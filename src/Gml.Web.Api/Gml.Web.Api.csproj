@@ -44,6 +44,13 @@
       <Compile Update="Core\Repositories\UserRepository.cs">
         <DependentUpon>IUserRepository.cs</DependentUpon>
       </Compile>
+      <Compile Update="Core\Handlers\ProfileHandler.cs">
+        <DependentUpon>IProfileHandler.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="data.db" />
     </ItemGroup>
 
 </Project>

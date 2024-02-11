@@ -19,5 +19,7 @@ public interface IAuthHandler
         IMapper mapper,
         UserAuthDto authDto);
 
-    static abstract Task<IResult> UpdateUser(IUserRepository userRepository, UserUpdateDto userUpdateDto);
+    static abstract Task<IResult> UpdateUser(
+        IUserRepository userRepository, 
+        UserUpdateDto userUpdateDto);
 }
