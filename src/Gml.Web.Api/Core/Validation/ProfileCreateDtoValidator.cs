@@ -19,6 +19,6 @@ public class ProfileCreateDtoValidator : AbstractValidator<ProfileCreateDto>
             .Length(2, 100).WithMessage("Длина версии должна быть от 2 до 100 символов.");
         RuleFor(x => x.IconBase64)
             .NotEmpty().WithMessage("IconBase64 обязательно.")
-            .Length(2, 10000).WithMessage("Длина IconBase64 должна быть от 2 до 10000 символов.");
+            .Length(2, 20000).WithMessage("Загруженная иконка имела слишком большой формат. Длина Base64 должна быть от 2 до 20000 символов.");
     }
 }
