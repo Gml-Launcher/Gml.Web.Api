@@ -2,6 +2,8 @@ using System.Net;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Messages;
+using Gml.Web.Api.Dto.Integration;
+using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.User;
 
@@ -34,6 +36,46 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<UserAuthReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        #endregion
+
+        #region Integrations
+
+        app.MapPost("/api/v1/integrations/auth/signin", IntegrationHandler.Auth)
+            .WithDescription("Авторизация через соответствующий сервиис")
+            .WithName("Auth")
+            .WithTags("Integration")
+            .Produces<ResponseMessage<PlayerReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+        
+        app.MapPut("/api/v1/integrations/auth", IntegrationHandler.SetAuthService)
+            .WithDescription("Обновление сервиса авторизации")
+            .WithName("Update auth service")
+            .WithTags("Integration")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+        
+        app.MapGet("/api/v1/integrations/auth", IntegrationHandler.GetIntegrationServices)
+            .WithDescription("Получение списка сервисов авторизации")
+            .WithName("Auth services list")
+            .WithTags("Integration")
+            .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+        
+        app.MapGet("/api/v1/integrations/auth/active", IntegrationHandler.GetAuthService)
+            .WithDescription("Получение активного сервиса авторизации")
+            .WithName("Get active auth service")
+            .WithTags("Integration")
+            .Produces<ResponseMessage<AuthServiceReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+        
+        app.MapDelete("/api/v1/integrations/auth/active", IntegrationHandler.RemoveAuthService)
+            .WithDescription("Удаление активного сервиса авторизации")
+            .WithName("Remove active auth service")
+            .WithTags("Integration")
+            .Produces<ResponseMessage<AuthServiceReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+        
+        
         #endregion
 
         #region Profiles

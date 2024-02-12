@@ -54,6 +54,18 @@
       <Compile Update="Core\Handlers\ProfileHandler.cs">
         <DependentUpon>IProfileHandler.cs</DependentUpon>
       </Compile>
+      <Compile Update="Core\Integrations\Auth\DataLifeEngineAuthService.cs">
+        <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Core\Integrations\Auth\AuthServiceFactory.cs">
+        <DependentUpon>IAuthServiceFactory.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Core\Integrations\Auth\UndefinedAuthService.cs">
+        <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Core\Handlers\IntegrationHandler.cs">
+        <DependentUpon>IIntegrationHandler.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

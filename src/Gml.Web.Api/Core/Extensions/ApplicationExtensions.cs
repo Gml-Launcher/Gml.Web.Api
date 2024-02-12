@@ -1,6 +1,7 @@
 using System.Text;
 using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Handlers;
+using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
@@ -39,7 +40,7 @@ public static class ApplicationExtensions
             out var policyName,
             out var projectPath,
             out var secretKey
-            );
+        );
 
         _policyName = policyName;
 
@@ -56,7 +57,7 @@ public static class ApplicationExtensions
         out string? projectDescription,
         out string policyName,
         out string projectPath,
-        out string secretkey)
+        out string secretKey)
     {
         var serverConfiguration = builder.Configuration.GetSection(nameof(ServerSettings));
 
@@ -65,7 +66,7 @@ public static class ApplicationExtensions
         projectDescription = serverConfiguration.GetValue<string>("ProjectDescription");
         policyName = serverConfiguration.GetValue<string>("PolicyName") ?? throw new Exception("Policy name not found");
         projectPath = serverConfiguration.GetValue<string>("ProjectPath") ?? string.Empty;
-        secretkey = serverConfiguration.GetValue<string>("SecretKey") ?? string.Empty;
+        secretKey = serverConfiguration.GetValue<string>("SecretKey") ?? string.Empty;
 
         return serverConfiguration;
     }
@@ -97,7 +98,7 @@ public static class ApplicationExtensions
         string secretKey)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        
+
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
@@ -106,13 +107,19 @@ public static class ApplicationExtensions
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = key
         };
-        
+
         builder.Services
+            .AddHttpClient()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
-            
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
             .AddSingleton<IGmlManager>(_ => new GmlManager(new GmlSettings(projectName, projectPath)))
+            .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
+            
+            .AddSingleton<IAuthService, AuthService>()
+            .AddTransient<UndefinedAuthService>()
+            .AddTransient<DataLifeEngineAuthService>()
+            
             .RegisterRepositories()
             .RegisterValidators()
             .RegisterCors(policyName)
@@ -138,12 +145,13 @@ public static class ApplicationExtensions
                     {
                         context.Token = accessToken;
                     }
-                    
+
                     return Task.CompletedTask;
                 }
             };
-        });;
-        
+        });
+        ;
+
         return builder;
     }
 }
