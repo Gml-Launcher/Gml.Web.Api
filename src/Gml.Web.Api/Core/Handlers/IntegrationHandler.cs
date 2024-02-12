@@ -105,7 +105,7 @@ public class IntegrationHandler : IIntegrationHandler
         if (service == null)
         {
             service = (await gmlManager.Integrations.GetAuthServices()).FirstOrDefault(c =>
-                c.AuthType == authType); //ToDo: rewrite to Find method
+                c.AuthType == authType);
         }
 
         if (service == null)
