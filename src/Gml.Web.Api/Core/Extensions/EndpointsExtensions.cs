@@ -13,7 +13,7 @@ public static class EndpointsExtensions
 {
     public static WebApplication RegisterEndpoints(this WebApplication app)
     {
-
+        
         #region SignalR Hubs
 
         app.MapHub<ProfileHub>("/ws/profiles/restore").RequireAuthorization();;
@@ -126,6 +126,7 @@ public static class EndpointsExtensions
         
 
         #endregion
+        
         return app;
     }
 
