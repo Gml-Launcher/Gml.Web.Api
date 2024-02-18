@@ -6,18 +6,15 @@ namespace Gml.Web.Api.Core.Integrations.Auth;
 
 public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager) : IPlatformAuthService
 {
-    private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
     private readonly IGmlManager _gmlManager = gmlManager;
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
     public async Task<bool> Auth(string login, string password)
     {
         var activeAuthService = await _gmlManager.Integrations.GetActiveAuthService();
 
-        if (activeAuthService == null)
-        {
-            throw new Exception("Сервис авторизации не настроен или настроен неправильно");
-        }
-        
+        if (activeAuthService == null) throw new Exception("Сервис авторизации не настроен или настроен неправильно");
+
         var dto = JsonConvert.SerializeObject(new
         {
             Login = login,

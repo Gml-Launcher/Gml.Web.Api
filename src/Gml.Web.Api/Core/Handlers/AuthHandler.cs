@@ -1,17 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Security.Claims;
-using System.Text;
 using AutoMapper;
 using FluentValidation;
-using FluentValidation.Results;
 using Gml.Web.Api.Core.Messages;
-using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Repositories;
-using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.User;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -26,10 +18,8 @@ public class AuthHandler : IAuthHandler
         var result = await validator.ValidateAsync(createDto);
 
         if (!result.IsValid)
-        {
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
-        }
 
         var user = await userRepository.CheckExistUser(createDto.Login, createDto.Email);
 
@@ -52,10 +42,8 @@ public class AuthHandler : IAuthHandler
         var result = await validator.ValidateAsync(authDto);
 
         if (!result.IsValid)
-        {
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
-        }
 
         var user = await userRepository.GetUser(authDto.Login, authDto.Password);
 

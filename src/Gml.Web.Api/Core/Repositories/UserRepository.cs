@@ -43,23 +43,6 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    private string GetAccessToken(string userId)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[] { new Claim("id", userId) }),
-            Expires = DateTime.UtcNow.AddHours(72),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Value.SecretKey)),
-                    SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-
-        return tokenHandler.WriteToken(token);
-    }
-
     public async Task<User> CreateUser(string email, string login, string password)
     {
         var checkUser = await CheckExistUser(email, login);
@@ -79,5 +62,22 @@ public class UserRepository : IUserRepository
         await _databaseContext.SaveChangesAsync();
 
         return entity.Entity;
+    }
+
+    private string GetAccessToken(string userId)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[] { new Claim("id", userId) }),
+            Expires = DateTime.UtcNow.AddHours(72),
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Value.SecretKey)),
+                    SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
     }
 }

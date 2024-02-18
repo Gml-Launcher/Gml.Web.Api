@@ -8,7 +8,6 @@ using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.User;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -27,20 +26,16 @@ public class IntegrationHandler : IIntegrationHandler
             var result = await validator.ValidateAsync(authDto);
 
             if (!result.IsValid)
-            {
                 return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                     HttpStatusCode.BadRequest));
-            }
 
             var authType = await gmlManager.Integrations.GetAuthType();
             var userAgent = context.Request.Headers["User-Agent"].ToString();
 
             if (string.IsNullOrWhiteSpace(userAgent))
-            {
                 return Results.BadRequest(ResponseMessage.Create(
                     "Не удалось определить устройство, с которого произошла авторизация",
                     HttpStatusCode.BadRequest));
-            }
 
 
             if (await authService.CheckAuth(authDto.Login, authDto.Password, authType))
@@ -92,10 +87,8 @@ public class IntegrationHandler : IIntegrationHandler
         var result = await validator.ValidateAsync(updateDto);
 
         if (!result.IsValid)
-        {
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
-        }
 
         if (!Enum.TryParse(updateDto.AuthType.ToString(), out AuthType authType))
             return Results.BadRequest();
@@ -103,15 +96,10 @@ public class IntegrationHandler : IIntegrationHandler
         var service = await gmlManager.Integrations.GetAuthService(authType);
 
         if (service == null)
-        {
             service = (await gmlManager.Integrations.GetAuthServices()).FirstOrDefault(c =>
                 c.AuthType == authType);
-        }
 
-        if (service == null)
-        {
-            return Results.NotFound();
-        }
+        if (service == null) return Results.NotFound();
 
         service.Endpoint = updateDto.Endpoint;
 

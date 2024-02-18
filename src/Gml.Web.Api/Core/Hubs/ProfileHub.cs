@@ -10,9 +10,9 @@ namespace Gml.Web.Api.Core.Hubs;
 public class ProfileHub : Hub
 {
     private readonly IGmlManager _gmlManager;
+    private int lastPackProgressSended = -1;
 
     private int lastProgressSended = -1;
-    private int lastPackProgressSended = -1;
 
     public ProfileHub(IGmlManager gmlManager)
     {

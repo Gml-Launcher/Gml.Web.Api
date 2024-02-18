@@ -2,7 +2,6 @@ using AutoMapper;
 using Gml.Core.Launcher;
 using Gml.Core.System;
 using Gml.Models;
-using Gml.Web.Api.Core.Validation;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Profile;
 
@@ -16,5 +15,4 @@ public class ProfileMapper : Profile
         CreateMap<GameProfileInfo, ProfileReadInfoDto>();
         CreateMap<LocalFileInfo, ProfileFileReadDto>();
     }
-    
 }

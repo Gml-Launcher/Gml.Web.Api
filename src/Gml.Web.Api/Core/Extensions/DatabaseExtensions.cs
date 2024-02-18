@@ -7,7 +7,6 @@ namespace Gml.Web.Api.Core.Extensions;
 
 public static class DatabaseExtensions
 {
-
     public static WebApplication InitializeDatabase(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
@@ -18,13 +17,8 @@ public static class DatabaseExtensions
 
         app.UseCors(settings.Value.PolicyName);
 
-        if (context.Database.GetPendingMigrations().Any())
-        {
-            context.Database.Migrate();
-        }
+        if (context.Database.GetPendingMigrations().Any()) context.Database.Migrate();
 
         return app;
-
     }
-
 }

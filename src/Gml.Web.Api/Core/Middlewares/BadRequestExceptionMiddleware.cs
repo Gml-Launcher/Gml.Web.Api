@@ -14,8 +14,9 @@ public class BadRequestExceptionMiddleware(RequestDelegate next)
         catch (BadHttpRequestException ex) when (ex.Message.StartsWith("Implicit body inferred for parameter"))
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            
-            await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Тело запроса не может быть пустым", HttpStatusCode.BadRequest));
+
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Тело запроса не может быть пустым",
+                HttpStatusCode.BadRequest));
         }
     }
 }

@@ -7,7 +7,6 @@ public class AuthServiceFactory(IServiceProvider serviceProvider) : IAuthService
 {
     public IPlatformAuthService CreateAuthService(AuthType platformKey)
     {
-
         switch (platformKey)
         {
             case AuthType.Undefined:

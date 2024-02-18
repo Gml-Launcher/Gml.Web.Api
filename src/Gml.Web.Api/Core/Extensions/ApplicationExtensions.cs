@@ -1,13 +1,11 @@
 using System.Text;
 using Gml.Core.Launcher;
-using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -23,11 +21,12 @@ public static class ApplicationExtensions
         app.UseAuthorization();
 
         app.RegisterEndpoints()
-            .InitializeDatabase()
             .UseCors(_policyName)
             .UseMiddleware<BadRequestExceptionMiddleware>()
             .UseSwagger()
             .UseSwaggerUI();
+
+        app.InitializeDatabase();
 
         return app;
     }
@@ -115,11 +114,9 @@ public static class ApplicationExtensions
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
             .AddSingleton<IGmlManager>(_ => new GmlManager(new GmlSettings(projectName, projectPath)))
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
-            
             .AddSingleton<IAuthService, AuthService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
-            
             .RegisterRepositories()
             .RegisterValidators()
             .RegisterCors(policyName)
@@ -142,15 +139,12 @@ public static class ApplicationExtensions
 
                     var path = context.HttpContext.Request.Path;
                     if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/ws"))
-                    {
                         context.Token = accessToken;
-                    }
 
                     return Task.CompletedTask;
                 }
             };
         });
-        ;
 
         return builder;
     }

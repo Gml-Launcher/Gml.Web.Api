@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using Gml.Web.Api.Dto.Files;
-
 namespace Gml.Web.Api.Dto.Profile;
 
 public class ProfileCreateInfoDto
@@ -17,5 +14,4 @@ public class ProfileCreateInfoDto
     public string UserUuid { get; set; } = null!;
     public string OsType { get; set; }
     public string OsArchitecture { get; set; } = null!;
-    
 }
