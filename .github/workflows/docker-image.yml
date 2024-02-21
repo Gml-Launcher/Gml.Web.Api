@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag gml-web-api:$(date +%s)
