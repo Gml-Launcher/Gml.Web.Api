@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 
 namespace Gml.Web.Api.Core.Extensions;
@@ -23,7 +24,7 @@ public static class RegisterSwaggerExtensions
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
+                Scheme = JwtBearerDefaults.AuthenticationScheme,
                 BearerFormat = "JWT"
             };
 
