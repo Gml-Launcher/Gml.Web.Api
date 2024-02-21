@@ -5,6 +5,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{F9F807
 		.gitignore = .gitignore
 		.gitmodules = .gitmodules
 		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
+		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BCA2A85C-3E30-46C0-8860-3B693CD3F9AB}"
