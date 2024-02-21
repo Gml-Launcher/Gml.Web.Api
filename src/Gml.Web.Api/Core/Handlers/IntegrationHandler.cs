@@ -42,6 +42,8 @@ public class IntegrationHandler : IIntegrationHandler
             {
                 var player = await gmlManager.Users.GetAuthData(authDto.Login, authDto.Password, userAgent);
 
+                player.TextureUrl = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", player.Name);
+
                 return Results.Ok(ResponseMessage.Create(
                     mapper.Map<PlayerReadDto>(player),
                     string.Empty,
