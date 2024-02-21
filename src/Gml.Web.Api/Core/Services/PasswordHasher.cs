@@ -22,9 +22,7 @@ public class PasswordHasher
         var parts = hash.Split('.', 2);
 
         if (parts.Length != 2)
-        {
             throw new FormatException("Unexpected hash format. Should be formatted as `{salt}.{key}`");
-        }
 
         var salt = Convert.FromBase64String(parts[0]);
         var key = Convert.FromBase64String(parts[1]);
@@ -37,10 +35,7 @@ public class PasswordHasher
 
     private static bool Compare(byte[] array1, byte[] array2)
     {
-        if (array1.Length != array2.Length)
-        {
-            return false;
-        }
+        if (array1.Length != array2.Length) return false;
 
         return !array1.Where((t, i) => t != array2[i]).Any();
     }

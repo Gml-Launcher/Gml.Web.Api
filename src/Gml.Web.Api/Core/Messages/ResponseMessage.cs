@@ -7,7 +7,7 @@ public class ResponseMessage
 {
     public string Status { get; set; } = null!;
     public int StatusCode { get; set; }
-    public string Message { get; set; }= null!;
+    public string Message { get; set; } = null!;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
     public static ResponseMessage Create(string message, HttpStatusCode statusCode)
@@ -41,11 +41,9 @@ public class ResponseMessage
             Errors = resultErrors.Select(c => c.ErrorMessage)
         };
     }
-
 }
 
 public class ResponseMessage<T> : ResponseMessage
 {
     public T? Data { get; set; }
-
 }

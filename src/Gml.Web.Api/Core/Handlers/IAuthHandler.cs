@@ -2,6 +2,7 @@ using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Dto.User;
+using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -20,6 +21,6 @@ public interface IAuthHandler
         UserAuthDto authDto);
 
     static abstract Task<IResult> UpdateUser(
-        IUserRepository userRepository, 
+        IUserRepository userRepository,
         UserUpdateDto userUpdateDto);
 }

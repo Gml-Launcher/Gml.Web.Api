@@ -14,7 +14,6 @@ public class ProfileRestoreDtoValidator : AbstractValidator<ProfileRestoreDto>
         RuleFor(x => x.OsArchitecture)
             .NotEmpty().WithMessage("Архитектура ОС обязательна.")
             .Length(2, 100).WithMessage("Длина архитектуры ОС должна быть от 2 до 100 символов.");
-        RuleFor(x => x.OsType)
-            .IsInEnum().WithMessage("OsType должен быть корректным значением ОС.");
+        RuleFor(x => x.OsType);
     }
 }

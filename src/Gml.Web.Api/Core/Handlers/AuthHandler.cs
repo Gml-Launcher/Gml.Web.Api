@@ -1,11 +1,10 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using FluentValidation.Results;
 using Gml.Web.Api.Core.Messages;
 using Gml.Web.Api.Core.Repositories;
-using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.User;
+using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -20,10 +19,8 @@ public class AuthHandler : IAuthHandler
         var result = await validator.ValidateAsync(createDto);
 
         if (!result.IsValid)
-        {
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
-        }
 
         var user = await userRepository.CheckExistUser(createDto.Login, createDto.Email);
 
@@ -40,28 +37,23 @@ public class AuthHandler : IAuthHandler
     public static async Task<IResult> AuthUser(
         IUserRepository userRepository,
         IValidator<UserAuthDto> validator,
-        IMapper mapper, 
+        IMapper mapper,
         UserAuthDto authDto)
     {
-        
         var result = await validator.ValidateAsync(authDto);
-        
+
         if (!result.IsValid)
-        {
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
-        }
-        
+
         var user = await userRepository.GetUser(authDto.Login, authDto.Password);
 
         if (user is null)
             return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль",
                 HttpStatusCode.BadRequest));
         
-        
         return Results.Ok(ResponseMessage.Create(mapper.Map<UserAuthReadDto>(user), "Успешная авторизация",
-            HttpStatusCode.OK)); 
-        
+            HttpStatusCode.OK));
     }
 
     public static Task<IResult> UpdateUser(IUserRepository userRepository, UserUpdateDto userUpdateDto)
