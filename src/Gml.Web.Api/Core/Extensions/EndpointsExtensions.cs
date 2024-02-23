@@ -194,6 +194,22 @@ public static class EndpointsExtensions
 
         #endregion
 
+        #region Files
+
+        
+        app.MapGet("/api/v1/file/{fileHash}", FileHandler.GetFile)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение файла на загрузку";
+                return generatedOperation;
+            })
+            .WithDescription("Получение файла на загрузку")
+            .WithName("Download file")
+            .WithTags("Files")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
+        #endregion
+
         return app;
     }
 }
