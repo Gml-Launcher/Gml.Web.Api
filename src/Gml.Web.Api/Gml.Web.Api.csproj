@@ -72,6 +72,12 @@
         <Compile Update="Core\Handlers\FileHandler.cs">
           <DependentUpon>IFileHandler.cs</DependentUpon>
         </Compile>
+        <Compile Update="Core\Services\SystemService.cs">
+          <DependentUpon>ISystemService.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Handlers\MinecraftHandler.cs">
+          <DependentUpon>IMinecraftHandler.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

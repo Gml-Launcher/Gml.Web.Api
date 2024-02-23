@@ -3,6 +3,7 @@ using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -114,6 +115,7 @@ public static class ApplicationExtensions
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
             .AddSingleton<IGmlManager>(_ => new GmlManager(new GmlSettings(projectName, projectPath)))
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
+            .AddSingleton<ISystemService, SystemService>()
             .AddSingleton<IAuthService, AuthService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
