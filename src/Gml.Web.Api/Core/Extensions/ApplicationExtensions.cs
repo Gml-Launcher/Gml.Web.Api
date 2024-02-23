@@ -115,7 +115,7 @@ public static class ApplicationExtensions
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
             .AddSingleton<IGmlManager>(_ => new GmlManager(new GmlSettings(projectName, projectPath)))
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
-            .AddSingleton<ISystemService, SystemService>()
+            .AddScoped<ISystemService, SystemService>()
             .AddSingleton<IAuthService, AuthService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()

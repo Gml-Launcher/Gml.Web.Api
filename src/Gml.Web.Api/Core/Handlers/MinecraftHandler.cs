@@ -7,7 +7,7 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public async Task<IResult> GetMetaData(ISystemService systemService, IOptions<ServerSettings> options)
+    public static async Task<IResult> GetMetaData(ISystemService systemService, IOptions<ServerSettings> options)
     {
         var metadataResponse = new MetadataResponse
         {
@@ -21,6 +21,5 @@ public class MinecraftHandler : IMinecraftHandler
         };
 
         return Results.Ok(metadataResponse);
-
     }
 }

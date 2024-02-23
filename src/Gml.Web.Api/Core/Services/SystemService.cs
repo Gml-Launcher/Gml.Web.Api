@@ -43,7 +43,7 @@ public class SystemService : ISystemService
         }
 
         using var reader = new StreamReader(path);
-        
+
         return await reader.ReadToEndAsync();
     }
 
@@ -64,8 +64,9 @@ public class SystemService : ISystemService
         process.WaitForExit();
 
         startInfo.Arguments = $"rsa -in {privateKeyPath} -out {publicKeyPath} -pubout";
-        process.StartInfo = startInfo;
-        process.Start();
-        process.WaitForExit();
+
+        var processSecondCommand = new Process { StartInfo = startInfo };  // Create new Process instance
+        processSecondCommand.Start();
+        processSecondCommand.WaitForExit();
     }
 }

@@ -82,6 +82,10 @@
 
     <ItemGroup>
         <None Remove="data.db"/>
+        <None Remove="private.key" />
+        <None Remove="public.key" />
+        <None Remove="data.db-shm" />
+        <None Remove="data.db-wal" />
     </ItemGroup>
 
 </Project>

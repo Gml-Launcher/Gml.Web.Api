@@ -54,6 +54,24 @@ public static class EndpointsExtensions
 
         #region Integrations
 
+
+        #region Minecraft authlib
+
+        app.MapGet("/api/v1/integrations/authlib/minecraft", MinecraftHandler.GetMetaData)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                return generatedOperation;
+            })
+            .WithDescription("Получение метаданных для Authlib injector")
+            .WithName("Integration with authlib, get metadata")
+            .WithTags("Integration/Minecraft")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        #endregion
+
+        #region Auth
+
         app.MapPost("/api/v1/integrations/auth/signin", IntegrationHandler.Auth)
             .WithOpenApi(generatedOperation =>
             {
@@ -62,7 +80,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Аутентификация через промежуточный сервис авторизации")
             .WithName("Auth")
-            .WithTags("Integration")
+            .WithTags("Integration/Auth")
             .Produces<ResponseMessage<PlayerReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
@@ -74,7 +92,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Обновление сервиса авторизации")
             .WithName("Update auth service")
-            .WithTags("Integration")
+            .WithTags("Integration/Auth")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
@@ -86,7 +104,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение списка сервисов авторизации")
             .WithName("Auth services list")
-            .WithTags("Integration")
+            .WithTags("Integration/Auth")
             .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
@@ -98,7 +116,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение активного сервиса авторизации")
             .WithName("Get active auth service")
-            .WithTags("Integration")
+            .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
@@ -110,9 +128,11 @@ public static class EndpointsExtensions
             })
             .WithDescription("Удаление активного сервиса авторизации")
             .WithName("Remove active auth service")
-            .WithTags("Integration")
+            .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        #endregion
 
         #endregion
 
@@ -196,7 +216,7 @@ public static class EndpointsExtensions
 
         #region Files
 
-        
+
         app.MapGet("/api/v1/file/{fileHash}", FileHandler.GetFile)
             .WithOpenApi(generatedOperation =>
             {
@@ -209,6 +229,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
 
         #endregion
+
 
         return app;
     }
