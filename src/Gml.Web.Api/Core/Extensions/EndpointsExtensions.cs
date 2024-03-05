@@ -15,7 +15,7 @@ public static class EndpointsExtensions
     {
         #region Root
 
-        app.MapGet("/", () => Results.Redirect("/swagger", true));
+        // app.MapGet("/", () => Results.Redirect("/swagger", true));
 
         #endregion
 
@@ -65,7 +65,65 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение метаданных для Authlib injector")
             .WithName("Integration with authlib, get metadata")
-            .WithTags("Integration/Minecraft")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+
+        app.MapPost("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/join", MinecraftHandler.Join)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                return generatedOperation;
+            })
+            .WithDescription("Получение метаданных для Authlib injector")
+            .WithName("Integration with authlib, join")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        //ToDo: comments
+
+        app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/hasJoined", MinecraftHandler.HasJoined)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                return generatedOperation;
+            })
+            .WithDescription("Получение метаданных для Authlib injector")
+            .WithName("Integration with authlib, player has join")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/profile/{uuid}", MinecraftHandler.GetProfile)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                return generatedOperation;
+            })
+            .WithDescription("Получение метаданных для Authlib injector")
+            .WithName("Integration with authlib, get minecraft profile")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/integrations/authlib/minecraft/profiles/minecraft", MinecraftHandler.GetPlayersUuids)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                return generatedOperation;
+            })
+            .WithDescription("Получение метаданных для Authlib injector")
+            .WithName("Integration with authlib, minecraft post")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/authlib/minecraft/player/attributes", MinecraftHandler.GetPlayerAttribute)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                return generatedOperation;
+            })
+            .WithDescription("Получение метаданных для Authlib injector")
+            .WithName("Integration with authlib, get player attributes")
+            .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         #endregion
@@ -208,6 +266,18 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение информации об игровом профиле")
             .WithName("Get profile info")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage<ProfileReadInfoDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/profiles/compile", ProfileHandler.CompileProfile)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Компиляция игрового профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Компиляция игрового профиля")
+            .WithName("Compile profile")
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);

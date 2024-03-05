@@ -1,17 +1,13 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Gml.Web.Api.Core.Services;
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Diagnostics;
-
 public class SystemService : ISystemService
 {
-    private static string publicKeyPath = "public.key";
-    private static string privateKeyPath = "private.key";
+    private static readonly string publicKeyPath = "public.key";
+    private static readonly string privateKeyPath = "private.key";
 
     public async Task<string> GetPublicKey()
     {
@@ -30,17 +26,15 @@ public class SystemService : ISystemService
         var csp = new RSACryptoServiceProvider(4096);
         csp.ImportFromPem(privateKey);
 
-        byte[] inputBytes = Encoding.UTF8.GetBytes(data);
-        byte[] signatureBytes = csp.SignData(inputBytes, "SHA1");
+        var inputBytes = Encoding.UTF8.GetBytes(data);
+        var signatureBytes = csp.SignData(inputBytes, "SHA1");
+
         return Convert.ToBase64String(signatureBytes);
     }
 
     private async Task<string> ReadKeyFile(string path)
     {
-        if (!File.Exists(path))
-        {
-            GenerateKeyPair();
-        }
+        if (!File.Exists(path)) GenerateKeyPair();
 
         using var reader = new StreamReader(path);
 
@@ -57,6 +51,7 @@ public class SystemService : ISystemService
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            WorkingDirectory = new FileInfo(privateKeyPath).Directory!.FullName
         };
 
         var process = new Process { StartInfo = startInfo };
@@ -65,7 +60,7 @@ public class SystemService : ISystemService
 
         startInfo.Arguments = $"rsa -in {privateKeyPath} -out {publicKeyPath} -pubout";
 
-        var processSecondCommand = new Process { StartInfo = startInfo };  // Create new Process instance
+        var processSecondCommand = new Process { StartInfo = startInfo }; // Create new Process instance
         processSecondCommand.Start();
         processSecondCommand.WaitForExit();
     }
