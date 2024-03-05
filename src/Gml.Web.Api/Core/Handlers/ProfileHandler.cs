@@ -109,7 +109,8 @@ public class ProfileHandler : IProfileHandler
 
         await gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
         {
-            OsType = osType
+            OsType = osType,
+            OsArch = restoreDto.OsArchitecture
         }, User.Empty);
 
         return Results.Ok(ResponseMessage.Create("Профиль успешно восстановлен", HttpStatusCode.OK));
