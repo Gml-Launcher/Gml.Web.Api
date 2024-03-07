@@ -120,57 +120,55 @@ public static class EndpointsExtensions
         app.MapPost("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/join", MinecraftHandler.Join)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация метода Minecraft Join";
                 return generatedOperation;
             })
-            .WithDescription("Получение метаданных для Authlib injector")
+            .WithDescription("Реализация метода Minecraft Join")
             .WithName("Integration with authlib, join")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        //ToDo: comments
-
         app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/hasJoined", MinecraftHandler.HasJoined)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация метода Minecraft HasJoin";
                 return generatedOperation;
             })
-            .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, player has join")
+            .WithDescription("Реализация метода Minecraft HasJoin")
+            .WithName("Implementation of Minecraft's HasJoin method")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/profile/{uuid}", MinecraftHandler.GetProfile)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация получения профиля пользователя Minecraft";
                 return generatedOperation;
             })
-            .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, get minecraft profile")
+            .WithDescription("Реализация профиля пользователя Minecraft")
+            .WithName("Implementation of Minecraft user profile retrieval")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapPost("/api/v1/integrations/authlib/minecraft/profiles/minecraft", MinecraftHandler.GetPlayersUuids)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация Uuid профилей";
                 return generatedOperation;
             })
             .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, minecraft post")
+            .WithName("Implementation of Uuid profiles")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapGet("/api/v1/integrations/authlib/minecraft/player/attributes", MinecraftHandler.GetPlayerAttribute)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Получение атрибутов пользователя";
                 return generatedOperation;
             })
             .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, get player attributes")
+            .WithName(" Getting user attributes")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
