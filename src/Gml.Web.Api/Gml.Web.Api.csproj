@@ -78,6 +78,9 @@
         <Compile Update="Core\Handlers\MinecraftHandler.cs">
           <DependentUpon>IMinecraftHandler.cs</DependentUpon>
         </Compile>
+        <Compile Update="Core\Handlers\TextureIntegrationHandler.cs">
+          <DependentUpon>ITextureIntegrationHandler.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

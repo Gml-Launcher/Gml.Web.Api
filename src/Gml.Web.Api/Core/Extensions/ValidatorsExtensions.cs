@@ -1,5 +1,6 @@
 using FluentValidation;
 using Gml.Web.Api.Core.Validation;
+using Gml.Web.Api.Domains.Texture;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.User;
@@ -26,7 +27,10 @@ public static class ValidatorsExtensions
             .AddScoped<IValidator<BaseUserPassword>, PlayerAuthDtoValidator>()
 
             // Integration validator
-            .AddScoped<IValidator<IntegrationUpdateDto>, IntegrationValidator>();
+            .AddScoped<IValidator<IntegrationUpdateDto>, IntegrationValidator>()
+
+            // Texture validator
+            .AddScoped<IValidator<TextureServiceDto>, TextureServiceDtoValidator>();
 
         return serviceCollection;
     }

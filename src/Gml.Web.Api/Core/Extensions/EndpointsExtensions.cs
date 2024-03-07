@@ -54,6 +54,54 @@ public static class EndpointsExtensions
 
         #region Integrations
 
+        #region Textures
+
+        app.MapGet("/api/v1/integrations/texture/skins", TextureIntegrationHandler.GetSkinUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение ссылки на сервис со скинами";
+                return generatedOperation;
+            })
+            .WithDescription("Получение ссылки на сервис со скинами")
+            .WithName("Get skin texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPut("/api/v1/integrations/texture/skins", TextureIntegrationHandler.SetSkinUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление ссылки на сервис со скинами";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление ссылки на сервис со скинами")
+            .WithName("Update skin texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.GetCloakUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение ссылки на сервис с плащами";
+                return generatedOperation;
+            })
+            .WithDescription("Получение ссылки на сервис с плащами")
+            .WithName("Get cloak texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPut("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.SetCloakUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление ссылки на сервис с плащами";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление ссылки на сервис с плащами")
+            .WithName("Update cloak texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+
+        #endregion
 
         #region Minecraft authlib
 
