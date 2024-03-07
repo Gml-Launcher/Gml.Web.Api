@@ -176,7 +176,7 @@ public static class EndpointsExtensions
 
         #region Auth
 
-        app.MapPost("/api/v1/integrations/auth/signin", IntegrationHandler.Auth)
+        app.MapPost("/api/v1/integrations/auth/signin", AuthIntegrationHandler.Auth)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Аутентификация через промежуточный сервис авторизации";
@@ -188,7 +188,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<PlayerReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapPut("/api/v1/integrations/auth", IntegrationHandler.SetAuthService)
+        app.MapPut("/api/v1/integrations/auth", AuthIntegrationHandler.SetAuthService)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Обновление информации о промежуточном сервисе авторизации";
@@ -200,7 +200,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/auth", IntegrationHandler.GetIntegrationServices)
+        app.MapGet("/api/v1/integrations/auth", AuthIntegrationHandler.GetIntegrationServices)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение списка сервисов авторизации";
@@ -212,7 +212,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/auth/active", IntegrationHandler.GetAuthService)
+        app.MapGet("/api/v1/integrations/auth/active", AuthIntegrationHandler.GetAuthService)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение активного сервиса авторизации";
@@ -224,7 +224,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapDelete("/api/v1/integrations/auth/active", IntegrationHandler.RemoveAuthService)
+        app.MapDelete("/api/v1/integrations/auth/active", AuthIntegrationHandler.RemoveAuthService)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление активного сервиса авторизации";
