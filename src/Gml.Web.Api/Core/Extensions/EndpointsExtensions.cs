@@ -15,7 +15,7 @@ public static class EndpointsExtensions
     {
         #region Root
 
-        // app.MapGet("/", () => Results.Redirect("/swagger", true));
+        app.MapGet("/", () => Results.Redirect("/swagger", true));
 
         #endregion
 
