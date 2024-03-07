@@ -64,7 +64,7 @@ public class MinecraftHandler : IMinecraftHandler
                 },
                 Cape = new SkinCape()
                 {
-                    Url = (await gmlManager.Integrations.GetClockServiceAsync()).Replace("{userName}", user) +
+                    Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}", user) +
                           $"?{DateTime.Now.Millisecond}"
                 }
             }
