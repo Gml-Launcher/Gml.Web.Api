@@ -7,7 +7,7 @@ using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
-public interface IIntegrationHandler
+public interface IAuthIntegrationHandler
 {
     static abstract Task<IResult> Auth(
         HttpContext context,

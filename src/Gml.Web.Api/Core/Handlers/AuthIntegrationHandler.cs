@@ -11,7 +11,7 @@ using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
-public class IntegrationHandler : IIntegrationHandler
+public class AuthIntegrationHandler : IAuthIntegrationHandler
 {
     public static async Task<IResult> Auth(
         HttpContext context,
