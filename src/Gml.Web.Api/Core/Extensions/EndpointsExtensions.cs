@@ -292,7 +292,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapDelete("/api/v1/profiles/{profileName}", ProfileHandler.RemoveProfile)
+        app.MapDelete("/api/v1/profiles/{profileNames}", ProfileHandler.RemoveProfile)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление игрового профиля";
