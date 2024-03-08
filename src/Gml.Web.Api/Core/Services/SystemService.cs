@@ -32,6 +32,16 @@ public class SystemService : ISystemService
         return Convert.ToBase64String(signatureBytes);
     }
 
+    public async Task<string> GetBase64FromImageFile(IFormFile file)
+    {
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var fileBytes = ms.ToArray();
+        var base64 = Convert.ToBase64String(fileBytes);
+
+        return base64;
+    }
+
     private async Task<string> ReadKeyFile(string path)
     {
         if (!File.Exists(path)) GenerateKeyPair();
