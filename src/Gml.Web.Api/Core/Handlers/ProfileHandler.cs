@@ -4,11 +4,13 @@ using FluentValidation;
 using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Core.Messages;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -26,57 +28,105 @@ public class ProfileHandler : IProfileHandler
 
     [Authorize]
     public static async Task<IResult> CreateProfile(
+        HttpContext context,
+        ISystemService systemService,
         IMapper mapper,
         IGmlManager gmlManager,
-        IValidator<ProfileCreateDto> validator,
-        ProfileCreateDto createDto)
+        IValidator<ProfileCreateDto> validator)
     {
-        var result = await validator.ValidateAsync(createDto);
+        try
+        {
+            var createDto = new ProfileCreateDto
+            {
+                Name = context.Request.Form["Name"],
+                Description = context.Request.Form["Description"],
+                Version = context.Request.Form["Version"],
+                GameLoader = context.Request.Form["GameLoader"]
+            };
 
-        if (!result.IsValid)
-            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+            var result = await validator.ValidateAsync(createDto);
+
+            if (!result.IsValid)
+                return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                    HttpStatusCode.BadRequest));
+
+            if (!Enum.TryParse(createDto.GameLoader, out GameLoader gameLoader))
+                return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика профиля",
+                    HttpStatusCode.BadRequest));
+
+            var checkProfile = await gmlManager.Profiles.GetProfile(createDto.Name);
+
+            if (checkProfile is not null)
+                return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем уже существует",
+                    HttpStatusCode.BadRequest));
+
+            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version))
+                return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
+                    HttpStatusCode.BadRequest));
+
+            if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
+            {
+                createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
+            }
+
+            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, gameLoader,
+                createDto.IconBase64, createDto.Description);
+
+            return Results.Created($"/api/v1/profiles/{createDto.Name}",
+                ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
+                    HttpStatusCode.Created));
+        }
+        catch (Exception exception)
+        {
+            return Results.BadRequest(ResponseMessage.Create(exception.Message,
                 HttpStatusCode.BadRequest));
-
-        if (!Enum.TryParse(createDto.GameLoader, out GameLoader gameLoader))
-            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика профиля",
-                HttpStatusCode.BadRequest));
-
-
-        var checkProfile = await gmlManager.Profiles.GetProfile(createDto.Name);
-
-        if (checkProfile is not null)
-            return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем уже существует",
-                HttpStatusCode.BadRequest));
-
-        if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version))
-            return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
-                HttpStatusCode.BadRequest));
-
-        var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, gameLoader,
-            createDto.IconBase64, createDto.Description);
-
-        return Results.Created($"/api/v1/profiles/{createDto.Name}",
-            ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
-                HttpStatusCode.Created));
+        }
     }
 
 
     [Authorize]
     public static async Task<IResult> UpdateProfile(
+        HttpContext context,
+        ISystemService systemService,
         IMapper mapper,
         IGmlManager gmlManager,
-        IValidator<ProfileUpdateDto> validator,
-        ProfileUpdateDto updateDto)
+        IValidator<ProfileUpdateDto> validator)
     {
+        var updateDto = new ProfileUpdateDto
+        {
+            Name = context.Request.Form["Name"],
+            Description = context.Request.Form["Description"],
+            OriginalName = context.Request.Form["OriginalName"]
+        };
+
         var result = await validator.ValidateAsync(updateDto);
 
         if (!result.IsValid)
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
+
         var profile = await gmlManager.Profiles.GetProfile(updateDto.OriginalName);
 
         if (profile is null)
             return Results.NotFound(ResponseMessage.Create("Профиль не найден", HttpStatusCode.NotFound));
+
+        if (updateDto.OriginalName != updateDto.Name)
+        {
+            var profileExists = await gmlManager.Profiles.GetProfile(updateDto.Name);
+
+            if (profileExists != null)
+                return Results.NotFound(ResponseMessage.Create("Профиль с таким наименованием уже существует",
+                    HttpStatusCode.NotFound));
+        }
+
+        if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
+        {
+            updateDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
+        }
+        else
+        {
+            updateDto.IconBase64 = profile.IconBase64;
+        }
 
         await gmlManager.Profiles.UpdateProfile(profile, updateDto.Name, updateDto.IconBase64, updateDto.Description);
 
@@ -185,16 +235,30 @@ public class ProfileHandler : IProfileHandler
     [Authorize]
     public static async Task<IResult> RemoveProfile(
         IGmlManager gmlManager,
-        string profileName)
+        string profileNames,
+        [FromQuery] bool removeFiles)
     {
-        var profile = await gmlManager.Profiles.GetProfile(profileName);
+        var profileNamesList = profileNames.Split(',');
+        var notRemovedProfiles = new List<string>();
 
-        if (profile is null)
-            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
-                HttpStatusCode.NotFound));
+        foreach (var profileName in profileNamesList)
+        {
+            var profile = await gmlManager.Profiles.GetProfile(profileName);
 
-        await gmlManager.Profiles.RemoveProfile(profile);
+            if (profile == null)
+                notRemovedProfiles.Add(profileName);
+            else
+                await gmlManager.Profiles.RemoveProfile(profile, removeFiles);
+        }
 
-        return Results.Ok(ResponseMessage.Create("Профиль был успешно удалён", HttpStatusCode.OK));
+        var message = "Операция выполнена";
+
+        if (notRemovedProfiles.Any())
+        {
+            message += ". Было пропущено удаление:";
+            message += string.Join(",", notRemovedProfiles);
+        }
+
+        return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }
 }
