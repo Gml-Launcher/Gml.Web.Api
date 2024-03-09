@@ -81,6 +81,12 @@
         <Compile Update="Core\Handlers\AuthIntegrationHandler.cs">
           <DependentUpon>IAuthIntegrationHandler.cs</DependentUpon>
         </Compile>
+        <Compile Update="Core\Handlers\GitHubIntegrationHandler.cs">
+          <DependentUpon>IGitHubIntegrationHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Services\GitHubService.cs">
+          <DependentUpon>IGitHubService.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
