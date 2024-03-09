@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Gml.Web.Api.Core.Hubs;
 
-public class ProfileHub : Hub
+public class ProfileHub : BaseHub
 {
     private readonly IGmlManager _gmlManager;
     private int lastPackProgressSended = -1;
@@ -62,9 +62,10 @@ public class ProfileHub : Hub
 
         if (profile == null)
         {
-            await Clients.Caller.SendAsync("Message", $"Профиль \"{profileName}\" не найден");
+            SendCallerMessage($"Профиль \"{profileName}\" не найден");
             return;
         }
+
         SendProgress(string.Empty, new ProgressChangedEventArgs(0, 0));
 
         profile.GameLoader.ProgressChanged += SendProgress;
@@ -95,19 +96,6 @@ public class ProfileHub : Hub
             await Clients.All.SendAsync("SuccessInstalled");
 
             lastProgressSended = -1;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    private async void SendFileChanged(string file)
-    {
-        try
-        {
-            if (!string.IsNullOrEmpty(file))
-                await Clients.Caller.SendAsync("FileChanged", file);
         }
         catch (Exception e)
         {

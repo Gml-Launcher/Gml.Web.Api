@@ -2,6 +2,7 @@ using System.Net;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Messages;
+using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
@@ -19,9 +20,46 @@ public static class EndpointsExtensions
 
         #endregion
 
+        #region Launcher
+
+        app.MapGet("/api/v1/integrations/github/launcher/versions", GitHubIntegrationHandler.GetVersions)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Список версий лаунчера";
+                return generatedOperation;
+            })
+            .WithName("Get launcher versions")
+            .WithTags("Integration/GitHub/Launcher")
+            .Produces<ResponseMessage<IEnumerable<LauncherVersionReadDto>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/integrations/github/launcher/download", GitHubIntegrationHandler.DownloadLauncher)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Загрузить лаунчер";
+                return generatedOperation;
+            })
+            .WithName("Download launcher version")
+            .WithTags("Integration/GitHub/Launcher")
+            .Produces<ResponseMessage<string>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/github/launcher/download/{version}", GitHubIntegrationHandler.ReturnLauncherSolution)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Скачать решение лаунчера";
+                return generatedOperation;
+            })
+            .WithName("Download launcher solution")
+            .WithTags("Integration/GitHub/Launcher")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        #endregion
+
         #region SignalR Hubs
 
         app.MapHub<ProfileHub>("/ws/profiles/restore").RequireAuthorization();
+        app.MapHub<GitHubLauncherHub>("/ws/launcher/build").RequireAuthorization();
 
         #endregion
 
