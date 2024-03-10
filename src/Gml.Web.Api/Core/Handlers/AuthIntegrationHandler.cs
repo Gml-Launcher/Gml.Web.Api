@@ -8,10 +8,11 @@ using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Gml.Web.Api.Core.Handlers;
 
-public class IntegrationHandler : IIntegrationHandler
+public class AuthIntegrationHandler : IAuthIntegrationHandler
 {
     public static async Task<IResult> Auth(
         HttpContext context,
@@ -63,6 +64,7 @@ public class IntegrationHandler : IIntegrationHandler
         return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль", HttpStatusCode.Unauthorized));
     }
 
+    [Authorize]
     public static async Task<IResult> GetIntegrationServices(IGmlManager gmlManager, IMapper mapper)
     {
         var authServices = await gmlManager.Integrations.GetAuthServices();
@@ -71,6 +73,7 @@ public class IntegrationHandler : IIntegrationHandler
             HttpStatusCode.OK));
     }
 
+    [Authorize]
     public static async Task<IResult> GetAuthService(IGmlManager gmlManager, IMapper mapper)
     {
         var activeAuthService = await gmlManager.Integrations.GetActiveAuthService();
@@ -81,6 +84,7 @@ public class IntegrationHandler : IIntegrationHandler
                 HttpStatusCode.OK));
     }
 
+    [Authorize]
     public static async Task<IResult> SetAuthService(
         IGmlManager gmlManager,
         IValidator<IntegrationUpdateDto> validator,
@@ -110,6 +114,7 @@ public class IntegrationHandler : IIntegrationHandler
         return Results.Ok(ResponseMessage.Create("Сервис авторизации успешно обновлен", HttpStatusCode.OK));
     }
 
+    [Authorize]
     public static async Task<IResult> RemoveAuthService(IGmlManager gmlManager)
     {
         await gmlManager.Integrations.SetActiveAuthService(null);

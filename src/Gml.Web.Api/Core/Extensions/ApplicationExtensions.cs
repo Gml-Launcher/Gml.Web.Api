@@ -117,6 +117,7 @@ public static class ApplicationExtensions
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddScoped<ISystemService, SystemService>()
             .AddSingleton<IAuthService, AuthService>()
+            .AddSingleton<IGitHubService, GitHubService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
             .RegisterRepositories()

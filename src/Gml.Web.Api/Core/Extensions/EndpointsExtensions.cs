@@ -2,6 +2,7 @@ using System.Net;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Messages;
+using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
@@ -15,13 +16,50 @@ public static class EndpointsExtensions
     {
         #region Root
 
-        // app.MapGet("/", () => Results.Redirect("/swagger", true));
+        app.MapGet("/", () => Results.Redirect("/swagger", true));
+
+        #endregion
+
+        #region Launcher
+
+        app.MapGet("/api/v1/integrations/github/launcher/versions", GitHubIntegrationHandler.GetVersions)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Список версий лаунчера";
+                return generatedOperation;
+            })
+            .WithName("Get launcher versions")
+            .WithTags("Integration/GitHub/Launcher")
+            .Produces<ResponseMessage<IEnumerable<LauncherVersionReadDto>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/integrations/github/launcher/download", GitHubIntegrationHandler.DownloadLauncher)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Загрузить лаунчер";
+                return generatedOperation;
+            })
+            .WithName("Download launcher version")
+            .WithTags("Integration/GitHub/Launcher")
+            .Produces<ResponseMessage<string>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/github/launcher/download/{version}", GitHubIntegrationHandler.ReturnLauncherSolution)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Скачать решение лаунчера";
+                return generatedOperation;
+            })
+            .WithName("Download launcher solution")
+            .WithTags("Integration/GitHub/Launcher")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         #endregion
 
         #region SignalR Hubs
 
         app.MapHub<ProfileHub>("/ws/profiles/restore").RequireAuthorization();
+        app.MapHub<GitHubLauncherHub>("/ws/launcher/build").RequireAuthorization();
 
         #endregion
 
@@ -54,6 +92,54 @@ public static class EndpointsExtensions
 
         #region Integrations
 
+        #region Textures
+
+        app.MapGet("/api/v1/integrations/texture/skins", TextureIntegrationHandler.GetSkinUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение ссылки на сервис со скинами";
+                return generatedOperation;
+            })
+            .WithDescription("Получение ссылки на сервис со скинами")
+            .WithName("Get skin texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPut("/api/v1/integrations/texture/skins", TextureIntegrationHandler.SetSkinUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление ссылки на сервис со скинами";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление ссылки на сервис со скинами")
+            .WithName("Update skin texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.GetCloakUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение ссылки на сервис с плащами";
+                return generatedOperation;
+            })
+            .WithDescription("Получение ссылки на сервис с плащами")
+            .WithName("Get cloak texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPut("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.SetCloakUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление ссылки на сервис с плащами";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление ссылки на сервис с плащами")
+            .WithName("Update cloak texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+
+        #endregion
 
         #region Minecraft authlib
 
@@ -72,57 +158,55 @@ public static class EndpointsExtensions
         app.MapPost("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/join", MinecraftHandler.Join)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация метода Minecraft Join";
                 return generatedOperation;
             })
-            .WithDescription("Получение метаданных для Authlib injector")
+            .WithDescription("Реализация метода Minecraft Join")
             .WithName("Integration with authlib, join")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        //ToDo: comments
-
         app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/hasJoined", MinecraftHandler.HasJoined)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация метода Minecraft HasJoin";
                 return generatedOperation;
             })
-            .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, player has join")
+            .WithDescription("Реализация метода Minecraft HasJoin")
+            .WithName("Implementation of Minecraft's HasJoin method")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/profile/{uuid}", MinecraftHandler.GetProfile)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация получения профиля пользователя Minecraft";
                 return generatedOperation;
             })
-            .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, get minecraft profile")
+            .WithDescription("Реализация профиля пользователя Minecraft")
+            .WithName("Implementation of Minecraft user profile retrieval")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapPost("/api/v1/integrations/authlib/minecraft/profiles/minecraft", MinecraftHandler.GetPlayersUuids)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Реализация Uuid профилей";
                 return generatedOperation;
             })
             .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, minecraft post")
+            .WithName("Implementation of Uuid profiles")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapGet("/api/v1/integrations/authlib/minecraft/player/attributes", MinecraftHandler.GetPlayerAttribute)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение метаданных для Authlib injector";
+                generatedOperation.Summary = "Получение атрибутов пользователя";
                 return generatedOperation;
             })
             .WithDescription("Получение метаданных для Authlib injector")
-            .WithName("Integration with authlib, get player attributes")
+            .WithName(" Getting user attributes")
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
@@ -130,7 +214,7 @@ public static class EndpointsExtensions
 
         #region Auth
 
-        app.MapPost("/api/v1/integrations/auth/signin", IntegrationHandler.Auth)
+        app.MapPost("/api/v1/integrations/auth/signin", AuthIntegrationHandler.Auth)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Аутентификация через промежуточный сервис авторизации";
@@ -142,7 +226,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<PlayerReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapPut("/api/v1/integrations/auth", IntegrationHandler.SetAuthService)
+        app.MapPut("/api/v1/integrations/auth", AuthIntegrationHandler.SetAuthService)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Обновление информации о промежуточном сервисе авторизации";
@@ -154,7 +238,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/auth", IntegrationHandler.GetIntegrationServices)
+        app.MapGet("/api/v1/integrations/auth", AuthIntegrationHandler.GetIntegrationServices)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение списка сервисов авторизации";
@@ -166,7 +250,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/auth/active", IntegrationHandler.GetAuthService)
+        app.MapGet("/api/v1/integrations/auth/active", AuthIntegrationHandler.GetAuthService)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение активного сервиса авторизации";
@@ -178,7 +262,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapDelete("/api/v1/integrations/auth/active", IntegrationHandler.RemoveAuthService)
+        app.MapDelete("/api/v1/integrations/auth/active", AuthIntegrationHandler.RemoveAuthService)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление активного сервиса авторизации";
@@ -246,7 +330,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapDelete("/api/v1/profiles/{profileName}", ProfileHandler.RemoveProfile)
+        app.MapDelete("/api/v1/profiles/{profileNames}", ProfileHandler.RemoveProfile)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление игрового профиля";

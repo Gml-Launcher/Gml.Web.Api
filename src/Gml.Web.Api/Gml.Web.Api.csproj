@@ -63,9 +63,6 @@
         <Compile Update="Core\Integrations\Auth\UndefinedAuthService.cs">
             <DependentUpon>IPlatformAuthService.cs</DependentUpon>
         </Compile>
-        <Compile Update="Core\Handlers\IntegrationHandler.cs">
-            <DependentUpon>IIntegrationHandler.cs</DependentUpon>
-        </Compile>
         <Compile Update="Core\Integrations\Auth\AuthService.cs">
             <DependentUpon>IAuthService.cs</DependentUpon>
         </Compile>
@@ -77,6 +74,18 @@
         </Compile>
         <Compile Update="Core\Handlers\MinecraftHandler.cs">
           <DependentUpon>IMinecraftHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Handlers\TextureIntegrationHandler.cs">
+          <DependentUpon>ITextureIntegrationHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Handlers\AuthIntegrationHandler.cs">
+          <DependentUpon>IAuthIntegrationHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Handlers\GitHubIntegrationHandler.cs">
+          <DependentUpon>IGitHubIntegrationHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Services\GitHubService.cs">
+          <DependentUpon>IGitHubService.cs</DependentUpon>
         </Compile>
     </ItemGroup>
 

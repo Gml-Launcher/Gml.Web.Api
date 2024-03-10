@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Gml.Web.Api.Core.Hubs;
 
-public class ProfileHub : Hub
+public class ProfileHub : BaseHub
 {
     private readonly IGmlManager _gmlManager;
     private int lastPackProgressSended = -1;
@@ -19,7 +19,7 @@ public class ProfileHub : Hub
         _gmlManager = gmlManager;
     }
 
-    public async Task Pack(string clientName)
+    public async Task Build(string clientName)
     {
         if (string.IsNullOrEmpty(clientName))
             return;
@@ -48,6 +48,7 @@ public class ProfileHub : Hub
             lastProgressSended = e.ProgressPercentage;
 
             await Clients.All.SendAsync("ChangeProgress", e?.ProgressPercentage);
+            await Clients.Others.SendAsync("BlockRestore");
         }
         catch (Exception exception)
         {
@@ -55,59 +56,46 @@ public class ProfileHub : Hub
         }
     }
 
-    public async Task Restore(string clientName, string osTypeValue)
+    public async Task Restore(string profileName)
     {
-        var profile = await _gmlManager.Profiles.GetProfile(clientName);
+        var profile = await _gmlManager.Profiles.GetProfile(profileName);
 
         if (profile == null)
+        {
+            SendCallerMessage($"Профиль \"{profileName}\" не найден");
             return;
+        }
 
-        if (!Enum.TryParse(osTypeValue, out OsType osType))
-            return;
-
-        await Clients.All.SendAsync("ChangeProgress", 0);
+        SendProgress(string.Empty, new ProgressChangedEventArgs(0, 0));
 
         profile.GameLoader.ProgressChanged += SendProgress;
-        profile.GameLoader.FileChanged += SendFileChanged;
 
-        var profileInfoRead = await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+        await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
         {
-            FullScreen = false,
-            ScreenHeight = 500,
-            ScreenWidth = 500,
-            ServerIp = string.Empty,
-            ServerPort = 25565,
-            MaximumRamMb = 10,
-            OsType = osType
-        }, new User
+            OsType = OsType.Linux,
+            OsArch = "64"
+        }, User.Empty);
+
+        await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
         {
-            Name = "Test",
-            AccessToken = "Test",
-            Uuid = "Test"
-        });
+            OsType = OsType.OsX,
+            OsArch = "64"
+        }, User.Empty);
+
+        await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+        {
+            OsType = OsType.Windows,
+            OsArch = "64"
+        }, User.Empty);
 
         profile.GameLoader.ProgressChanged -= SendProgress;
-        profile.GameLoader.FileChanged -= SendFileChanged;
 
         try
         {
-            await Clients.All.SendAsync("ChangeProgress", 100);
+            SendProgress(string.Empty, new ProgressChangedEventArgs(100, 0));
             await Clients.All.SendAsync("SuccessInstalled");
 
             lastProgressSended = -1;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    private async void SendFileChanged(string file)
-    {
-        try
-        {
-            if (!string.IsNullOrEmpty(file))
-                await Clients.All.SendAsync("FileChanged", file);
         }
         catch (Exception e)
         {
@@ -123,6 +111,7 @@ public class ProfileHub : Hub
 
             lastProgressSended = e.ProgressPercentage;
             await Clients.All.SendAsync("ChangeProgress", e?.ProgressPercentage);
+            await Clients.Others.SendAsync("BlockRestore");
         }
         catch (Exception exception)
         {
