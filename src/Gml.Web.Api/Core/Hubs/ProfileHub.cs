@@ -21,22 +21,37 @@ public class ProfileHub : BaseHub
 
     public async Task Build(string clientName)
     {
-        if (string.IsNullOrEmpty(clientName))
-            return;
+        try
+        {
+            if (string.IsNullOrEmpty(clientName))
+                return;
 
-        var profile = await _gmlManager.Profiles.GetProfile(clientName);
+            if (!_gmlManager.Profiles.CanUpdateAndRestore)
+            {
+                SendCallerMessage(
+                    $"В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна");
+                return;
+            }
 
-        if (profile is null)
-            return;
+            var profile = await _gmlManager.Profiles.GetProfile(clientName);
 
-        await Clients.All.SendAsync("FileChanged", "Packaging...");
+            if (profile is null)
+                return;
 
-        _gmlManager.Profiles.PackChanged += ChangePackProgress;
-        await _gmlManager.Profiles.PackProfile(profile);
-        _gmlManager.Profiles.PackChanged -= ChangePackProgress;
+            await Clients.All.SendAsync("FileChanged", "Packaging...");
 
-        await Clients.All.SendAsync("SuccessPacked");
-        lastPackProgressSended = -1;
+            _gmlManager.Profiles.PackChanged += ChangePackProgress;
+            await _gmlManager.Profiles.PackProfile(profile);
+            _gmlManager.Profiles.PackChanged -= ChangePackProgress;
+
+            await Clients.All.SendAsync("SuccessPacked");
+            lastPackProgressSended = -1;
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+            throw;
+        }
     }
 
     private async void ChangePackProgress(ProgressChangedEventArgs e)
@@ -52,54 +67,63 @@ public class ProfileHub : BaseHub
         }
         catch (Exception exception)
         {
+            SendCallerMessage(exception.Message);
             Console.WriteLine(exception);
         }
     }
 
     public async Task Restore(string profileName)
     {
-        var profile = await _gmlManager.Profiles.GetProfile(profileName);
-
-        if (profile == null)
-        {
-            SendCallerMessage($"Профиль \"{profileName}\" не найден");
-            return;
-        }
-
-        SendProgress(string.Empty, new ProgressChangedEventArgs(0, 0));
-
-        profile.GameLoader.ProgressChanged += SendProgress;
-
-        await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
-        {
-            OsType = OsType.Linux,
-            OsArch = "64"
-        }, User.Empty);
-
-        await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
-        {
-            OsType = OsType.OsX,
-            OsArch = "64"
-        }, User.Empty);
-
-        await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
-        {
-            OsType = OsType.Windows,
-            OsArch = "64"
-        }, User.Empty);
-
-        profile.GameLoader.ProgressChanged -= SendProgress;
-
         try
         {
+            var profile = await _gmlManager.Profiles.GetProfile(profileName);
+
+            if (profile == null)
+            {
+                SendCallerMessage($"Профиль \"{profileName}\" не найден");
+                return;
+            }
+
+            if (!_gmlManager.Profiles.CanUpdateAndRestore)
+            {
+                SendCallerMessage(
+                    $"В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна");
+                return;
+            }
+
+            SendProgress(string.Empty, new ProgressChangedEventArgs(0, 0));
+
+            profile.GameLoader.ProgressChanged += SendProgress;
+
+            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+            {
+                OsType = OsType.Linux,
+                OsArch = "64"
+            }, User.Empty);
+
+            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+            {
+                OsType = OsType.OsX,
+                OsArch = "64"
+            }, User.Empty);
+
+            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+            {
+                OsType = OsType.Windows,
+                OsArch = "64"
+            }, User.Empty);
+
+            profile.GameLoader.ProgressChanged -= SendProgress;
+
             SendProgress(string.Empty, new ProgressChangedEventArgs(100, 0));
             await Clients.All.SendAsync("SuccessInstalled");
 
             lastProgressSended = -1;
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            Console.WriteLine(e);
+            SendCallerMessage($"Не удалось восстановить профиль. {exception.Message}");
+            Console.WriteLine(exception);
         }
     }
 

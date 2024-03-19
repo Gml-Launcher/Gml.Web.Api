@@ -152,6 +152,11 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид оперционной системы профиля",
                 HttpStatusCode.BadRequest));
 
+        if (!gmlManager.Profiles.CanUpdateAndRestore)
+        {
+            return Results.NotFound(ResponseMessage.Create("В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна", HttpStatusCode.NotFound));
+        }
+
         var profile = await gmlManager.Profiles.GetProfile(restoreDto.Name);
 
         if (profile is null)
@@ -177,6 +182,11 @@ public class ProfileHandler : IProfileHandler
         if (!result.IsValid)
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
+
+        if (!gmlManager.Profiles.CanUpdateAndRestore)
+        {
+            return Results.NotFound(ResponseMessage.Create("В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна", HttpStatusCode.NotFound));
+        }
 
         var profile = await gmlManager.Profiles.GetProfile(profileDto.Name);
 
