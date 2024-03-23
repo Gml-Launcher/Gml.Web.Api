@@ -1,10 +1,9 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Core.Messages;
 using Gml.Web.Api.Core.Repositories;
+using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.User;
-using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -51,7 +50,7 @@ public class AuthHandler : IAuthHandler
         if (user is null)
             return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль",
                 HttpStatusCode.BadRequest));
-        
+
         return Results.Ok(ResponseMessage.Create(mapper.Map<UserAuthReadDto>(user), "Успешная авторизация",
             HttpStatusCode.OK));
     }

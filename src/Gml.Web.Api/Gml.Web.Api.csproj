@@ -87,6 +87,12 @@
         <Compile Update="Core\Services\GitHubService.cs">
           <DependentUpon>IGitHubService.cs</DependentUpon>
         </Compile>
+        <Compile Update="Core\Handlers\SentryErrorSaveHandler.cs">
+          <DependentUpon>IErrorSaveHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Core\Integrations\Auth\AnyAuthService.cs">
+          <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

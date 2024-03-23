@@ -120,6 +120,7 @@ public static class ApplicationExtensions
             .AddSingleton<IGitHubService, GitHubService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
+            .AddTransient<AnyAuthService>()
             .RegisterRepositories()
             .RegisterValidators()
             .RegisterCors(policyName)

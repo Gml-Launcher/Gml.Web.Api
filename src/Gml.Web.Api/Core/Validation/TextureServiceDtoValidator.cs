@@ -1,18 +1,19 @@
-using Gml.Web.Api.Domains.Texture;
+using Gml.Web.Api.Dto.Texture;
 
 namespace Gml.Web.Api.Core.Validation;
 
 using System;
 using FluentValidation;
 
-public class TextureServiceDtoValidator : AbstractValidator<TextureServiceDto>
+public class TextureServiceDtoValidator : AbstractValidator<UrlServiceDto>
 {
     public TextureServiceDtoValidator()
     {
         RuleFor(x => x.Url)
             .NotEmpty().WithMessage("URL обязателен.")
-            .Must(ValidateUrl).WithMessage("Невалидный URL.")
-            .Must(ContainUserName).WithMessage("В адресной строке отсутствует обязательный атрибут {userName}, который необходим для замены текстуры пользователей.");
+            .Must(ValidateUrl).WithMessage("Невалидный URL.");
+        // .Must(ContainUserName).WithMessage("В адресной строке отсутствует обязательный атрибут {userName}, который необходим для замены текстуры пользователей.");
+        // ToDo: Create valiator for Sentry and Texture link
     }
 
     private bool ValidateUrl(string url)

@@ -1,9 +1,9 @@
 using System.Net;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
-using Gml.Web.Api.Core.Messages;
 using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Dto.Integration;
+using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.User;
@@ -91,6 +91,32 @@ public static class EndpointsExtensions
         #endregion
 
         #region Integrations
+
+        #region Sentry
+
+        app.MapGet("/api/v1/integrations/sentry/dsn", SentryErrorSaveHandler.GetDsnUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение DSN для лаунчера";
+                return generatedOperation;
+            })
+            .WithDescription("Получение ссылки на DSN сервис Sentry")
+            .WithName("Get dsn sentry service url")
+            .WithTags("Integration/Sentry")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPut("/api/v1/integrations/sentry/dsn", SentryErrorSaveHandler.UpdateDsnUrl)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление DSN для лаунчера";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление ссылки на DSN сервис Sentry")
+            .WithName("Update dsn sentry service url")
+            .WithTags("Integration/Sentry")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        #endregion
 
         #region Textures
 

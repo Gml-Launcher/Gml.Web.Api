@@ -1,5 +1,5 @@
 using System.Net;
-using Gml.Web.Api.Core.Messages;
+using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -14,7 +14,7 @@ public class FileHandler : IFileHandler
         {
             return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
         }
-        
+
         return Results.File(string.Join("/", manager.LauncherInfo.InstallationDirectory, file.Directory));
     }
 }
