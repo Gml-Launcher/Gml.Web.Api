@@ -22,9 +22,11 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
         return Results.Ok(ResponseMessage.Create(versionsDtos, "Список версий успешно получен", HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> DownloadLauncher(IGitHubService gitHubService, CreateLauncherProject createLauncherDto)
+    public static async Task<IResult> DownloadLauncher(IGmlManager manager, IGitHubService gitHubService, CreateLauncherProject createLauncherDto)
     {
-        // var projectPath = await gitHubService.DownloadProject(createLauncherDto.GitHubVersions, LauncherGitHubUrl);
+        var path = Path.Combine(manager.LauncherInfo.InstallationDirectory, "Launcher");
+
+        var projectPath = await gitHubService.DownloadProject(path, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
 
         return Results.Ok();
     }

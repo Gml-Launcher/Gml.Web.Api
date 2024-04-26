@@ -26,15 +26,15 @@ public class MinecraftHandler : IMinecraftHandler
         return Results.Ok(metadataResponse);
     }
 
-    public static async Task<IResult> HasJoined(ISystemService systemService, string username, string serverId,
+    public static Task<IResult> HasJoined(ISystemService systemService, string username, string serverId,
         string? ip)
     {
-        return Results.Ok();
+        return Task.FromResult(Results.Ok());
     }
 
-    public static async Task<IResult> Join(JoinRequest joinDto)
+    public static Task<IResult> Join(JoinRequest joinDto)
     {
-        return Results.StatusCode(StatusCodes.Status204NoContent);
+        return Task.FromResult(Results.StatusCode(StatusCodes.Status204NoContent));
     }
 
     public static async Task<IResult> GetProfile(IGmlManager gmlManager, ISystemService systemService, string uuid,
@@ -83,13 +83,13 @@ public class MinecraftHandler : IMinecraftHandler
         return Results.Ok(profile);
     }
 
-    public static async Task<IResult> GetPlayersUuids(ISystemService systemService)
+    public static Task<IResult> GetPlayersUuids(ISystemService systemService)
     {
-        return Results.Ok();
+        return Task.FromResult(Results.Ok());
     }
 
-    public static async Task<IResult> GetPlayerAttribute(ISystemService systemService)
+    public static Task<IResult> GetPlayerAttribute(ISystemService systemService)
     {
-        return Results.Ok();
+        return Task.FromResult(Results.Ok());
     }
 }

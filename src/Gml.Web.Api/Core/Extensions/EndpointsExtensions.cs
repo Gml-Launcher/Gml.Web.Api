@@ -44,7 +44,8 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<string>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/github/launcher/download/{version}", GitHubIntegrationHandler.ReturnLauncherSolution)
+        app.MapGet("/api/v1/integrations/github/launcher/download/{version}",
+                GitHubIntegrationHandler.ReturnLauncherSolution)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Скачать решение лаунчера";
@@ -164,7 +165,6 @@ public static class EndpointsExtensions
             .WithTags("Integration/Textures")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-
         #endregion
 
         #region Minecraft authlib
@@ -181,7 +181,8 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
 
-        app.MapPost("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/join", MinecraftHandler.Join)
+        app.MapPost("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/join",
+                MinecraftHandler.Join)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Реализация метода Minecraft Join";
@@ -192,7 +193,8 @@ public static class EndpointsExtensions
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/hasJoined", MinecraftHandler.HasJoined)
+        app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/hasJoined",
+                MinecraftHandler.HasJoined)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Реализация метода Minecraft HasJoin";
@@ -203,7 +205,8 @@ public static class EndpointsExtensions
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/profile/{uuid}", MinecraftHandler.GetProfile)
+        app.MapGet("/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/profile/{uuid}",
+                MinecraftHandler.GetProfile)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Реализация получения профиля пользователя Minecraft";
@@ -396,7 +399,6 @@ public static class EndpointsExtensions
 
         #region Files
 
-
         app.MapGet("/api/v1/file/{fileHash}", FileHandler.GetFile)
             .WithOpenApi(generatedOperation =>
             {
@@ -405,6 +407,28 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение файла на загрузку")
             .WithName("Download file")
+            .WithTags("Files")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
+        app.MapPost("/api/v1/file/whiteList", FileHandler.AddFileWhiteList)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Добавление файла в White-Лист";
+                return generatedOperation;
+            })
+            .WithDescription("Добавление файла в White-Лист")
+            .WithName("Add file to white list")
+            .WithTags("Files")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
+        app.MapDelete("/api/v1/file/whiteList", FileHandler.RemoveFileWhiteList)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление файла из White-Листа";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление файла из White-Лист")
+            .WithName("Rmove file from white list")
             .WithTags("Files")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
 

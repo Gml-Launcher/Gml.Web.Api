@@ -33,7 +33,6 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         await gitHubService.EditLauncherFiles(projectPath, host, folderName);
         ChangeProgress(nameof(GitHubLauncherHub), 30);
 
-
         ChangeProgress(nameof(GitHubLauncherHub), 100);
         SendCallerMessage("Проект успешно создан");
     }
