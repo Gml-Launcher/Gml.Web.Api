@@ -1,100 +1,107 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <InvariantGlobalization>true</InvariantGlobalization>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AutoMapper" Version="13.0.1"/>
-        <PackageReference Include="FluentValidation" Version="11.9.0"/>
-        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1"/>
+    <PackageReference Include="FluentValidation" Version="11.9.0"/>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.1"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <Content Update="appsettings.Development.json">
-            <DependentUpon>appsettings.json</DependentUpon>
-        </Content>
-        <Content Include="..\..\.dockerignore">
-          <Link>.dockerignore</Link>
-        </Content>
-    </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+    <Content Include="..\..\.dockerignore">
+      <Link>.dockerignore</Link>
+    </Content>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Gml.Core\src\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
-        <ProjectReference Include="..\Gml.Core\src\GmlCore\GmlCore.csproj" />
-        <ProjectReference Include="..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj"/>
-        <ProjectReference Include="..\Gml.Web.Api.Dto\Gml.Web.Api.Dto.csproj"/>
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gml.Core\src\GmlCore.Interfaces\GmlCore.Interfaces.csproj"/>
+    <ProjectReference Include="..\Gml.Core\src\GmlCore\GmlCore.csproj"/>
+    <ProjectReference Include="..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj"/>
+    <ProjectReference Include="..\Gml.Web.Api.Dto\Gml.Web.Api.Dto.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <Compile Update="Core\Handlers\AuthHandler.cs">
-            <DependentUpon>IAuthHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Repositories\UserRepository.cs">
-            <DependentUpon>IUserRepository.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Handlers\ProfileHandler.cs">
-            <DependentUpon>IProfileHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Integrations\Auth\DataLifeEngineAuthService.cs">
-            <DependentUpon>IPlatformAuthService.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Integrations\Auth\AuthServiceFactory.cs">
-            <DependentUpon>IAuthServiceFactory.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Integrations\Auth\UndefinedAuthService.cs">
-            <DependentUpon>IPlatformAuthService.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Integrations\Auth\AuthService.cs">
-            <DependentUpon>IAuthService.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Handlers\FileHandler.cs">
-          <DependentUpon>IFileHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Services\SystemService.cs">
-          <DependentUpon>ISystemService.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Handlers\MinecraftHandler.cs">
-          <DependentUpon>IMinecraftHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Handlers\TextureIntegrationHandler.cs">
-          <DependentUpon>ITextureIntegrationHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Handlers\AuthIntegrationHandler.cs">
-          <DependentUpon>IAuthIntegrationHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Handlers\GitHubIntegrationHandler.cs">
-          <DependentUpon>IGitHubIntegrationHandler.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Core\Services\GitHubService.cs">
-          <DependentUpon>IGitHubService.cs</DependentUpon>
-        </Compile>
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Core\Handlers\AuthHandler.cs">
+      <DependentUpon>IAuthHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Repositories\UserRepository.cs">
+      <DependentUpon>IUserRepository.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\ProfileHandler.cs">
+      <DependentUpon>IProfileHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\DataLifeEngineAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AuthServiceFactory.cs">
+      <DependentUpon>IAuthServiceFactory.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\UndefinedAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AuthService.cs">
+      <DependentUpon>IAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\FileHandler.cs">
+      <DependentUpon>IFileHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Services\SystemService.cs">
+      <DependentUpon>ISystemService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\MinecraftHandler.cs">
+      <DependentUpon>IMinecraftHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\TextureIntegrationHandler.cs">
+      <DependentUpon>ITextureIntegrationHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\AuthIntegrationHandler.cs">
+      <DependentUpon>IAuthIntegrationHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\GitHubIntegrationHandler.cs">
+      <DependentUpon>IGitHubIntegrationHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Services\GitHubService.cs">
+      <DependentUpon>IGitHubService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\SentryErrorSaveHandler.cs">
+      <DependentUpon>IErrorSaveHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AnyAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 
-    <ItemGroup>
-        <None Remove="data.db"/>
-        <None Remove="private.key" />
-        <None Remove="public.key" />
-        <None Remove="data.db-shm" />
-        <None Remove="data.db-wal" />
-    </ItemGroup>
+  <ItemGroup>
+    <None Remove="data.db"/>
+    <None Remove="private.key"/>
+    <None Remove="public.key"/>
+    <None Remove="data.db-shm"/>
+    <None Remove="data.db-wal"/>
+  </ItemGroup>
 
 </Project>

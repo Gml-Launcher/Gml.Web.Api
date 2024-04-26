@@ -1,8 +1,9 @@
 using FluentValidation;
 using Gml.Web.Api.Core.Validation;
-using Gml.Web.Api.Domains.Texture;
+using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Profile;
+using Gml.Web.Api.Dto.Texture;
 using Gml.Web.Api.Dto.User;
 
 namespace Gml.Web.Api.Core.Extensions;
@@ -29,8 +30,11 @@ public static class ValidatorsExtensions
             // Integration validator
             .AddScoped<IValidator<IntegrationUpdateDto>, IntegrationValidator>()
 
+            // Files validator
+            .AddScoped<IValidator<FileWhiteListDto>, FileWhiteListValidator>()
+
             // Texture validator
-            .AddScoped<IValidator<TextureServiceDto>, TextureServiceDtoValidator>();
+            .AddScoped<IValidator<UrlServiceDto>, TextureServiceDtoValidator>();
 
         return serviceCollection;
     }

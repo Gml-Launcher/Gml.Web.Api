@@ -39,9 +39,24 @@ public class GitHubService : IGitHubService
 
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
     {
+        var process = new Process()
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "/bin/bash",
+                Arguments = "-c \"apt-get update && apt-get install -y git\"",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        };
+        process.Start();
+        Console.WriteLine(await process.StandardOutput.ReadToEndAsync());
+        await process.WaitForExitAsync();
+
         var gitCommand = $"clone --recursive --branch {branchName} {repoUrl} {projectPath}";
 
-        var process = new Process
+        process = new Process
         {
             StartInfo = new ProcessStartInfo
             {

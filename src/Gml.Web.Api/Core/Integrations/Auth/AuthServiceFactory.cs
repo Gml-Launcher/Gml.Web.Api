@@ -7,16 +7,12 @@ public class AuthServiceFactory(IServiceProvider serviceProvider) : IAuthService
 {
     public IPlatformAuthService CreateAuthService(AuthType platformKey)
     {
-        switch (platformKey)
+        return platformKey switch
         {
-            case AuthType.Undefined:
-                return serviceProvider.GetRequiredService<UndefinedAuthService>();
-            case AuthType.DataLifeEngine:
-                return serviceProvider.GetRequiredService<DataLifeEngineAuthService>();
-            default:
-                throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null);
-        }
-
-        throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null);
+            AuthType.Undefined => serviceProvider.GetRequiredService<UndefinedAuthService>(),
+            AuthType.DataLifeEngine => serviceProvider.GetRequiredService<DataLifeEngineAuthService>(),
+            AuthType.Any => serviceProvider.GetRequiredService<AnyAuthService>(),
+            _ => throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null)
+        };
     }
 }
