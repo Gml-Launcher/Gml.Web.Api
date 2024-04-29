@@ -18,7 +18,9 @@ public abstract class SettingsHandler : ISettingsHandler
 
         var result = await settingsService.UpdateSettings(settings);
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<SettingsReadDto>(result), "Настройки обновлены",
+        return Results.Ok(ResponseMessage.Create(
+            mapper.Map<SettingsReadDto>(result),
+            string.Empty,
             HttpStatusCode.OK));
     }
 
