@@ -1,6 +1,5 @@
 using FluentValidation;
 using Gml.Web.Api.Dto.Files;
-using Gml.Web.Api.Dto.Profile;
 
 namespace Gml.Web.Api.Core.Validation;
 
@@ -15,6 +14,7 @@ public class FileWhiteListValidator : AbstractValidator<FileWhiteListDto>
 
         RuleFor(x => x.Hash)
             .NotEmpty().WithMessage("Хэш обязателен.")
-            .Matches("^[a-fA-F0-9]*$").WithMessage("Хэш может содержать только HEX символы (цифры от 0 до 9 и буквы от A до F).");
+            .Matches("^[a-fA-F0-9]*$")
+            .WithMessage("Хэш может содержать только HEX символы (цифры от 0 до 9 и буквы от A до F).");
     }
 }

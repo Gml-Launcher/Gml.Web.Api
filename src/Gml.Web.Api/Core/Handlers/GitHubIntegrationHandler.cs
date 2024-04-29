@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Net;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.LauncherDto;
@@ -22,11 +23,13 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
         return Results.Ok(ResponseMessage.Create(versionsDtos, "Список версий успешно получен", HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> DownloadLauncher(IGmlManager manager, IGitHubService gitHubService, CreateLauncherProject createLauncherDto)
+    public static async Task<IResult> DownloadLauncher(IGmlManager manager, IGitHubService gitHubService,
+        CreateLauncherProject createLauncherDto)
     {
         var path = Path.Combine(manager.LauncherInfo.InstallationDirectory, "Launcher");
 
-        var projectPath = await gitHubService.DownloadProject(path, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
+        var projectPath =
+            await gitHubService.DownloadProject(path, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
 
         return Results.Ok();
     }
@@ -36,18 +39,16 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
         var projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher", version);
 
         if (!Directory.Exists(projectPath))
-        {
             return Results.BadRequest(ResponseMessage.Create("Проект не найден, сначала скачайте и соберите его",
                 HttpStatusCode.BadRequest));
-        }
 
-        string zipPath = Path.Combine(Path.GetTempPath(), $"Solution_Launcher_{DateTime.Now.Ticks}.zip");
+        var zipPath = Path.Combine(Path.GetTempPath(), $"Solution_Launcher_{DateTime.Now.Ticks}.zip");
 
-        await Task.Run(() => System.IO.Compression.ZipFile.CreateFromDirectory(projectPath, zipPath));
+        await Task.Run(() => ZipFile.CreateFromDirectory(projectPath, zipPath));
 
         var contentType = "application/zip";
 
-        var downloadFileName = $"gml-solution.zip";
+        var downloadFileName = "gml-solution.zip";
 
         var fileBytes = await File.ReadAllBytesAsync(zipPath);
 

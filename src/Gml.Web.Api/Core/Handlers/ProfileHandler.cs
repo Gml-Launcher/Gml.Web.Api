@@ -65,9 +65,7 @@ public class ProfileHandler : IProfileHandler
                     HttpStatusCode.BadRequest));
 
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
-            {
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
-            }
 
             var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, gameLoader,
                 createDto.IconBase64, createDto.Description);
@@ -120,13 +118,9 @@ public class ProfileHandler : IProfileHandler
         }
 
         if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
-        {
             updateDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
-        }
         else
-        {
             updateDto.IconBase64 = profile.IconBase64;
-        }
 
         await gmlManager.Profiles.UpdateProfile(profile, updateDto.Name, updateDto.IconBase64, updateDto.Description);
 
@@ -153,9 +147,9 @@ public class ProfileHandler : IProfileHandler
                 HttpStatusCode.BadRequest));
 
         if (!gmlManager.Profiles.CanUpdateAndRestore)
-        {
-            return Results.NotFound(ResponseMessage.Create("В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна", HttpStatusCode.NotFound));
-        }
+            return Results.NotFound(ResponseMessage.Create(
+                "В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна",
+                HttpStatusCode.NotFound));
 
         var profile = await gmlManager.Profiles.GetProfile(restoreDto.Name);
 
@@ -184,9 +178,9 @@ public class ProfileHandler : IProfileHandler
                 HttpStatusCode.BadRequest));
 
         if (!gmlManager.Profiles.CanUpdateAndRestore)
-        {
-            return Results.NotFound(ResponseMessage.Create("В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна", HttpStatusCode.NotFound));
-        }
+            return Results.NotFound(ResponseMessage.Create(
+                "В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна",
+                HttpStatusCode.NotFound));
 
         var profile = await gmlManager.Profiles.GetProfile(profileDto.Name);
 

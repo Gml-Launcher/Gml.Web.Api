@@ -42,14 +42,14 @@ public class MinecraftHandler : IMinecraftHandler
     {
         var user = "GamerVII";
 
-        var profile = new Profile()
+        var profile = new Profile
         {
             Id = uuid,
             Name = user,
             Properties = []
         };
 
-        var texture = new PropertyTextures()
+        var texture = new PropertyTextures
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user,
@@ -57,12 +57,12 @@ public class MinecraftHandler : IMinecraftHandler
             SignatureRequired = unsigned == false,
             Textures = new Textures
             {
-                Skin = new SkinCape()
+                Skin = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", user) +
                           $"?{DateTime.Now.Millisecond}"
                 },
-                Cape = new SkinCape()
+                Cape = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}", user) +
                           $"?{DateTime.Now.Millisecond}"
@@ -73,7 +73,7 @@ public class MinecraftHandler : IMinecraftHandler
         var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(texture)));
         var signature = await systemService.GetSignature(base64Value);
 
-        profile.Properties.Add(new ProfileProperties()
+        profile.Properties.Add(new ProfileProperties
         {
             Value = base64Value,
             Signature = signature

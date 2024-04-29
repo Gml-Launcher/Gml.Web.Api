@@ -14,10 +14,10 @@ public class SentryErrorSaveHandler : IErrorSaveHandler
         var serviceUrl = await gmlManager.Integrations.GetSentryService() ?? string.Empty;
 
         return Results.Ok(ResponseMessage.Create(new UrlServiceDto(serviceUrl), "Успешно", HttpStatusCode.OK));
-
     }
 
-    public static async Task<IResult> UpdateDsnUrl(HttpContext context, IGmlManager gmlManager, IMapper mapper, IValidator<UrlServiceDto> validator,
+    public static async Task<IResult> UpdateDsnUrl(HttpContext context, IGmlManager gmlManager, IMapper mapper,
+        IValidator<UrlServiceDto> validator,
         UrlServiceDto urlDto)
     {
         var result = await validator.ValidateAsync(urlDto);

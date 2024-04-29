@@ -1,9 +1,7 @@
+using FluentValidation;
 using Gml.Web.Api.Dto.Texture;
 
 namespace Gml.Web.Api.Core.Validation;
-
-using System;
-using FluentValidation;
 
 public class TextureServiceDtoValidator : AbstractValidator<UrlServiceDto>
 {

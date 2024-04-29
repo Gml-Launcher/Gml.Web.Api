@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Gml.Web.Api.Domains.LauncherDto;
 using GmlCore.Interfaces;
 using Newtonsoft.Json.Linq;
 
@@ -26,7 +25,6 @@ public class GitHubService : IGitHubService
 
         if (response.IsSuccessStatusCode)
         {
-
             var responseString = await response.Content.ReadAsStringAsync();
 
             var branches = JArray.Parse(responseString);
@@ -39,7 +37,7 @@ public class GitHubService : IGitHubService
 
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
     {
-        var process = new Process()
+        var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -47,7 +45,7 @@ public class GitHubService : IGitHubService
                 Arguments = "-c \"apt-get update && apt-get install -y git\"",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
-                CreateNoWindow = true,
+                CreateNoWindow = true
             }
         };
         process.Start();
@@ -64,7 +62,7 @@ public class GitHubService : IGitHubService
                 Arguments = gitCommand,
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
-                CreateNoWindow = true,
+                CreateNoWindow = true
             }
         };
 
@@ -84,7 +82,8 @@ public class GitHubService : IGitHubService
         };
 
         var settingsTemplateFile =
-            Path.Combine(projectPath, "src", "Gml.Launcher", "Assets", "Resources", "ResourceKeysDictionary.Template.cs");
+            Path.Combine(projectPath, "src", "Gml.Launcher", "Assets", "Resources",
+                "ResourceKeysDictionary.Template.cs");
 
         var settingsFile =
             Path.Combine(projectPath, "src", "Gml.Launcher", "Assets", "Resources", "ResourceKeysDictionary.cs");
@@ -94,10 +93,7 @@ public class GitHubService : IGitHubService
 
         var content = await File.ReadAllTextAsync(settingsTemplateFile);
 
-        foreach (var key in keys)
-        {
-            content = content.Replace(key.Key, key.Value);
-        }
+        foreach (var key in keys) content = content.Replace(key.Key, key.Value);
 
         await File.WriteAllTextAsync(settingsFile, content);
     }
