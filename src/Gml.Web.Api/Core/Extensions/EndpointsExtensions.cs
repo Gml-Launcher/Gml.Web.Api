@@ -428,8 +428,35 @@ public static class EndpointsExtensions
                 return generatedOperation;
             })
             .WithDescription("Удаление файла из White-Лист")
-            .WithName("Rmove file from white list")
+            .WithName("Remove file from white list")
             .WithTags("Files")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
+        #endregion
+
+        #region Settings
+
+        app.MapGet("/api/v1/settings/platform", SettingsHandler.GetSettings)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение конфигурации платформы";
+                return generatedOperation;
+            })
+            .WithDescription("Получение конфигурации платформы")
+            .WithName("Get settings")
+            .WithTags("Settings")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
+
+        app.MapPut("/api/v1/settings/platform", SettingsHandler.UpdateSettings)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление конфигурации платформы";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление конфигурации платформы")
+            .WithName("Update settings")
+            .WithTags("Settings")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
 
         #endregion

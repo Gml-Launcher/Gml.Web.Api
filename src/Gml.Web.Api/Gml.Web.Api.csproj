@@ -94,6 +94,12 @@
     <Compile Update="Core\Integrations\Auth\AnyAuthService.cs">
       <DependentUpon>IPlatformAuthService.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\SettingsHandler.cs">
+      <DependentUpon>ISettingsHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Repositories\SettingsRepository.cs">
+      <DependentUpon>ISettingsRepository.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

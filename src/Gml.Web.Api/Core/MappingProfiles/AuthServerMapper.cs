@@ -2,7 +2,7 @@ using AutoMapper;
 using Gml.Models.Auth;
 using Gml.Web.Api.Dto.Integration;
 
-namespace Gml.Web.Api.Core.Profiles;
+namespace Gml.Web.Api.Core.MappingProfiles;
 
 public class AuthServerMapper : Profile
 {

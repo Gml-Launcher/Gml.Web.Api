@@ -5,7 +5,7 @@ using Gml.Models;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Profile;
 
-namespace Gml.Web.Api.Core.Profiles;
+namespace Gml.Web.Api.Core.MappingProfiles;
 
 public class ProfileMapper : Profile
 {
