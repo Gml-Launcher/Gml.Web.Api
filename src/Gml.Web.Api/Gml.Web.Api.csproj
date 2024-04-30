@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Gml.WebApi.Tests" />
+    <InternalsVisibleTo Include="Gml.WebApi.Tests"/>
   </ItemGroup>
 
   <ItemGroup>

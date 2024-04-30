@@ -8,5 +8,6 @@ public class IntegrationUpdateDto
 {
     [JsonConverter(typeof(StringEnumConverter))]
     public AuthType AuthType { get; set; }
+
     public string Endpoint { get; set; } = null!;
 }
