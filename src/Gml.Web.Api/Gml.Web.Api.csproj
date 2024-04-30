@@ -46,6 +46,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Gml.WebApi.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Core\Handlers\AuthHandler.cs">
       <DependentUpon>IAuthHandler.cs</DependentUpon>
     </Compile>
