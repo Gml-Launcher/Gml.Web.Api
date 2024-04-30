@@ -21,7 +21,7 @@ public static class ValidatorsExtensions
             .AddScoped<IValidator<ProfileCreateDto>, ProfileCreateDtoValidator>()
             .AddScoped<IValidator<ProfileUpdateDto>, ProfileUpdateDtoValidator>()
             .AddScoped<IValidator<ProfileRestoreDto>, ProfileRestoreDtoValidator>()
-            .AddScoped<IValidator<CompileProfileDto>, CompileProfileDtoValidator>()
+            .AddScoped<IValidator<ProfileCompileDto>, CompileProfileDtoValidator>()
             .AddScoped<IValidator<ProfileCreateInfoDto>, ProfileCreateInfoDtoValidator>()
 
             // Players validator

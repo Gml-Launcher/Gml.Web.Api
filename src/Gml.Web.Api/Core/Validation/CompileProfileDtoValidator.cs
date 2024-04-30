@@ -3,7 +3,7 @@ using Gml.Web.Api.Dto.Profile;
 
 namespace Gml.Web.Api.Core.Validation;
 
-public class CompileProfileDtoValidator : AbstractValidator<CompileProfileDto>
+public class CompileProfileDtoValidator : AbstractValidator<ProfileCompileDto>
 {
     public CompileProfileDtoValidator()
     {

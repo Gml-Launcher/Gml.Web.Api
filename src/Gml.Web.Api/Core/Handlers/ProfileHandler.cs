@@ -169,8 +169,8 @@ public class ProfileHandler : IProfileHandler
     public static async Task<IResult> CompileProfile(
         IMapper mapper,
         IGmlManager gmlManager,
-        IValidator<CompileProfileDto> validator,
-        CompileProfileDto profileDto)
+        IValidator<ProfileCompileDto> validator,
+        ProfileCompileDto profileDto)
     {
         var result = await validator.ValidateAsync(profileDto);
         if (!result.IsValid)

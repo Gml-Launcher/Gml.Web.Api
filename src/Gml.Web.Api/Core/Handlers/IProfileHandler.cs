@@ -33,8 +33,8 @@ public interface IProfileHandler
     static abstract Task<IResult> CompileProfile(
         IMapper mapper,
         IGmlManager gmlManager,
-        IValidator<CompileProfileDto> validator,
-        CompileProfileDto profileName);
+        IValidator<ProfileCompileDto> validator,
+        ProfileCompileDto profileName);
 
     static abstract Task<IResult> GetProfileInfo(
         IMapper mapper,
