@@ -97,14 +97,11 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        if (!Enum.TryParse(updateDto.AuthType.ToString(), out AuthType authType))
-            return Results.BadRequest();
-
-        var service = await gmlManager.Integrations.GetAuthService(authType);
+        var service = await gmlManager.Integrations.GetAuthService(updateDto.AuthType);
 
         if (service == null)
             service = (await gmlManager.Integrations.GetAuthServices()).FirstOrDefault(c =>
-                c.AuthType == authType);
+                c.AuthType == updateDto.AuthType);
 
         if (service == null) return Results.NotFound();
 

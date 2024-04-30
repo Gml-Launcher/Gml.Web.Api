@@ -7,9 +7,6 @@ public class IntegrationValidator : AbstractValidator<IntegrationUpdateDto>
 {
     public IntegrationValidator()
     {
-        RuleFor(x => x.AuthType)
-            .InclusiveBetween(0, 2).WithMessage("Тип авторизации должен быть между 0 и 2.");
-
         RuleFor(x => x.Endpoint)
             .NotEmpty().WithMessage("Endpoint обязателен.")
             .Must(IsValidUrl).WithMessage("Endpoint должен быть валидным URL.");

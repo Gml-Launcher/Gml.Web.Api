@@ -10,4 +10,8 @@
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj" />
+    </ItemGroup>
+
 </Project>
