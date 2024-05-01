@@ -1,3 +1,4 @@
+using System.Reactive.Subjects;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Settings;
@@ -10,18 +11,25 @@ public class SettingsRepository : ISettingsRepository
 {
     private readonly DatabaseContext _databaseContext;
     private readonly IOptions<ServerSettings> _options;
+    private readonly IObserver<Settings> _settingsObservable;
 
 
-    public SettingsRepository(DatabaseContext databaseContext, IOptions<ServerSettings> options)
+    public SettingsRepository(
+        DatabaseContext databaseContext,
+        IOptions<ServerSettings> options,
+        ISubject<Settings> settingsObservable)
     {
         _databaseContext = databaseContext;
         _options = options;
+        _settingsObservable = settingsObservable;
     }
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
         await _databaseContext.AddAsync(settings);
         await _databaseContext.SaveChangesAsync();
+
+        _settingsObservable.OnNext(settings);
 
         return settings;
     }
