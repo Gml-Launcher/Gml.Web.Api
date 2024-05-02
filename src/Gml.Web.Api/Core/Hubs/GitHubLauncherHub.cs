@@ -17,6 +17,8 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             return;
         }
 
+        projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher");
+
         ChangeProgress(nameof(GitHubLauncherHub), 5);
         var allowedVersions = await gitHubService.GetRepositoryBranches("GamerVII-NET", "Gml.Launcher");
 
@@ -27,10 +29,10 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         }
 
         ChangeProgress(nameof(GitHubLauncherHub), 10);
-        await gitHubService.DownloadProject(projectPath, branchName, _launcherGitHub);
+        var newFolder= await gitHubService.DownloadProject(projectPath, branchName, _launcherGitHub);
         ChangeProgress(nameof(GitHubLauncherHub), 20);
 
-        await gitHubService.EditLauncherFiles(projectPath, host, folderName);
+        await gitHubService.EditLauncherFiles(newFolder, host, folderName);
         ChangeProgress(nameof(GitHubLauncherHub), 30);
 
         ChangeProgress(nameof(GitHubLauncherHub), 100);

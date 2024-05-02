@@ -31,7 +31,9 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
         var projectPath =
             await gitHubService.DownloadProject(path, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
 
-        return Results.Ok();
+        await gitHubService.EditLauncherFiles(projectPath, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
+
+        return await ReturnLauncherSolution(manager, createLauncherDto.GitHubVersions);
     }
 
     public static async Task<IResult> ReturnLauncherSolution(IGmlManager gmlManager, string version)
