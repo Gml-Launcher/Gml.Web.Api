@@ -2,6 +2,7 @@ using System.Net;
 using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Repositories;
+using Gml.Web.Api.Data;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.User;
 
@@ -9,12 +10,19 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthHandler : IAuthHandler
 {
+
     public static async Task<IResult> CreateUser(
         IUserRepository userRepository,
         IValidator<UserCreateDto> validator,
         IMapper mapper,
-        UserCreateDto createDto)
+        UserCreateDto createDto,
+        ApplicationContext appContext)
     {
+        if (appContext.Settings.RegistrationIsEnabled == false)
+        {
+            return Results.Ok(ResponseMessage.Create("Регистрация для новых пользователей запрещена", HttpStatusCode.BadRequest));
+        }
+
         var result = await validator.ValidateAsync(createDto);
 
         if (!result.IsValid)
@@ -39,6 +47,7 @@ public class AuthHandler : IAuthHandler
         IMapper mapper,
         UserAuthDto authDto)
     {
+
         var result = await validator.ValidateAsync(authDto);
 
         if (!result.IsValid)

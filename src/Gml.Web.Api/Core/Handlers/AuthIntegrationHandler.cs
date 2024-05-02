@@ -2,7 +2,6 @@ using System.Net;
 using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Integrations.Auth;
-using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
@@ -97,14 +96,11 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        if (!Enum.TryParse(updateDto.AuthType.ToString(), out AuthType authType))
-            return Results.BadRequest();
-
-        var service = await gmlManager.Integrations.GetAuthService(authType);
+        var service = await gmlManager.Integrations.GetAuthService(updateDto.AuthType);
 
         if (service == null)
             service = (await gmlManager.Integrations.GetAuthServices()).FirstOrDefault(c =>
-                c.AuthType == authType);
+                c.AuthType == updateDto.AuthType);
 
         if (service == null) return Results.NotFound();
 

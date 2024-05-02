@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using GmlCore.Interfaces;
+using ICSharpCode.SharpZipLib.Core;
 using Newtonsoft.Json.Linq;
 
 namespace Gml.Web.Api.Core.Services;
@@ -37,40 +39,43 @@ public class GitHubService : IGitHubService
 
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
     {
-        var process = new Process
+        var httpClient = new HttpClient();
+
+        var directory = new DirectoryInfo(projectPath);
+
+        if (!directory.Exists)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "/bin/bash",
-                Arguments = "-c \"apt-get update && apt-get install -y git\"",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        Console.WriteLine(await process.StandardOutput.ReadToEndAsync());
-        await process.WaitForExitAsync();
+            directory.Create();
+        }
 
-        var gitCommand = $"clone --recursive --branch {branchName} {repoUrl} {projectPath}";
+        string zipPath = $"{projectPath}/{branchName}.zip";
+        string extractPath = $"{projectPath}/{branchName}";
 
-        process = new Process
+        var url = $"https://github.com/GamerVII-NET/Gml.Launcher/archive/refs/heads/{branchName}.zip";
+
+        using (var request = new HttpRequestMessage(HttpMethod.Get, url))
         {
-            StartInfo = new ProcessStartInfo
+            using (
+                Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
+                stream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
             {
-                FileName = "git",
-                Arguments = gitCommand,
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
+                await contentStream.CopyToAsync(stream);
             }
-        };
+        }
 
-        process.Start();
+        // Проверяем, существует ли уже папка для распаковки
+        if (!Directory.Exists(extractPath))
+        {
+            // Если папка не существует - создаем ее
+            Directory.CreateDirectory(extractPath);
+        }
 
-        await process.WaitForExitAsync();
+        // Распаковываем архив
+        ZipFile.ExtractToDirectory(zipPath, extractPath, true);
 
-        return projectPath;
+        File.Delete(zipPath);
+
+        return new DirectoryInfo(extractPath).GetDirectories().First().FullName;
     }
 
     public async Task EditLauncherFiles(string projectPath, string host, string folder)

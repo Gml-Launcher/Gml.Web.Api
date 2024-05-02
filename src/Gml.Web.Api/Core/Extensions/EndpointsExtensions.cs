@@ -6,6 +6,7 @@ using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
+using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
 
 namespace Gml.Web.Api.Core.Extensions;
@@ -445,6 +446,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение конфигурации платформы")
             .WithName("Get settings")
             .WithTags("Settings")
+            .Produces<ResponseMessage<SettingsReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
 
 
