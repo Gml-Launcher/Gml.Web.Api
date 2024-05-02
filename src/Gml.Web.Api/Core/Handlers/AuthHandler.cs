@@ -20,7 +20,7 @@ public class AuthHandler : IAuthHandler
     {
         if (appContext.Settings.RegistrationIsEnabled == false)
         {
-            return Results.Ok(ResponseMessage.Create("Регистрация для новых пользователей запрещена", HttpStatusCode.BadRequest));
+            return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена", HttpStatusCode.BadRequest));
         }
 
         var result = await validator.ValidateAsync(createDto);
