@@ -10,11 +10,16 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public static async Task<IResult> GetMetaData(ISystemService systemService, IOptions<ServerSettings> options)
+    public static async Task<IResult> GetMetaData(ISystemService systemService, IGmlManager gmlManager, IOptions<ServerSettings> options)
     {
+        var skinsAddresses = options.Value.SkinDomains.ToList();
+        skinsAddresses.AddRange(await GetEnvironmentAddress(gmlManager));
+
+        skinsAddresses = skinsAddresses.Distinct().ToList();
+
         var metadataResponse = new MetadataResponse
         {
-            SkinDomains = options.Value.SkinDomains,
+            SkinDomains = skinsAddresses.ToArray(),
             Meta =
             {
                 ServerName = options.Value.ProjectName,
@@ -24,6 +29,31 @@ public class MinecraftHandler : IMinecraftHandler
         };
 
         return Results.Ok(metadataResponse);
+    }
+
+    private static async Task<string[]> GetEnvironmentAddress(IGmlManager gmlManager)
+    {
+        List<string> domains = new List<string>();
+        var skinService = await gmlManager.Integrations.GetSkinServiceAsync();
+        var cloakService = await gmlManager.Integrations.GetCloakServiceAsync();
+
+        if (!string.IsNullOrWhiteSpace(skinService))
+        {
+            var skinUri = new Uri(skinService);
+
+            domains.Add(skinUri.Host);
+            domains.Add($".{skinUri.Host}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cloakService))
+        {
+            var cloakUri = new Uri(cloakService);
+
+            domains.Add(cloakUri.Host);
+            domains.Add($".{cloakUri.Host}");
+        }
+
+        return domains.ToArray();
     }
 
     public static Task<IResult> HasJoined(ISystemService systemService, string username, string serverId,
