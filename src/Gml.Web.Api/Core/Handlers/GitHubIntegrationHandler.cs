@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Net;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.LauncherDto;
+using Gml.Web.Api.Dto.Launcher;
 using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
 
@@ -24,16 +25,16 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
     }
 
     public static async Task<IResult> DownloadLauncher(IGmlManager manager, IGitHubService gitHubService,
-        CreateLauncherProject createLauncherDto)
+        LauncherCreateDto launcherCreateDto)
     {
         var path = Path.Combine(manager.LauncherInfo.InstallationDirectory, "Launcher");
 
         var projectPath =
-            await gitHubService.DownloadProject(path, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
+            await gitHubService.DownloadProject(path, launcherCreateDto.GitHubVersions, LauncherGitHubUrl);
 
-        await gitHubService.EditLauncherFiles(projectPath, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
+        await gitHubService.EditLauncherFiles(projectPath, launcherCreateDto.Host, launcherCreateDto.Folder);
 
-        return await ReturnLauncherSolution(manager, createLauncherDto.GitHubVersions);
+        return await ReturnLauncherSolution(manager, launcherCreateDto.GitHubVersions);
     }
 
     public static async Task<IResult> ReturnLauncherSolution(IGmlManager gmlManager, string version)
