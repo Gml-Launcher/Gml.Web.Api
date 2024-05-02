@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Net;
+using FluentValidation;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Dto.Launcher;
@@ -24,9 +25,18 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
         return Results.Ok(ResponseMessage.Create(versionsDtos, "Список версий успешно получен", HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> DownloadLauncher(IGmlManager manager, IGitHubService gitHubService,
+    public static async Task<IResult> DownloadLauncher(
+        IGmlManager manager,
+        IGitHubService gitHubService,
+        IValidator<LauncherCreateDto> validator,
         LauncherCreateDto launcherCreateDto)
     {
+        var result = await validator.ValidateAsync(launcherCreateDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
         var path = Path.Combine(manager.LauncherInfo.InstallationDirectory, "Launcher");
 
         var projectPath =
