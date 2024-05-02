@@ -36,22 +36,22 @@ public class ProfileHandler : IProfileHandler
     {
         try
         {
+            if (!Enum.TryParse<GameLoader>(context.Request.Form["GameLoader"], out var gameLoader))
+                return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика профиля",
+                    HttpStatusCode.BadRequest));
+
             var createDto = new ProfileCreateDto
             {
                 Name = context.Request.Form["Name"],
                 Description = context.Request.Form["Description"],
                 Version = context.Request.Form["Version"],
-                GameLoader = context.Request.Form["GameLoader"]
+                GameLoader = gameLoader
             };
 
             var result = await validator.ValidateAsync(createDto);
 
             if (!result.IsValid)
                 return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
-                    HttpStatusCode.BadRequest));
-
-            if (!Enum.TryParse(createDto.GameLoader, out GameLoader gameLoader))
-                return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика профиля",
                     HttpStatusCode.BadRequest));
 
             var checkProfile = await gmlManager.Profiles.GetProfile(createDto.Name);
@@ -67,7 +67,7 @@ public class ProfileHandler : IProfileHandler
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
 
-            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, gameLoader,
+            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.GameLoader,
                 createDto.IconBase64, createDto.Description);
 
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
@@ -169,8 +169,8 @@ public class ProfileHandler : IProfileHandler
     public static async Task<IResult> CompileProfile(
         IMapper mapper,
         IGmlManager gmlManager,
-        IValidator<CompileProfileDto> validator,
-        CompileProfileDto profileDto)
+        IValidator<ProfileCompileDto> validator,
+        ProfileCompileDto profileDto)
     {
         var result = await validator.ValidateAsync(profileDto);
         if (!result.IsValid)

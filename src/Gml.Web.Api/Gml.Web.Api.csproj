@@ -27,6 +27,7 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +44,10 @@
     <ProjectReference Include="..\Gml.Core\src\GmlCore\GmlCore.csproj"/>
     <ProjectReference Include="..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj"/>
     <ProjectReference Include="..\Gml.Web.Api.Dto\Gml.Web.Api.Dto.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gml.WebApi.Tests"/>
   </ItemGroup>
 
   <ItemGroup>

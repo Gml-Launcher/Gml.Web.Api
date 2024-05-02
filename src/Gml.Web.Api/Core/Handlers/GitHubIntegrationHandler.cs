@@ -1,7 +1,9 @@
 using System.IO.Compression;
 using System.Net;
+using FluentValidation;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.LauncherDto;
+using Gml.Web.Api.Dto.Launcher;
 using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
 
@@ -23,15 +25,26 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
         return Results.Ok(ResponseMessage.Create(versionsDtos, "Список версий успешно получен", HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> DownloadLauncher(IGmlManager manager, IGitHubService gitHubService,
-        CreateLauncherProject createLauncherDto)
+    public static async Task<IResult> DownloadLauncher(
+        IGmlManager manager,
+        IGitHubService gitHubService,
+        IValidator<LauncherCreateDto> validator,
+        LauncherCreateDto launcherCreateDto)
     {
+        var result = await validator.ValidateAsync(launcherCreateDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
         var path = Path.Combine(manager.LauncherInfo.InstallationDirectory, "Launcher");
 
         var projectPath =
-            await gitHubService.DownloadProject(path, createLauncherDto.GitHubVersions, LauncherGitHubUrl);
+            await gitHubService.DownloadProject(path, launcherCreateDto.GitHubVersions, LauncherGitHubUrl);
 
-        return Results.Ok();
+        await gitHubService.EditLauncherFiles(projectPath, launcherCreateDto.Host, launcherCreateDto.Folder);
+
+        return await ReturnLauncherSolution(manager, launcherCreateDto.GitHubVersions);
     }
 
     public static async Task<IResult> ReturnLauncherSolution(IGmlManager gmlManager, string version)
