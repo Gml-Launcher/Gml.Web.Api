@@ -100,7 +100,9 @@ public class MinecraftHandler : IMinecraftHandler
             }
         };
 
-        var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(texture)));
+        var jsonData = JsonConvert.SerializeObject(texture);
+
+        var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
         var signature = await systemService.GetSignature(base64Value);
 
         profile.Properties.Add(new ProfileProperties
@@ -108,7 +110,6 @@ public class MinecraftHandler : IMinecraftHandler
             Value = base64Value,
             Signature = signature
         });
-
 
         return Results.Ok(profile);
     }
