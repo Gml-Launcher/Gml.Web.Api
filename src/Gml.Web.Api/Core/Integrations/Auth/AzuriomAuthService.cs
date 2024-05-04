@@ -20,8 +20,8 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         var dto = JsonConvert.SerializeObject(new
         {
             email = login,
-            password = password,
-            code = string.Empty,
+            password,
+            code = string.Empty
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");

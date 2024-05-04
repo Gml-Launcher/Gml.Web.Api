@@ -1,12 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Reactive.Subjects;
 using System.Security.Claims;
 using System.Text;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Exceptions;
-using Gml.Web.Api.Domains.Settings;
 using Gml.Web.Api.Domains.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,9 +14,9 @@ namespace Gml.Web.Api.Core.Repositories;
 
 public class UserRepository : IUserRepository
 {
+    private readonly ApplicationContext _context;
     private readonly DatabaseContext _databaseContext;
     private readonly IOptions<ServerSettings> _options;
-    private readonly ApplicationContext _context;
 
     public UserRepository(DatabaseContext databaseContext, IOptions<ServerSettings> options)
     {

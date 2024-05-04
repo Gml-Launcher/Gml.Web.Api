@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using System.IO.Compression;
 using GmlCore.Interfaces;
-using ICSharpCode.SharpZipLib.Core;
 using Newtonsoft.Json.Linq;
 
 namespace Gml.Web.Api.Core.Services;
@@ -43,13 +41,10 @@ public class GitHubService : IGitHubService
 
         var directory = new DirectoryInfo(projectPath);
 
-        if (!directory.Exists)
-        {
-            directory.Create();
-        }
+        if (!directory.Exists) directory.Create();
 
-        string zipPath = $"{projectPath}/{branchName}.zip";
-        string extractPath = $"{projectPath}/{branchName}";
+        var zipPath = $"{projectPath}/{branchName}.zip";
+        var extractPath = $"{projectPath}/{branchName}";
 
         var url = $"https://github.com/GamerVII-NET/Gml.Launcher/archive/refs/heads/{branchName}.zip";
 
@@ -65,10 +60,8 @@ public class GitHubService : IGitHubService
 
         // Проверяем, существует ли уже папка для распаковки
         if (!Directory.Exists(extractPath))
-        {
             // Если папка не существует - создаем ее
             Directory.CreateDirectory(extractPath);
-        }
 
         // Распаковываем архив
         ZipFile.ExtractToDirectory(zipPath, extractPath, true);

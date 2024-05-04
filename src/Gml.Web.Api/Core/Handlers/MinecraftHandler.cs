@@ -1,5 +1,4 @@
 using System.Text;
-using Gml.Core.User;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Minecraft.AuthLib;
@@ -35,7 +34,7 @@ public class MinecraftHandler : IMinecraftHandler
 
     private static async Task<string[]> GetEnvironmentAddress(IGmlManager gmlManager)
     {
-        List<string> domains = new List<string>();
+        var domains = new List<string>();
         var skinService = await gmlManager.Integrations.GetSkinServiceAsync();
         var cloakService = await gmlManager.Integrations.GetCloakServiceAsync();
 
@@ -78,10 +77,7 @@ public class MinecraftHandler : IMinecraftHandler
 
         var user = await gmlManager.Users.GetUserByUuid(guidUuid);
 
-        if (user is null || string.IsNullOrEmpty(guidUuid))
-        {
-            return Results.NoContent();
-        }
+        if (user is null || string.IsNullOrEmpty(guidUuid)) return Results.NoContent();
 
         var profile = new Profile
         {
@@ -101,7 +97,7 @@ public class MinecraftHandler : IMinecraftHandler
                 Skin = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}",
-                              user.Name) + $"/{uuid}"
+                            user.Name) + $"/{uuid}"
                 },
                 Cape = new SkinCape
                 {

@@ -29,7 +29,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         }
 
         ChangeProgress(nameof(GitHubLauncherHub), 10);
-        var newFolder= await gitHubService.DownloadProject(projectPath, branchName, _launcherGitHub);
+        var newFolder = await gitHubService.DownloadProject(projectPath, branchName, _launcherGitHub);
         ChangeProgress(nameof(GitHubLauncherHub), 20);
 
         await gitHubService.EditLauncherFiles(newFolder, host, folderName);

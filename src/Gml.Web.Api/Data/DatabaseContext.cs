@@ -8,6 +8,4 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Settings> Settings { get; set; }
-
-    
 }

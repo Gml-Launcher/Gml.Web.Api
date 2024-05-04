@@ -10,7 +10,6 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthHandler : IAuthHandler
 {
-
     public static async Task<IResult> CreateUser(
         IUserRepository userRepository,
         IValidator<UserCreateDto> validator,
@@ -19,9 +18,8 @@ public class AuthHandler : IAuthHandler
         ApplicationContext appContext)
     {
         if (appContext.Settings.RegistrationIsEnabled == false)
-        {
-            return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена", HttpStatusCode.BadRequest));
-        }
+            return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
+                HttpStatusCode.BadRequest));
 
         var result = await validator.ValidateAsync(createDto);
 
@@ -47,7 +45,6 @@ public class AuthHandler : IAuthHandler
         IMapper mapper,
         UserAuthDto authDto)
     {
-
         var result = await validator.ValidateAsync(authDto);
 
         if (!result.IsValid)
