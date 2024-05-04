@@ -124,6 +124,7 @@ public static class ApplicationExtensions
             .AddSingleton<ApplicationContext>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
+            .AddTransient<AzuriomAuthService>()
             .AddTransient<AnyAuthService>()
             .RegisterRepositories()
             .RegisterValidators()

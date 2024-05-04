@@ -1,4 +1,5 @@
 using System.Text;
+using Gml.Core.User;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Minecraft.AuthLib;
@@ -10,7 +11,8 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public static async Task<IResult> GetMetaData(ISystemService systemService, IGmlManager gmlManager, IOptions<ServerSettings> options)
+    public static async Task<IResult> GetMetaData(ISystemService systemService, IGmlManager gmlManager,
+        IOptions<ServerSettings> options)
     {
         var skinsAddresses = options.Value.SkinDomains.ToList();
         skinsAddresses.AddRange(await GetEnvironmentAddress(gmlManager));
@@ -70,32 +72,41 @@ public class MinecraftHandler : IMinecraftHandler
     public static async Task<IResult> GetProfile(IGmlManager gmlManager, ISystemService systemService, string uuid,
         bool unsigned = false)
     {
-        var user = "GamerVII";
+        var guid = Guid.Parse(uuid);
+
+        var guidUuid = guid.ToString().ToUpper();
+
+        var user = await gmlManager.Users.GetUserByUuid(guidUuid);
+
+        if (user is null || string.IsNullOrEmpty(guidUuid))
+        {
+            return Results.NoContent();
+        }
 
         var profile = new Profile
         {
             Id = uuid,
-            Name = user,
+            Name = user.Name,
             Properties = []
         };
 
         var texture = new PropertyTextures
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-            ProfileName = user,
+            ProfileName = user.Name,
             ProfileId = uuid,
             SignatureRequired = unsigned == false,
             Textures = new Textures
             {
                 Skin = new SkinCape
                 {
-                    Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", user) +
-                          $"?{DateTime.Now.Millisecond}"
+                    Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}",
+                              user.Name) + $"/{uuid}"
                 },
                 Cape = new SkinCape
                 {
-                    Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}", user) +
-                          $"?{DateTime.Now.Millisecond}"
+                    Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}",
+                            user.Name) + $"/{uuid}"
                 }
             }
         };

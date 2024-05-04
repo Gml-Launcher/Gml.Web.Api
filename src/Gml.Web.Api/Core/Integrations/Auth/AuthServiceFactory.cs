@@ -12,6 +12,7 @@ public class AuthServiceFactory(IServiceProvider serviceProvider) : IAuthService
             AuthType.Undefined => serviceProvider.GetRequiredService<UndefinedAuthService>(),
             AuthType.DataLifeEngine => serviceProvider.GetRequiredService<DataLifeEngineAuthService>(),
             AuthType.Any => serviceProvider.GetRequiredService<AnyAuthService>(),
+            AuthType.Azuriom => serviceProvider.GetRequiredService<AzuriomAuthService>(),
             _ => throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null)
         };
     }

@@ -105,6 +105,9 @@
     <Compile Update="Core\Repositories\SettingsRepository.cs">
       <DependentUpon>ISettingsRepository.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Integrations\Auth\AzuriomAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
