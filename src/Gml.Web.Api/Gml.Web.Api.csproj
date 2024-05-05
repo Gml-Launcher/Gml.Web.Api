@@ -27,7 +27,7 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
-    <PackageReference Include="System.Reactive" Version="6.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.0"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -104,6 +104,9 @@
     </Compile>
     <Compile Update="Core\Repositories\SettingsRepository.cs">
       <DependentUpon>ISettingsRepository.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AzuriomAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 

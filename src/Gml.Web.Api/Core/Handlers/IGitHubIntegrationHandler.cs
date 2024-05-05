@@ -1,6 +1,5 @@
 using FluentValidation;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Dto.Launcher;
 using GmlCore.Interfaces;
 

@@ -18,6 +18,7 @@ public class LauncherCreateDtoValidator : AbstractValidator<LauncherCreateDto>
         RuleFor(x => x.Folder)
             .NotEmpty().WithMessage("Поле Folder обязательно для заполнения.")
             .Length(3, 50).WithMessage("Folder должен содержать от 3 до 50 символов.")
-            .Matches(@"^[^\\\/:*?""<>|]+$").WithMessage("Folder не должно содержать недопустимых символов: \\ / : * ? \" < > |");
+            .Matches(@"^[^\\\/:*?""<>|]+$")
+            .WithMessage("Folder не должно содержать недопустимых символов: \\ / : * ? \" < > |");
     }
 }

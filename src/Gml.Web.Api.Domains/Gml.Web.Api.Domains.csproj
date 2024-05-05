@@ -5,4 +5,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Gml.Core\src\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
+  </ItemGroup>
+
 </Project>

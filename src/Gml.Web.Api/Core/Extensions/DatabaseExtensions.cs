@@ -2,6 +2,8 @@ using System.Reactive.Subjects;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Settings;
+using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -29,6 +31,7 @@ public static class DatabaseExtensions
     private static void EnsureCreateRecords(DatabaseContext context, IServiceProvider services)
     {
         var settingsSubject = services.GetRequiredService<ISubject<Settings>>();
+        var gmlManager = services.GetRequiredService<IGmlManager>();
         var applicationContext = services.GetRequiredService<ApplicationContext>();
 
         var dataBaseSettings = context.Settings.OrderBy(c => c.Id).LastOrDefault();
@@ -44,5 +47,16 @@ public static class DatabaseExtensions
         }
 
         settingsSubject.OnNext(dataBaseSettings);
+
+        RestoreStorage(gmlManager, dataBaseSettings);
+
+    }
+
+    private static void RestoreStorage(IGmlManager gmlManager, Settings settings)
+    {
+        gmlManager.LauncherInfo.StorageSettings.StorageType = settings.StorageType;
+        gmlManager.LauncherInfo.StorageSettings.StorageHost = settings.StorageHost;
+        gmlManager.LauncherInfo.StorageSettings.StorageLogin = settings.StorageLogin;
+        gmlManager.LauncherInfo.StorageSettings.StoragePassword = settings.StoragePassword;
     }
 }

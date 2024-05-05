@@ -1,4 +1,5 @@
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
