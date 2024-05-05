@@ -25,6 +25,18 @@ namespace Gml.Web.Api.Migrations
                     b.Property<bool>("RegistrationIsEnabled")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("StorageHost")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StorageLogin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StoragePassword")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StorageType")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.ToTable("Settings");

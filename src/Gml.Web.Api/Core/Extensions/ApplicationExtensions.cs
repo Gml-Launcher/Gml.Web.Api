@@ -11,6 +11,7 @@ using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Minio;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -50,6 +51,14 @@ public static class ApplicationExtensions
         builder.RegisterEndpointsInfo(projectName, projectDescription);
         builder.RegisterSystemComponents(policyName, projectName, projectPath, secretKey);
 
+        if (bool.TryParse(Environment.GetEnvironmentVariable("HAS_S3"), out var hasMinio) && hasMinio)
+        {
+            builder.Services.AddMinio(configureClient => configureClient
+                .WithEndpoint(Environment.GetEnvironmentVariable("S3_HOST"))
+                .WithCredentials(Environment.GetEnvironmentVariable("S3_ACCESS_KEY"), Environment.GetEnvironmentVariable("S3_SECRET_KEY"))
+                .Build());
+        }
+
         return builder;
     }
 
@@ -59,7 +68,8 @@ public static class ApplicationExtensions
         out string? projectDescription,
         out string policyName,
         out string projectPath,
-        out string secretKey)
+        out string secretKey
+        )
     {
         var serverConfiguration = builder.Configuration.GetSection(nameof(ServerSettings));
 
@@ -112,6 +122,7 @@ public static class ApplicationExtensions
 
         builder.Services
             .AddHttpClient()
+
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
@@ -130,6 +141,7 @@ public static class ApplicationExtensions
             .RegisterValidators()
             .RegisterCors(policyName)
             .AddSignalR();
+
 
         builder.Services.AddAuthentication(options =>
         {

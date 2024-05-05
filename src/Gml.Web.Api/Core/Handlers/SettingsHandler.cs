@@ -4,6 +4,7 @@ using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Domains.Settings;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Settings;
+using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 

@@ -2,32 +2,29 @@ using System.Reactive.Subjects;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Settings;
+using GmlCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Gml.Web.Api.Core.Repositories;
 
-public class SettingsRepository : ISettingsRepository
+public class SettingsRepository(
+    DatabaseContext databaseContext,
+    IOptions<ServerSettings> options,
+    IGmlManager gmlManager,
+    ISubject<Settings> settingsObservable)
+    : ISettingsRepository
 {
-    private readonly DatabaseContext _databaseContext;
-    private readonly IOptions<ServerSettings> _options;
-    private readonly IObserver<Settings> _settingsObservable;
-
-
-    public SettingsRepository(
-        DatabaseContext databaseContext,
-        IOptions<ServerSettings> options,
-        ISubject<Settings> settingsObservable)
-    {
-        _databaseContext = databaseContext;
-        _options = options;
-        _settingsObservable = settingsObservable;
-    }
+    private readonly IOptions<ServerSettings> _options = options;
+    private readonly IGmlManager gmlManager = gmlManager;
+    private readonly IObserver<Settings> _settingsObservable = settingsObservable;
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
-        await _databaseContext.AddAsync(settings);
-        await _databaseContext.SaveChangesAsync();
+        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType,settings.StorageHost, settings.StorageLogin, settings.StoragePassword);
+
+        await databaseContext.AddAsync(settings);
+        await databaseContext.SaveChangesAsync();
 
         _settingsObservable.OnNext(settings);
 
@@ -36,6 +33,6 @@ public class SettingsRepository : ISettingsRepository
 
     public async Task<Settings?> GetSettings()
     {
-        return await _databaseContext.Settings.OrderBy(c => c.Id).LastOrDefaultAsync();
+        return await databaseContext.Settings.OrderBy(c => c.Id).LastOrDefaultAsync();
     }
 }

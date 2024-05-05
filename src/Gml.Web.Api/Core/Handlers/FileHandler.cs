@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using FluentValidation;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Messages;
@@ -10,14 +11,15 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class FileHandler : IFileHandler
 {
-    public static async Task<IResult> GetFile(IGmlManager manager, string fileHash)
+    public static async Task GetFile(HttpContext context ,IGmlManager gmlManager, string fileHash)
     {
-        var file = await manager.Files.GetFileInfo(fileHash);
+        var response = context.Response;
 
-        if (file == null)
-            return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
+        response.ContentType = "application/octet-stream";
 
-        return Results.File(string.Join("/", manager.LauncherInfo.InstallationDirectory, file.Directory));
+        context.Response.ContentType = "application/octet-stream";
+
+        await gmlManager.Files.DownloadFileStream(fileHash, response.Body, response.Headers);
     }
 
     [Authorize]
@@ -36,7 +38,7 @@ public class FileHandler : IFileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{fileDto.ProfileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        var file = await manager.Files.GetFileInfo(fileDto.Hash);
+        var file = await manager.Files.DownloadFileStream(fileDto.Hash, new MemoryStream(), null);
 
         if (file == null)
             return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
@@ -63,7 +65,7 @@ public class FileHandler : IFileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{fileDto.ProfileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        var file = await manager.Files.GetFileInfo(fileDto.Hash);
+        var file = await manager.Files.DownloadFileStream(fileDto.Hash, new MemoryStream(), null);
 
         if (file == null)
             return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));

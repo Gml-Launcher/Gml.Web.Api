@@ -97,12 +97,12 @@ public class MinecraftHandler : IMinecraftHandler
                 Skin = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}",
-                            user.Name) + $"/{uuid}"
+                            user.Name) + $"/skin-{uuid}"
                 },
                 Cape = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}",
-                            user.Name) + $"/{uuid}"
+                            user.Name) + $"/cape-{uuid}"
                 }
             }
         };
