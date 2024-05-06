@@ -3,6 +3,7 @@ using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Minecraft.AuthLib;
 using GmlCore.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -57,15 +58,65 @@ public class MinecraftHandler : IMinecraftHandler
         return domains.ToArray();
     }
 
-    public static Task<IResult> HasJoined(ISystemService systemService, string username, string serverId,
+    public static async Task<IResult> HasJoined(IGmlManager gmlManager, ISystemService systemService, string userName,
+        string serverId,
         string? ip)
     {
-        return Task.FromResult(Results.Ok());
+        var user = await gmlManager.Users.GetUserByName(userName);
+
+        if (user is null || string.IsNullOrEmpty(userName)) return Results.NoContent();
+
+        var profile = new Profile
+        {
+            Id = user.Uuid,
+            Name = user.Name,
+            Properties = []
+        };
+
+        var texture = new PropertyTextures
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            ProfileName = user.Name,
+            ProfileId = user.Uuid,
+            Textures = new Textures
+            {
+                Skin = new SkinCape
+                {
+                    Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}",
+                            user.Name) + $"/skin-{user.Uuid}"
+                },
+                Cape = new SkinCape
+                {
+                    Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}",
+                            user.Name) + $"/cape-{user.Uuid}"
+                }
+            }
+        };
+
+        var jsonData = JsonConvert.SerializeObject(texture);
+
+        var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
+        var signature = await systemService.GetSignature(base64Value);
+
+        profile.Properties.Add(new ProfileProperties
+        {
+            Value = base64Value,
+            Signature = signature
+        });
+
+        return Results.Ok(profile);
     }
 
-    public static Task<IResult> Join(JoinRequest joinDto)
+    public static async Task<IResult> Join(IGmlManager gmlManager, JoinRequest joinDto)
     {
-        return Task.FromResult(Results.StatusCode(StatusCodes.Status204NoContent));
+        bool validateUser = await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.AccessToken);
+
+        if (validateUser is false)
+        {
+            return Results.Unauthorized();
+        }
+
+        return Results.NoContent();
     }
 
     public static async Task<IResult> GetProfile(IGmlManager gmlManager, ISystemService systemService, string uuid,
