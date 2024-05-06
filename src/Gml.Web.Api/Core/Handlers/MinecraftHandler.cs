@@ -64,7 +64,8 @@ public class MinecraftHandler : IMinecraftHandler
     {
         var user = await gmlManager.Users.GetUserByName(userName);
 
-        if (user is null || string.IsNullOrEmpty(userName)) return Results.NoContent();
+        if (user is null || string.IsNullOrEmpty(userName) || await gmlManager.Users.CanJoinToServer(user, serverId) == false)
+            return Results.NoContent();
 
         var profile = new Profile
         {
@@ -109,7 +110,7 @@ public class MinecraftHandler : IMinecraftHandler
 
     public static async Task<IResult> Join(IGmlManager gmlManager, JoinRequest joinDto)
     {
-        bool validateUser = await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.AccessToken);
+        bool validateUser = await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.ServerId, joinDto.AccessToken);
 
         if (validateUser is false)
         {
