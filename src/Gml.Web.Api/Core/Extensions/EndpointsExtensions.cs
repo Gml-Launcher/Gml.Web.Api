@@ -120,6 +120,32 @@ public static class EndpointsExtensions
 
         #endregion
 
+        #region Discord
+
+        app.MapGet("/api/v1/integrations/discord", DiscordHandler.GetInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение DiscordRPC";
+                return generatedOperation;
+            })
+            .WithDescription("Получение данных DiscordRPC")
+            .WithName("Get discord RPC data")
+            .WithTags("Integration/Discord")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPut("/api/v1/integrations/discord", DiscordHandler.UpdateInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление DiscordRPC";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление данных DiscordRPC")
+            .WithName("Update discord RPC data")
+            .WithTags("Integration/Discord")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        #endregion
+
         #region Textures
 
         app.MapGet("/api/v1/integrations/texture/skins", TextureIntegrationHandler.GetSkinUrl)
