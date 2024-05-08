@@ -108,6 +108,9 @@
     <Compile Update="Core\Integrations\Auth\AzuriomAuthService.cs">
       <DependentUpon>IPlatformAuthService.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\DiscordHandler.cs">
+      <DependentUpon>IDiscordHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
