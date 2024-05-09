@@ -124,7 +124,6 @@ public static class ApplicationExtensions
 
         builder.Services
             .AddHttpClient()
-
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
@@ -135,6 +134,7 @@ public static class ApplicationExtensions
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
             .AddSingleton<ApplicationContext>()
+            .AddSingleton<AccessTokenService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
             .AddTransient<AzuriomAuthService>()

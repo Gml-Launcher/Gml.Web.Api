@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.EndpointSDK;
 
 namespace Gml.Web.Api.Core.Middlewares;
@@ -9,15 +10,22 @@ namespace Gml.Web.Api.Core.Middlewares;
 public class PluginMiddleware
 {
     private readonly RequestDelegate _next;
+    private static AccessTokenService _accessTokenService;
 
-    public PluginMiddleware(RequestDelegate next)
+    public PluginMiddleware(RequestDelegate next, AccessTokenService accessTokenService)
     {
         _next = next;
+        _accessTokenService = accessTokenService;
     }
 
     public async Task Invoke(HttpContext context)
     {
         var reference = await Process(context);
+
+        if (reference is null)
+        {
+            return;
+        }
 
         if (!context.Response.HasStarted)
         {
@@ -34,7 +42,7 @@ public class PluginMiddleware
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static async Task<WeakReference> Process(HttpContext context)
+    private static async Task<WeakReference?> Process(HttpContext context)
     {
         var directoryInfo = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
 
@@ -62,6 +70,22 @@ public class PluginMiddleware
                     if (pathInfo is not { Method: not null, Path: not null }
                         || !pathInfo.Method.Equals(context.Request.Method, StringComparison.OrdinalIgnoreCase)
                         || !pathInfo.Path.Equals(context.Request.Path, StringComparison.OrdinalIgnoreCase)) continue;
+
+                    if (pathInfo.NeedAuth)
+                    {
+                        var accessToken = context.Request.Headers.Authorization
+                            .FirstOrDefault()
+                            ?.Split("Bearer ")
+                            .Last();
+
+                        if (string.IsNullOrEmpty(accessToken)|| !_accessTokenService.ValidateToken(accessToken))
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            return null;
+                        }
+
+
+                    }
 
                     var endpoint = Activator.CreateInstance(type) as IPluginEndpoint;
                     await endpoint?.Execute(context)!;
