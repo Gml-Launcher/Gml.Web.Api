@@ -45,6 +45,7 @@
     <ProjectReference Include="..\Gml.Core\src\GmlCore\GmlCore.csproj"/>
     <ProjectReference Include="..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj"/>
     <ProjectReference Include="..\Gml.Web.Api.Dto\Gml.Web.Api.Dto.csproj"/>
+    <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
   </ItemGroup>
 
   <ItemGroup>
