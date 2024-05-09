@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.EndpointSDK;
+using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Middlewares;
 
@@ -11,11 +12,13 @@ public class PluginMiddleware
 {
     private readonly RequestDelegate _next;
     private static AccessTokenService _accessTokenService;
+    private static IGmlManager _gmlManager;
 
-    public PluginMiddleware(RequestDelegate next, AccessTokenService accessTokenService)
+    public PluginMiddleware(RequestDelegate next, AccessTokenService accessTokenService, IGmlManager gmlManager)
     {
         _next = next;
         _accessTokenService = accessTokenService;
+        _gmlManager = gmlManager;
     }
 
     public async Task Invoke(HttpContext context)
@@ -88,7 +91,7 @@ public class PluginMiddleware
                     }
 
                     var endpoint = Activator.CreateInstance(type) as IPluginEndpoint;
-                    await endpoint?.Execute(context)!;
+                    await endpoint?.Execute(context, _gmlManager)!;
                 }
             }
         }

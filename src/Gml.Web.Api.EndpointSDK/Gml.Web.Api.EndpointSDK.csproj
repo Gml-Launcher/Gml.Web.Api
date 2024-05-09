@@ -10,4 +10,8 @@
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Gml.Core\src\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
+    </ItemGroup>
+
 </Project>
