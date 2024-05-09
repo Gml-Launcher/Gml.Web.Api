@@ -28,6 +28,7 @@ public static class ApplicationExtensions
         app.RegisterEndpoints()
             .UseCors(_policyName)
             .UseMiddleware<BadRequestExceptionMiddleware>()
+            .UseMiddleware<PluginMiddleware>()
             .UseSwagger()
             .UseSwaggerUI();
 
