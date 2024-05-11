@@ -8,7 +8,10 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public interface IProfileHandler
 {
-    static abstract Task<IResult> GetProfiles(IMapper mapper, IGmlManager gmlManager);
+    static abstract Task<IResult> GetProfiles(
+        HttpContext context,
+        IMapper mapper,
+        IGmlManager gmlManager);
 
     static abstract Task<IResult> CreateProfile(
         HttpContext context,
