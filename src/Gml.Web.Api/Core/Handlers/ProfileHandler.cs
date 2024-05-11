@@ -121,7 +121,7 @@ public class ProfileHandler : IProfileHandler
             ? null
             : context.Request.Form.Files["icon"]!.OpenReadStream();
 
-        var background = context.Request.Form.Files["icon"] is null
+        var background = context.Request.Form.Files["background"] is null
             ? null
             : context.Request.Form.Files["background"]!.OpenReadStream();
 
