@@ -37,6 +37,7 @@ public interface IProfileHandler
         ProfileCompileDto profileName);
 
     static abstract Task<IResult> GetProfileInfo(
+        HttpContext context,
         IMapper mapper,
         IGmlManager gmlManager,
         IValidator<ProfileCreateInfoDto> validator,
