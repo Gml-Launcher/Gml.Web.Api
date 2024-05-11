@@ -9,6 +9,7 @@ using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
+using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,13 +18,27 @@ namespace Gml.Web.Api.Core.Handlers;
 public class ProfileHandler : IProfileHandler
 {
     public static async Task<IResult> GetProfiles(
+        HttpContext context,
         IMapper mapper,
         IGmlManager gmlManager)
     {
         var profiles = await gmlManager.Profiles.GetProfiles();
+        var gameProfiles = profiles as IGameProfile[] ?? profiles.ToArray();
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<IEnumerable<ProfileReadDto>>(profiles), string.Empty,
-            HttpStatusCode.OK));
+        var dtoProfiles = mapper.Map<IEnumerable<ProfileReadDto>>(profiles);
+
+        var profileReadDtos = dtoProfiles as ProfileReadDto[] ?? dtoProfiles.ToArray();
+
+
+        foreach (var profile in profileReadDtos)
+        {
+            var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
+
+            profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
+        }
+
+
+        return Results.Ok(ResponseMessage.Create(profileReadDtos, string.Empty, HttpStatusCode.OK));
     }
 
     [Authorize]
