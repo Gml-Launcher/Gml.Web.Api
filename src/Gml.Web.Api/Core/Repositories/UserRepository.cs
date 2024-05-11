@@ -71,7 +71,7 @@ public class UserRepository : IUserRepository
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] { new Claim("id", userId) }),
-            Expires = DateTime.UtcNow.AddHours(72),
+            Expires = DateTime.UtcNow.AddDays(3),
             SigningCredentials =
                 new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Value.SecretKey)),
                     SecurityAlgorithms.HmacSha256Signature)

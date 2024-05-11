@@ -117,14 +117,25 @@ public class ProfileHandler : IProfileHandler
                     HttpStatusCode.NotFound));
         }
 
-        if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
-            updateDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
-        else
-            updateDto.IconBase64 = profile.IconBase64;
+        var icon = context.Request.Form.Files["icon"] is null
+            ? null
+            : context.Request.Form.Files["icon"]!.OpenReadStream();
 
-        await gmlManager.Profiles.UpdateProfile(profile, updateDto.Name, updateDto.IconBase64, updateDto.Description);
+        var background = context.Request.Form.Files["icon"] is null
+            ? null
+            : context.Request.Form.Files["background"]!.OpenReadStream();
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно обновлен",
+        await gmlManager.Profiles.UpdateProfile(
+            profile,
+            updateDto.Name,
+            icon,
+            background,
+            updateDto.Description);
+
+        var newProfile = mapper.Map<ProfileReadDto>(profile);
+        newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+
+        return Results.Ok(ResponseMessage.Create(newProfile, "Профиль успешно обновлен",
             HttpStatusCode.OK));
     }
 
@@ -193,6 +204,7 @@ public class ProfileHandler : IProfileHandler
     }
 
     public static async Task<IResult> GetProfileInfo(
+        HttpContext context,
         IMapper mapper,
         IGmlManager gmlManager,
         IValidator<ProfileCreateInfoDto> validator,
@@ -232,8 +244,11 @@ public class ProfileHandler : IProfileHandler
             AccessToken = createInfoDto.UserAccessToken
         });
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<ProfileReadInfoDto>(profileInfo), string.Empty,
-            HttpStatusCode.OK));
+        var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
+
+        profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+
+        return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
     }
 
     [Authorize]
