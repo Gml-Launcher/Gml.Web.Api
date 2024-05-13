@@ -137,6 +137,7 @@ public static class ApplicationExtensions
             .AddSingleton<AccessTokenService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
+            .AddTransient<EasyCabinetAuthService>()
             .AddTransient<AzuriomAuthService>()
             .AddTransient<AnyAuthService>()
             .RegisterRepositories()
