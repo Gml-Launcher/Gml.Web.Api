@@ -53,14 +53,6 @@ public static class ApplicationExtensions
         builder.RegisterEndpointsInfo(projectName, projectDescription);
         builder.RegisterSystemComponents(policyName, projectName, projectPath, secretKey);
 
-        if (bool.TryParse(Environment.GetEnvironmentVariable("HAS_S3"), out var hasMinio) && hasMinio)
-        {
-            builder.Services.AddMinio(configureClient => configureClient
-                .WithEndpoint(Environment.GetEnvironmentVariable("S3_HOST"))
-                .WithCredentials(Environment.GetEnvironmentVariable("S3_ACCESS_KEY"), Environment.GetEnvironmentVariable("S3_SECRET_KEY"))
-                .Build());
-        }
-
         return builder;
     }
 
