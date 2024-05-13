@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -41,12 +42,17 @@ public class PluginMiddleware
             GC.WaitForPendingFinalizers();
         }
 
-        Console.WriteLine($"Unload successful: {!reference.IsAlive}");
+        Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static async Task<WeakReference?> Process(HttpContext context)
     {
+        var loadContext = new AssemblyLoadContext("GmlAssemblyResolver", true);
+
+        if (string.IsNullOrEmpty(context.Request.Path.Value) || !context.Request.Path.Value.Contains("plugins"))
+            return new WeakReference(loadContext);
+
         var directoryInfo = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
 
         if (!directoryInfo.Exists)
@@ -56,7 +62,6 @@ public class PluginMiddleware
 
         var plugins = directoryInfo.GetFiles("*.dll");
 
-        var loadContext = new AssemblyLoadContext("GmlAssemblyResolver", true);
 
         try
         {
