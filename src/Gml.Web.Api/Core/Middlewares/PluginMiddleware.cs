@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -41,7 +42,7 @@ public class PluginMiddleware
             GC.WaitForPendingFinalizers();
         }
 
-        Console.WriteLine($"Unload successful: {!reference.IsAlive}");
+        Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
