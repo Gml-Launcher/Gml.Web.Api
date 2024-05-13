@@ -112,6 +112,9 @@
     <Compile Update="Core\Handlers\DiscordHandler.cs">
       <DependentUpon>IDiscordHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Integrations\Auth\EasyCabinetAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
