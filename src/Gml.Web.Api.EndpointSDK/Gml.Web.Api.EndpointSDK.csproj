@@ -7,11 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="11.9.0" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Gml.Core\src\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
+      <ProjectReference Include="..\Gml.Core\src\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
+      <ProjectReference Include="..\Gml.Web.Api.Dto\Gml.Web.Api.Dto.csproj" />
     </ItemGroup>
 
 </Project>
