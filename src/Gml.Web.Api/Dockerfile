@@ -1,5 +1,5 @@
 ﻿# Use an official dotnet runtime as a parent image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
 # Update packages and install openssl
 RUN apt-get update -y && \
