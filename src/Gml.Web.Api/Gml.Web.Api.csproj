@@ -115,6 +115,9 @@
     <Compile Update="Core\Integrations\Auth\EasyCabinetAuthService.cs">
       <DependentUpon>IPlatformAuthService.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Integrations\Auth\UnicoreCMSAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -123,6 +126,7 @@
     <None Remove="public.key"/>
     <None Remove="data.db-shm"/>
     <None Remove="data.db-wal"/>
+    <None Remove="builds\build-16-05-2024 16-44-44\linux-x64\Gml.Launcher" />
   </ItemGroup>
 
 </Project>
