@@ -15,6 +15,7 @@ public class AuthServiceFactory(IServiceProvider serviceProvider) : IAuthService
             AuthType.Any => serviceProvider.GetRequiredService<AnyAuthService>(),
             AuthType.Azuriom => serviceProvider.GetRequiredService<AzuriomAuthService>(),
             AuthType.EasyCabinet => serviceProvider.GetRequiredService<EasyCabinetAuthService>(),
+            AuthType.UnicoreCMS => serviceProvider.GetRequiredService<UnicoreCMSAuthService>(),
             _ => throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null)
         };
     }

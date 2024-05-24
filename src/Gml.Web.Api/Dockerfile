@@ -26,8 +26,8 @@ COPY ["src/Gml.Core/src/CmlLib.Core.Installer.Forge/CmlLib.Core.Installer.Forge/
 COPY ["src/Gml.Core/src/CmlLib.ExtendedCore/CmlLib/CmlLib.csproj", "src/Gml.Core/src/CmlLib.ExtendedCore/CmlLib/"]
 COPY ["src/Gml.Web.Api.Domains/Gml.Web.Api.Domains.csproj", "src/Gml.Web.Api.Domains/"]
 COPY ["src/Gml.Web.Api.Dto/Gml.Web.Api.Dto.csproj", "src/Gml.Web.Api.Dto/"]
-COPY ["src/Gml.Core/src/GmlCore/GmlCore.csproj", "src/Gml.Core/src/GmlCore/"]
-COPY ["src/Gml.Core/src/GmlCore.Interfaces/GmlCore.Interfaces.csproj", "src/Gml.Core/src/GmlCore.Interfaces/"]
+COPY ["src/Gml.Core/src/Gml.Core/GmlCore.csproj", "src/Gml.Core/src/GmlCore/"]
+COPY ["src/Gml.Core/src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj", "src/Gml.Core/src/Gml.Core.Interfaces/"]
 RUN dotnet restore "src/Gml.Web.Api/Gml.Web.Api.csproj"
 
 # Copy the rest of the files and build the project
