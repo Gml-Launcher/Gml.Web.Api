@@ -44,7 +44,7 @@ public class GitHubService : IGitHubService
         if (!directory.Exists) directory.Create();
 
         var zipPath = $"{projectPath}/{branchName}.zip";
-        var extractPath = $"{projectPath}/{branchName}";
+        var extractPath = NormalizePath(projectPath, branchName);
 
         var url = $"https://github.com/GamerVII-NET/Gml.Launcher/archive/refs/heads/{branchName}.zip";
 
@@ -69,6 +69,22 @@ public class GitHubService : IGitHubService
         File.Delete(zipPath);
 
         return new DirectoryInfo(extractPath).GetDirectories().First().FullName;
+    }
+
+
+    private string NormalizePath(string directory, string fileDirectory)
+    {
+        directory = directory
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar);
+        // .TrimStart(Path.DirectorySeparatorChar);
+
+        fileDirectory = fileDirectory
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .TrimStart(Path.DirectorySeparatorChar);
+
+        return Path.Combine(directory, fileDirectory);
     }
 
     public async Task EditLauncherFiles(string projectPath, string host, string folder)
