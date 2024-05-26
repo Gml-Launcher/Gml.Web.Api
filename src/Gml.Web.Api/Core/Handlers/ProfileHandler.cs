@@ -25,20 +25,16 @@ public class ProfileHandler : IProfileHandler
         var profiles = await gmlManager.Profiles.GetProfiles();
         var gameProfiles = profiles as IGameProfile[] ?? profiles.ToArray();
 
-        var dtoProfiles = mapper.Map<IEnumerable<ProfileReadDto>>(profiles);
+        var dtoProfiles = mapper.Map<ProfileReadDto[]>(profiles);
 
-        var profileReadDtos = dtoProfiles as ProfileReadDto[] ?? dtoProfiles.ToArray();
-
-
-        foreach (var profile in profileReadDtos)
+        foreach (var profile in dtoProfiles)
         {
             var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
 
             profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
-
-        return Results.Ok(ResponseMessage.Create(profileReadDtos, string.Empty, HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(dtoProfiles, string.Empty, HttpStatusCode.OK));
     }
 
     [Authorize]
