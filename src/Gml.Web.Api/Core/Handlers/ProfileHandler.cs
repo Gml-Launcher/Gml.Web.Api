@@ -141,7 +141,8 @@ public class ProfileHandler : IProfileHandler
             updateDto.Name,
             icon,
             background,
-            updateDto.Description);
+            updateDto.Description,
+            updateDto.IsEnabled);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
