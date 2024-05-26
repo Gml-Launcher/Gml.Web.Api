@@ -57,7 +57,7 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
-    protected async Task Created(HttpContext context, object data, string message)
+    protected async Task Created(HttpContext context, object? data, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.Created;
@@ -67,7 +67,7 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
-    protected async Task Ok(HttpContext context, object data, string message)
+    protected async Task Ok(HttpContext context, object? data, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -104,7 +104,6 @@ public class EndpointHelper
             StatusCode = (int)HttpStatusCode.BadRequest,
             Errors = resultErrors.Select(c => c.ErrorMessage)
         };
-
 
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
