@@ -11,7 +11,7 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class FileHandler : IFileHandler
 {
-    public static async Task GetFile(HttpContext context ,IGmlManager gmlManager, string fileHash)
+    public static async Task GetFile(HttpContext context, IGmlManager gmlManager, string fileHash)
     {
         var response = context.Response;
 
@@ -23,8 +23,10 @@ public class FileHandler : IFileHandler
     }
 
     [Authorize]
-    public static async Task<IResult> AddFileWhiteList(IGmlManager manager, IValidator<FileWhiteListDto> validator,
-        [FromBody] FileWhiteListDto fileDto)
+    public static async Task<IResult> AddFileWhiteList(
+        IGmlManager manager,
+        IValidator<List<FileWhiteListDto>> validator,
+        [FromBody] List<FileWhiteListDto> fileDto)
     {
         var result = await validator.ValidateAsync(fileDto);
 
@@ -32,26 +34,39 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        var profile = await manager.Profiles.GetProfile(fileDto.ProfileName);
+        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
 
-        if (profile == null)
-            return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{fileDto.ProfileName}\" не найден",
-                HttpStatusCode.NotFound));
+        var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
-        var file = await manager.Files.DownloadFileStream(fileDto.Hash, new MemoryStream(), null);
+        foreach (var profileFiles in profileNames)
+        {
+            var profile = await manager.Profiles.GetProfile(profileFiles.Key);
 
-        if (file == null)
-            return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
+            if (profile == null)
+                return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFiles.Key}\" не найден",
+                    HttpStatusCode.NotFound));
 
-        await manager.Profiles.AddFileToWhiteList(profile, file);
+            foreach (var fileInfo in profileFiles)
+            {
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), null);
 
-        return Results.Ok(ResponseMessage.Create($"Файл \"{file.Name}\" успешно добавлен в White-Лист",
+                if (file == null)
+                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
+
+                await manager.Profiles.AddFileToWhiteList(profile, file);
+            }
+
+        }
+
+        return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно добавлено в White-Лист",
             HttpStatusCode.NotFound));
     }
 
     [Authorize]
-    public static async Task<IResult> RemoveFileWhiteList(IGmlManager manager, IValidator<FileWhiteListDto> validator,
-        [FromBody] FileWhiteListDto fileDto)
+    public static async Task<IResult> RemoveFileWhiteList(
+        IGmlManager manager,
+        IValidator<List<FileWhiteListDto>> validator,
+        [FromBody] List<FileWhiteListDto> fileDto)
     {
         var result = await validator.ValidateAsync(fileDto);
 
@@ -59,20 +74,31 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        var profile = await manager.Profiles.GetProfile(fileDto.ProfileName);
+        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
 
-        if (profile == null)
-            return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{fileDto.ProfileName}\" не найден",
-                HttpStatusCode.NotFound));
+        var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
-        var file = await manager.Files.DownloadFileStream(fileDto.Hash, new MemoryStream(), null);
+        foreach (var profileFiles in profileNames)
+        {
+            var profile = await manager.Profiles.GetProfile(profileFiles.Key);
 
-        if (file == null)
-            return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
+            if (profile == null)
+                return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFiles.Key}\" не найден",
+                    HttpStatusCode.NotFound));
 
-        await manager.Profiles.RemoveFileFromWhiteList(profile, file);
+            foreach (var fileInfo in profileFiles.DistinctBy(c => c.Hash))
+            {
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), null);
 
-        return Results.Ok(ResponseMessage.Create($"Файл \"{file.Name}\" успешно удален из White-Листа",
+                if (file == null)
+                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена",
+                        HttpStatusCode.NotFound));
+
+                await manager.Profiles.RemoveFileFromWhiteList(profile, file);
+            }
+        }
+
+        return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно удалено из White-Листа",
             HttpStatusCode.NotFound));
     }
 }
