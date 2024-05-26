@@ -13,11 +13,11 @@ public interface IFileHandler
 
     static abstract Task<IResult> AddFileWhiteList(
         IGmlManager manager,
-        IValidator<FileWhiteListDto> validator,
-        FileWhiteListDto fileDto);
+        IValidator<List<FileWhiteListDto>> validator,
+        List<FileWhiteListDto> fileDto);
 
     static abstract Task<IResult> RemoveFileWhiteList(
         IGmlManager manager,
-        IValidator<FileWhiteListDto> validator,
-        FileWhiteListDto fileDto);
+        IValidator<List<FileWhiteListDto>> validator,
+        List<FileWhiteListDto> fileDto);
 }

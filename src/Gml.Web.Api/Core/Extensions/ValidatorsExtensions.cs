@@ -32,7 +32,7 @@ public static class ValidatorsExtensions
             .AddScoped<IValidator<IntegrationUpdateDto>, IntegrationValidator>()
 
             // Files validator
-            .AddScoped<IValidator<FileWhiteListDto>, FileWhiteListValidator>()
+            .AddScoped<IValidator<List<FileWhiteListDto>>, FileWhiteListValidator>()
 
             // Launcher validator
             .AddScoped<IValidator<LauncherCreateDto>, LauncherCreateDtoValidator>()
