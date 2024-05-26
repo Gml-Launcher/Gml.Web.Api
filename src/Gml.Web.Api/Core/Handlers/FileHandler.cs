@@ -59,7 +59,7 @@ public class FileHandler : IFileHandler
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно добавлено в White-Лист",
-            HttpStatusCode.NotFound));
+            HttpStatusCode.OK));
     }
 
     [Authorize]
@@ -99,6 +99,6 @@ public class FileHandler : IFileHandler
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно удалено из White-Листа",
-            HttpStatusCode.NotFound));
+            HttpStatusCode.OK));
     }
 }
