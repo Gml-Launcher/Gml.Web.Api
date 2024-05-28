@@ -1,6 +1,8 @@
+using Gml.Web.Api.Domains.Integrations;
+
 namespace Gml.Web.Api.Core.Integrations.Auth;
 
 public interface IPlatformAuthService
 {
-    Task<bool> Auth(string login, string password);
+    Task<AuthResult> Auth(string login, string password);
 }

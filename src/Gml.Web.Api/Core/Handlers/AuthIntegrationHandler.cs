@@ -2,6 +2,7 @@ using System.Net;
 using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Integrations.Auth;
+using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
@@ -38,9 +39,9 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
 
 
-            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType))
+            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is { } authResult)
             {
-                var player = await gmlManager.Users.GetAuthData(authDto.Login, authDto.Password, userAgent);
+                var player = await gmlManager.Users.GetAuthData(authResult.Login ?? authDto.Login, authDto.Password, userAgent, authResult.Uuid);
 
                 player.TextureUrl =
                     (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", player.Name);

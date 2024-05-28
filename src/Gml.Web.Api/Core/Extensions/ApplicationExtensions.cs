@@ -131,6 +131,7 @@ public static class ApplicationExtensions
             .AddTransient<DataLifeEngineAuthService>()
             .AddTransient<UnicoreCMSAuthService>()
             .AddTransient<EasyCabinetAuthService>()
+            .AddTransient<CustomEndpointAuthService>()
             .AddTransient<AzuriomAuthService>()
             .AddTransient<AnyAuthService>()
             .RegisterRepositories()
