@@ -30,7 +30,6 @@ public class ProfileHandler : IProfileHandler
         foreach (var profile in dtoProfiles)
         {
             var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
-
             profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
@@ -105,7 +104,8 @@ public class ProfileHandler : IProfileHandler
         {
             Name = context.Request.Form["Name"],
             Description = context.Request.Form["Description"],
-            OriginalName = context.Request.Form["OriginalName"]
+            OriginalName = context.Request.Form["OriginalName"],
+            JvmArguments = context.Request.Form["JvmArguments"]
         };
 
         var result = await validator.ValidateAsync(updateDto);
@@ -142,7 +142,8 @@ public class ProfileHandler : IProfileHandler
             icon,
             background,
             updateDto.Description,
-            updateDto.IsEnabled);
+            updateDto.IsEnabled,
+            updateDto.JvmArguments);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
@@ -258,6 +259,7 @@ public class ProfileHandler : IProfileHandler
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
+        profileDto.JvmArguments = profile.JvmArguments;
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
