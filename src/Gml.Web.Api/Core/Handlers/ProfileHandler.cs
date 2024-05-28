@@ -142,8 +142,7 @@ public class ProfileHandler : IProfileHandler
             icon,
             background,
             updateDto.Description,
-            updateDto.IsEnabled,
-            updateDto.JvmArguments);
+            updateDto.IsEnabled);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
@@ -259,7 +258,6 @@ public class ProfileHandler : IProfileHandler
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
-        profileDto.JvmArguments = profile.JvmArguments;
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
