@@ -83,13 +83,17 @@ public class MinecraftHandler : IMinecraftHandler
             {
                 Skin = new SkinCape
                 {
-                    Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}",
-                            user.Name) + $"/skin-{user.Uuid}"
+                    Url = (await gmlManager.Integrations.GetSkinServiceAsync())
+                        .Replace("{userName}",user.Name)
+                        .Replace("{userUuid}", user.Uuid)
+                        + $"?uuid/{Guid.NewGuid()}"
                 },
                 Cape = new SkinCape
                 {
-                    Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}",
-                            user.Name) + $"/cape-{user.Uuid}"
+                    Url = (await gmlManager.Integrations.GetCloakServiceAsync())
+                        .Replace("{userName}", user.Name)
+                        .Replace("{userUuid}", user.Uuid)
+                        + $"?uuid/{Guid.NewGuid()}"
                 }
             }
         };
@@ -148,11 +152,17 @@ public class MinecraftHandler : IMinecraftHandler
             {
                 Skin = new SkinCape
                 {
-                    Url = (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", user.Name)
+                    Url = (await gmlManager.Integrations.GetSkinServiceAsync())
+                        .Replace("{userName}", user.Name)
+                        .Replace("{userUuid}", user.Uuid)
+                        + $"?uuid/{Guid.NewGuid()}"
                 },
                 Cape = new SkinCape
                 {
-                    Url = (await gmlManager.Integrations.GetCloakServiceAsync()).Replace("{userName}", user.Name)
+                    Url = (await gmlManager.Integrations.GetCloakServiceAsync())
+                        .Replace("{userName}", user.Name)
+                        .Replace("{userUuid}", user.Uuid)
+                        + $"?uuid/{Guid.NewGuid()}"
                 }
             }
         };
