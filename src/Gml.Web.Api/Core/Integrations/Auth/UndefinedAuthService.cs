@@ -1,4 +1,5 @@
 using System.Text;
+using Gml.Web.Api.Domains.Integrations;
 using GmlCore.Interfaces;
 using Newtonsoft.Json;
 
@@ -9,7 +10,7 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
     private readonly IGmlManager _gmlManager = gmlManager;
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<bool> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password)
     {
         var activeAuthService = await _gmlManager.Integrations.GetActiveAuthService();
 
@@ -25,6 +26,9 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
 
         var result = await _httpClient.PostAsync(activeAuthService.Endpoint, content);
 
-        return result.IsSuccessStatusCode;
-    }
+        return new AuthResult
+        {
+            Login = login,
+            IsSuccess = result.IsSuccessStatusCode
+        };    }
 }

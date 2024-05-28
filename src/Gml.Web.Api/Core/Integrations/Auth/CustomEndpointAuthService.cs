@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 
-public class DataLifeEngineAuthService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager)
+public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager)
     : IPlatformAuthService
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
@@ -23,9 +23,23 @@ public class DataLifeEngineAuthService(IHttpClientFactory httpClientFactory, IGm
         var result =
             await _httpClient.PostAsync((await gmlManager.Integrations.GetActiveAuthService())!.Endpoint, content);
 
-        return new AuthResult
+        var resultContent = await result.Content.ReadAsStringAsync();
+
+        var authResult = new AuthResult
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+        };
+
+        if (string.IsNullOrEmpty(resultContent))
+            return authResult;
+
+        var model = JsonConvert.DeserializeObject<AuthCustomResponse>(resultContent);
+
+        authResult.Login = model?.Login ?? login;
+        authResult.Uuid = model?.UserUuid;
+
+        return authResult;
+
+    }
 }
