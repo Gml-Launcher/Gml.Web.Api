@@ -13,5 +13,6 @@ public class ProfileReadDto
     public string LaunchVersion { get; set; }
     public string IconBase64 { get; set; }
     public string Background { get; set; }
+    public string JvmArguments { get; set; }
     public List<ServerReadDto> Servers { get; set; } = [];
 }
