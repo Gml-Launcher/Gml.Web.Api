@@ -30,7 +30,6 @@ public class ProfileHandler : IProfileHandler
         foreach (var profile in dtoProfiles)
         {
             var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
-
             profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
@@ -260,6 +259,7 @@ public class ProfileHandler : IProfileHandler
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
+        profileDto.JvmArguments = profile.JvmArguments;
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
