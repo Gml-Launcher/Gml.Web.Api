@@ -39,7 +39,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
 
 
-            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is { } authResult)
+            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is { } authResult && authResult.IsSuccess)
             {
                 var player = await gmlManager.Users.GetAuthData(authResult.Login ?? authDto.Login, authDto.Password, userAgent, authResult.Uuid);
 
