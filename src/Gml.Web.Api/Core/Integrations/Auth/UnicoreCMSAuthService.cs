@@ -35,5 +35,6 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+        };
+    }
 }
