@@ -1,9 +1,15 @@
+using Gml.Web.Api.Domains.Integrations;
+
 namespace Gml.Web.Api.Core.Integrations.Auth;
 
 public class AnyAuthService : IPlatformAuthService
 {
-    public Task<bool> Auth(string login, string password)
+    public Task<AuthResult> Auth(string login, string password)
     {
-        return Task.FromResult(true);
+        return Task.FromResult(new AuthResult
+        {
+            Login = login,
+            IsSuccess = true
+        });
     }
 }
