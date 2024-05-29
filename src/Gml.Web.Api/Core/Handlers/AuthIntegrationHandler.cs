@@ -41,7 +41,13 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
 
             if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is { IsSuccess: true } authResult)
             {
-                var player = await gmlManager.Users.GetAuthData(authResult.Login ?? authDto.Login, authDto.Password, userAgent, authResult.Uuid);
+                var player = await gmlManager.Users.GetAuthData(
+                    authResult.Login ?? authDto.Login,
+                    authDto.Password,
+                    userAgent,
+                    context.Connection.RemoteIpAddress,
+                    context.Request.Protocol,
+                    authResult.Uuid);
 
                 player.TextureUrl =
                     (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", player.Name);
