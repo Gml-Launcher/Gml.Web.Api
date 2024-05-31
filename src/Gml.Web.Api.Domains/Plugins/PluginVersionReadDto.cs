@@ -1,6 +1,6 @@
 namespace Gml.Web.Api.Domains.Plugins;
 
-public class InstalledPluginReadDto
+public class PluginVersionReadDto
 {
     public string Name { get; set; }
     public string Version { get; set; }
