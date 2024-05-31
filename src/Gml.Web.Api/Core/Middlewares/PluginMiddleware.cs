@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -6,6 +7,7 @@ using System.Runtime.Loader;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
+using Spectre.Console;
 
 namespace Gml.Web.Api.Core.Middlewares;
 
@@ -40,11 +42,12 @@ public class PluginMiddleware
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
+
+            Debug.WriteLine($"Clean GC: {i}/10");
         }
 
         Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
     }
-
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static async Task<WeakReference?> Process(HttpContext context)
     {
@@ -60,7 +63,7 @@ public class PluginMiddleware
             directoryInfo.Create();
         }
 
-        var plugins = directoryInfo.GetFiles("*.dll");
+        var plugins = directoryInfo.GetFiles("*.dll", SearchOption.AllDirectories);
 
 
         try
@@ -107,6 +110,8 @@ public class PluginMiddleware
         finally
         {
             loadContext.Unload();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         return new WeakReference(loadContext);

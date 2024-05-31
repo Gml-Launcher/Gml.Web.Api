@@ -18,5 +18,12 @@ public class BadRequestExceptionMiddleware(RequestDelegate next)
             await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Тело запроса не может быть пустым",
                 HttpStatusCode.BadRequest));
         }
+        catch (BadHttpRequestException ex)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create(ex.Message,
+                HttpStatusCode.BadRequest));
+        }
     }
 }

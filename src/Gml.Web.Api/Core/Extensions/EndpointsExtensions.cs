@@ -2,6 +2,7 @@ using System.Net;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Domains.LauncherDto;
+using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
@@ -32,7 +33,8 @@ public static class EndpointsExtensions
             .WithName("Get launcher versions")
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage<IEnumerable<LauncherVersionReadDto>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPost("/api/v1/integrations/github/launcher/download", GitHubIntegrationHandler.DownloadLauncher)
             .WithOpenApi(generatedOperation =>
@@ -43,7 +45,8 @@ public static class EndpointsExtensions
             .WithName("Download launcher version")
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage<string>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/integrations/github/launcher/download/{version}",
                 GitHubIntegrationHandler.ReturnLauncherSolution)
@@ -54,7 +57,8 @@ public static class EndpointsExtensions
             })
             .WithName("Download launcher solution")
             .WithTags("Integration/GitHub/Launcher")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         #endregion
 
@@ -116,7 +120,8 @@ public static class EndpointsExtensions
             .WithDescription("Обновление ссылки на DSN сервис Sentry")
             .WithName("Update dsn sentry service url")
             .WithTags("Integration/Sentry")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         #endregion
 
@@ -142,7 +147,8 @@ public static class EndpointsExtensions
             .WithDescription("Обновление данных DiscordRPC")
             .WithName("Update discord RPC data")
             .WithTags("Integration/Discord")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         #endregion
 
@@ -168,7 +174,8 @@ public static class EndpointsExtensions
             .WithDescription("Обновление ссылки на сервис со скинами")
             .WithName("Update skin texture url")
             .WithTags("Integration/Textures")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.GetCloakUrl)
             .WithOpenApi(generatedOperation =>
@@ -190,7 +197,8 @@ public static class EndpointsExtensions
             .WithDescription("Обновление ссылки на сервис с плащами")
             .WithName("Update cloak texture url")
             .WithTags("Integration/Textures")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         #endregion
 
@@ -280,7 +288,8 @@ public static class EndpointsExtensions
             .WithName("Auth")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<PlayerReadDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPut("/api/v1/integrations/auth", AuthIntegrationHandler.SetAuthService)
             .WithOpenApi(generatedOperation =>
@@ -292,7 +301,8 @@ public static class EndpointsExtensions
             .WithName("Update auth service")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/integrations/auth", AuthIntegrationHandler.GetIntegrationServices)
             .WithOpenApi(generatedOperation =>
@@ -304,7 +314,8 @@ public static class EndpointsExtensions
             .WithName("Auth services list")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/integrations/auth/active", AuthIntegrationHandler.GetAuthService)
             .WithOpenApi(generatedOperation =>
@@ -316,7 +327,8 @@ public static class EndpointsExtensions
             .WithName("Get active auth service")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapDelete("/api/v1/integrations/auth/active", AuthIntegrationHandler.RemoveAuthService)
             .WithOpenApi(generatedOperation =>
@@ -328,7 +340,8 @@ public static class EndpointsExtensions
             .WithName("Remove active auth service")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         #endregion
 
@@ -359,7 +372,8 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPut("/api/v1/profiles", ProfileHandler.UpdateProfile)
             .WithOpenApi(generatedOperation =>
@@ -372,7 +386,8 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPost("/api/v1/profiles/restore", ProfileHandler.RestoreProfile)
             .WithOpenApi(generatedOperation =>
@@ -384,7 +399,8 @@ public static class EndpointsExtensions
             .WithName("Restore profile")
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapDelete("/api/v1/profiles/{profileNames}", ProfileHandler.RemoveProfile)
             .WithOpenApi(generatedOperation =>
@@ -396,7 +412,8 @@ public static class EndpointsExtensions
             .WithName("Remove profile")
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPost("/api/v1/profiles/info", ProfileHandler.GetProfileInfo)
             .WithOpenApi(generatedOperation =>
@@ -408,7 +425,8 @@ public static class EndpointsExtensions
             .WithName("Get profile info")
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPost("/api/v1/profiles/compile", ProfileHandler.CompileProfile)
             .WithOpenApi(generatedOperation =>
@@ -420,7 +438,8 @@ public static class EndpointsExtensions
             .WithName("Compile profile")
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         #endregion
 
@@ -446,7 +465,8 @@ public static class EndpointsExtensions
             .WithDescription("Добавление файла в White-Лист")
             .WithName("Add file to white list")
             .WithTags("Files")
-            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization();
 
         app.MapDelete("/api/v1/file/whiteList", FileHandler.RemoveFileWhiteList)
             .WithOpenApi(generatedOperation =>
@@ -457,7 +477,8 @@ public static class EndpointsExtensions
             .WithDescription("Удаление файла из White-Лист")
             .WithName("Remove file from white list")
             .WithTags("Files")
-            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization();
 
         #endregion
 
@@ -473,7 +494,8 @@ public static class EndpointsExtensions
             .WithName("Get settings")
             .WithTags("Settings")
             .Produces<ResponseMessage<SettingsReadDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization();
 
 
         app.MapPut("/api/v1/settings/platform", SettingsHandler.UpdateSettings)
@@ -485,10 +507,39 @@ public static class EndpointsExtensions
             .WithDescription("Обновление конфигурации платформы")
             .WithName("Update settings")
             .WithTags("Settings")
-            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization();
 
         #endregion
 
+        #region Plugins
+
+
+        app.MapPost("/api/v1/plugins/install", PluginHandler.InstallPlugin)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Установка плагина в систему";
+                return generatedOperation;
+            })
+            .WithDescription("Установка плагина в систему")
+            .WithName("Install plugin")
+            .WithTags("Plugins")
+            .RequireAuthorization();
+
+
+        app.MapGet("/api/v1/plugins", PluginHandler.GetInstalledPlugins)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка установленных плагинов";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка установленных плагинов")
+            .WithName("Get installed plugin")
+            .WithTags("Plugins")
+            .Produces<ResponseMessage<InstalledPluginReadDto[]>>()
+            .RequireAuthorization();
+
+        #endregion
 
         return app;
     }

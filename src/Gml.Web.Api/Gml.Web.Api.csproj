@@ -121,6 +121,9 @@
     <Compile Update="Core\Integrations\Auth\CustomEndpointAuthService.cs">
       <DependentUpon>IPlatformAuthService.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\PluginHandler.cs">
+      <DependentUpon>IPluginHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
