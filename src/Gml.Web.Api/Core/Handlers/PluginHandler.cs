@@ -1,20 +1,45 @@
+using System.Diagnostics.Tracing;
 using System.IO.Compression;
 using System.Net;
 using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Dto.Messages;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Gml.Web.Api.Core.Handlers;
 
 public abstract class PluginHandler : IPluginHandler
 {
+    public static Task<IResult> RemovePlugin(string name, string version)
+    {
+        var pluginPath = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
+
+        var file = pluginPath.GetFiles($"{name}.dll", SearchOption.AllDirectories)
+            .FirstOrDefault(c => c.Directory!.Name == version);
+
+        if (file?.Exists == true)
+        {
+            try
+            {
+                file.Delete();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                return Task.FromResult(Results.BadRequest(ResponseMessage.Create($"Произошла ошибка при удалении. Плагин не был удален.", HttpStatusCode.BadRequest)));
+            }
+        }
+
+        return Task.FromResult(Results.Ok(ResponseMessage.Create("Плагин успешно удален", HttpStatusCode.OK)));
+    }
+
     public static Task<IResult> GetInstalledPlugins()
     {
         var pluginsDirectory = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
 
         var plugins = pluginsDirectory.GetFiles("*.dll", SearchOption.AllDirectories);
 
-        var pluginsDto = plugins.Select(c => new InstalledPluginReadDto
+        var pluginsDto = plugins.Select(c => new PluginVersionReadDto
         {
             Name = c.Name.Replace(Path.GetExtension(c.Name), string.Empty),
             Version = c.Directory!.Name
@@ -26,7 +51,6 @@ public abstract class PluginHandler : IPluginHandler
 
     public static async Task<IResult> InstallPlugin(HttpContext context)
     {
-
         var pluginFormData = new
         {
             Url = context.Request.Form["pluginUrl"]
@@ -69,8 +93,7 @@ public abstract class PluginHandler : IPluginHandler
 
         }
 
-
-        return Results.Empty;
+        return Results.Ok(ResponseMessage.Create("Плагин успешно установлен", HttpStatusCode.OK));
     }
 
     private static void ExtractPlugin(string pluginsDirectory, string zipPath)

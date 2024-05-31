@@ -11,19 +11,29 @@ public class BadRequestExceptionMiddleware(RequestDelegate next)
         {
             await next(context);
         }
-        catch (BadHttpRequestException ex) when (ex.Message.StartsWith("Implicit body inferred for parameter"))
+        catch (BadHttpRequestException badHttpRequestException) when (badHttpRequestException.Message.StartsWith(
+                                                                          "Implicit body inferred for parameter"))
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
             await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Тело запроса не может быть пустым",
                 HttpStatusCode.BadRequest));
         }
-        catch (BadHttpRequestException ex)
+        catch (BadHttpRequestException exception)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-            await context.Response.WriteAsJsonAsync(ResponseMessage.Create(ex.Message,
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create(exception.Message,
                 HttpStatusCode.BadRequest));
+        }
+        catch (IOException ioException)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+            Console.WriteLine(ioException);
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create(
+                "Произошла ошибка при работе с файловой системой. Попробуйте перезапустить сервис для восстановления работы",
+                HttpStatusCode.InternalServerError));
         }
     }
 }

@@ -536,7 +536,19 @@ public static class EndpointsExtensions
             .WithDescription("Получение списка установленных плагинов")
             .WithName("Get installed plugin")
             .WithTags("Plugins")
-            .Produces<ResponseMessage<InstalledPluginReadDto[]>>()
+            .Produces<ResponseMessage<PluginVersionReadDto[]>>()
+            .RequireAuthorization();
+
+
+        app.MapDelete("/api/v1/plugins/{name}/{version}", PluginHandler.RemovePlugin)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление плагина из системы";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление плагина из системы")
+            .WithName("Remove plugin")
+            .WithTags("Plugins")
             .RequireAuthorization();
 
         #endregion
