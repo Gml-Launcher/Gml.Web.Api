@@ -61,11 +61,13 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         }
         catch (HttpRequestException exception)
         {
+            Console.WriteLine(exception);
             return Results.BadRequest(ResponseMessage.Create(
                 "Произошла ошибка при обмене данных с сервисом авторизации.", HttpStatusCode.InternalServerError));
         }
         catch (Exception exception)
         {
+            Console.WriteLine(exception);
             return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.InternalServerError));
         }
 
