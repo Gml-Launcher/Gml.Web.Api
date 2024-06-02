@@ -139,7 +139,6 @@ public static class ApplicationExtensions
             .RegisterCors(policyName)
             .AddSignalR();
 
-
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
