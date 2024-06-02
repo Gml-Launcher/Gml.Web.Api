@@ -288,8 +288,7 @@ public static class EndpointsExtensions
             .WithName("Auth")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<PlayerReadDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization();
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapPut("/api/v1/integrations/auth", AuthIntegrationHandler.SetAuthService)
             .WithOpenApi(generatedOperation =>
@@ -425,8 +424,7 @@ public static class EndpointsExtensions
             .WithName("Get profile info")
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization();
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         app.MapPost("/api/v1/profiles/compile", ProfileHandler.CompileProfile)
             .WithOpenApi(generatedOperation =>

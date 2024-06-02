@@ -45,9 +45,10 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Login ?? authDto.Login,
                     authDto.Password,
                     userAgent,
-                    context.Connection.RemoteIpAddress,
                     context.Request.Protocol,
-                    authResult.Uuid);
+                    context.Connection.RemoteIpAddress,
+                    authResult.Uuid,
+                    context.Request.Headers["X-HWID"]);
 
                 player.TextureUrl =
                     (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", player.Name);
