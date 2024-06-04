@@ -200,6 +200,28 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
+        app.MapPost("/api/v1/integrations/texture/skins/load", TextureIntegrationHandler.UpdateUserSkin)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление скина пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление скина пользователя")
+            .WithName("Upload skin texture")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/integrations/texture/cloak/load", TextureIntegrationHandler.UpdateUserCloak)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление плаща пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление плаща пользователя")
+            .WithName("Upload cloak texture")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         #endregion
 
         #region Minecraft authlib
@@ -359,6 +381,19 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<List<ProfileReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/profiles/versions/{gameLoader}/{minecraftVersion}", ProfileHandler.GetMinecraftVersions)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка версий под каждый загрузчик Minecraft";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка версий Minecraft")
+            .WithName("Minecraft versions")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage<List<ProfileReadDto>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPost("/api/v1/profiles", ProfileHandler.CreateProfile)
             .WithOpenApi(generatedOperation =>

@@ -116,6 +116,7 @@ public static class ApplicationExtensions
 
         builder.Services
             .AddHttpClient()
+            .AddNamedHttpClients()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
@@ -123,6 +124,7 @@ public static class ApplicationExtensions
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddScoped<ISystemService, SystemService>()
+            .AddScoped<ISkinServiceManager, SkinServiceManager>()
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
             .AddSingleton<ApplicationContext>()
