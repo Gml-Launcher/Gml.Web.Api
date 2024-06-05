@@ -15,11 +15,14 @@ public class FileHandler : IFileHandler
     {
         var response = context.Response;
 
+        (Stream file, string fileName, long length) = await gmlManager.Files.GetFileStream(fileHash);
+
+        response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
+        response.Headers.Append("Content-Length", length.ToString());
         response.ContentType = "application/octet-stream";
 
-        context.Response.ContentType = "application/octet-stream";
+        await file.CopyToAsync(response.Body);
 
-        await gmlManager.Files.DownloadFileStream(fileHash, response.Body, response.Headers);
     }
 
     [Authorize]

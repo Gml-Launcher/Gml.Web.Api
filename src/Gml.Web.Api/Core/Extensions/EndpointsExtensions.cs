@@ -586,6 +586,31 @@ public static class EndpointsExtensions
 
         #endregion
 
+        #region Launcher
+
+        app.MapPost("/api/v1/launcher/upload/{osType}", LauncherUpdateHandler.UploadLauncherVersion)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Зарузка новой версии лаунчера";
+                return generatedOperation;
+            })
+            .WithDescription("Загрузка новой версии лаунчера")
+            .WithName("Upload launcher version")
+            .WithTags("Launcher")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/launcher", LauncherUpdateHandler.GetActualVersion)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение актуальной версии лаунчера";
+                return generatedOperation;
+            })
+            .WithDescription("Получение актуальной версии лаунчера")
+            .WithName("Get actual launcher version")
+            .WithTags("Launcher");
+
+        #endregion
+
         return app;
     }
 }

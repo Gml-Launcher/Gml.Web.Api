@@ -7,9 +7,12 @@ using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
+using Gml.Web.Api.Domains.Launcher;
 using Gml.Web.Api.Domains.Settings;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Minio;
@@ -63,7 +66,7 @@ public static class ApplicationExtensions
         out string policyName,
         out string projectPath,
         out string secretKey
-        )
+    )
     {
         var serverConfiguration = builder.Configuration.GetSection(nameof(ServerSettings));
 
@@ -114,13 +117,30 @@ public static class ApplicationExtensions
             IssuerSigningKey = key
         };
 
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.Limits.MaxRequestBodySize = 209715200; // 200Мб
+        });
+
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            options.MultipartBodyLengthLimit = 209715200; // 200 MB
+        });
+
         builder.Services
             .AddHttpClient()
             .AddNamedHttpClients()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .AddSingleton<IGmlManager>(_ => new GmlManager(new GmlSettings(projectName, projectPath)))
+            .AddSingleton<IGmlManager>(_ =>
+            {
+                var manager = new GmlManager(new GmlSettings(projectName, projectPath));
+
+                manager.RestoreSettings<LauncherVersion>();
+
+                return manager;
+            })
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddScoped<ISystemService, SystemService>()

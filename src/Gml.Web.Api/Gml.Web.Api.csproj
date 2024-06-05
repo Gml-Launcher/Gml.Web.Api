@@ -124,6 +124,9 @@
     <Compile Update="Core\Handlers\PluginHandler.cs">
       <DependentUpon>IPluginHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\LauncherUpdateHandler.cs">
+      <DependentUpon>ILauncherUpdateHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
