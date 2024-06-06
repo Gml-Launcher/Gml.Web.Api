@@ -243,7 +243,6 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(
                 ResponseMessage.Create(result.Errors, "Ошибка валидации", HttpStatusCode.BadRequest));
 
-
         if (!Enum.TryParse(createInfoDto.OsType, out OsType osType))
             return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид оперционной системы профиля",
                 HttpStatusCode.BadRequest));
