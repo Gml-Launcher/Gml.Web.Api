@@ -200,6 +200,28 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
+        app.MapPost("/api/v1/integrations/texture/skins/load", TextureIntegrationHandler.UpdateUserSkin)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление скина пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление скина пользователя")
+            .WithName("Upload skin texture")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/integrations/texture/cloak/load", TextureIntegrationHandler.UpdateUserCloak)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление плаща пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление плаща пользователя")
+            .WithName("Upload cloak texture")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         #endregion
 
         #region Minecraft authlib
@@ -359,6 +381,19 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<List<ProfileReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/profiles/versions/{gameLoader}/{minecraftVersion}", ProfileHandler.GetMinecraftVersions)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка версий под каждый загрузчик Minecraft";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка версий Minecraft")
+            .WithName("Minecraft versions")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage<List<ProfileReadDto>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
 
         app.MapPost("/api/v1/profiles", ProfileHandler.CreateProfile)
             .WithOpenApi(generatedOperation =>
@@ -548,6 +583,31 @@ public static class EndpointsExtensions
             .WithName("Remove plugin")
             .WithTags("Plugins")
             .RequireAuthorization();
+
+        #endregion
+
+        #region Launcher
+
+        app.MapPost("/api/v1/launcher/upload/{osType}", LauncherUpdateHandler.UploadLauncherVersion)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Зарузка новой версии лаунчера";
+                return generatedOperation;
+            })
+            .WithDescription("Загрузка новой версии лаунчера")
+            .WithName("Upload launcher version")
+            .WithTags("Launcher")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/launcher", LauncherUpdateHandler.GetActualVersion)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение актуальной версии лаунчера";
+                return generatedOperation;
+            })
+            .WithDescription("Получение актуальной версии лаунчера")
+            .WithName("Get actual launcher version")
+            .WithTags("Launcher");
 
         #endregion
 

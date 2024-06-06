@@ -36,6 +36,20 @@ public class ProfileHandler : IProfileHandler
         return Results.Ok(ResponseMessage.Create(dtoProfiles, string.Empty, HttpStatusCode.OK));
     }
 
+    public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
+    {
+        if (!Enum.TryParse<GameLoader>(gameLoader, out var loader))
+        {
+            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика",
+                HttpStatusCode.BadRequest));
+        }
+
+        IEnumerable<string> versions = await gmlManager.GameLoader.GetAllowVersions(loader, minecraftVersion);
+
+        return Results.Ok(ResponseMessage.Create(versions, "Доступные версии Minecraft", HttpStatusCode.Created));
+    }
+
+
     [Authorize]
     public static async Task<IResult> CreateProfile(
         HttpContext context,
