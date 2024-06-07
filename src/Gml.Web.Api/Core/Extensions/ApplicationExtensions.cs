@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Text;
 using Gml.Core.Launcher;
+using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
@@ -9,6 +10,7 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Launcher;
 using Gml.Web.Api.Domains.Settings;
+using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -143,8 +145,10 @@ public static class ApplicationExtensions
             })
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
+            .AddSingleton<PlayersController>()
             .AddScoped<ISystemService, SystemService>()
             .AddScoped<ISkinServiceManager, SkinServiceManager>()
+            .AddSingleton<HubEvents>()
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
             .AddSingleton<ApplicationContext>()
