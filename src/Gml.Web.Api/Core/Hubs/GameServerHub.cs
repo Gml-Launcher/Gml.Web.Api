@@ -11,7 +11,7 @@ public class GameServerHub : BaseHub
     private readonly IGmlManager _gmlManager;
     private readonly PlayersController _onlineUsers;
     private readonly HubEvents _hubEvents;
-    private ISingleClientProxy _serverCaller;
+    private ConcurrentDictionary<ISingleClientProxy, byte> _serverCaller = new();
 
     public GameServerHub(
         IGmlManager gmlManager,
@@ -22,26 +22,32 @@ public class GameServerHub : BaseHub
         _hubEvents = hubEvents;
         _onlineUsers = onlineUsers;
 
-        _hubEvents.KickUser.Subscribe(async userName => await KickUser(userName));
+        hubEvents.KickUser.Subscribe(async userName => await KickUser(userName));
     }
 
     private async Task KickUser(string userName)
     {
-        try
+
+        foreach (var caller in _serverCaller.Keys)
         {
-            await _serverCaller.SendAsync("KickUser", userName,
-                "Не удалось идентифицировать пользователя. Перезапустите лаунчер!");
-        }
-        catch (Exception e)
-        {
-            // Debug.Write
+            try
+            {
+                await caller.SendAsync("KickUser", userName, "Не удалось идентифицировать пользователя. Перезапустите лаунчер!");
+                Debug.WriteLine($"User Kicked: {userName}");
+            }
+            catch (Exception e)
+            {
+                _serverCaller.TryRemove(caller, out _);
+                Debug.WriteLine($"Ошибка при отправке сообщения на удаление: {e}");
+            }
         }
 
     }
 
     public async Task OnJoin(string userName)
     {
-        _serverCaller = Clients.Caller;
+        if (!_serverCaller.ContainsKey(Clients.Caller))
+            _serverCaller.TryAdd(Clients.Caller, byte.MinValue);
 
         if (!_onlineUsers.TryGetValue(userName, out var launcherInfo) || launcherInfo.ExpiredDate < DateTimeOffset.Now)
         {

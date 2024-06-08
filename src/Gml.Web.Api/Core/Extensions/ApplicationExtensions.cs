@@ -144,11 +144,11 @@ public static class ApplicationExtensions
                 return manager;
             })
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
+            .AddSingleton<HubEvents>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddSingleton<PlayersController>()
             .AddScoped<ISystemService, SystemService>()
             .AddScoped<ISkinServiceManager, SkinServiceManager>()
-            .AddSingleton<HubEvents>()
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
             .AddSingleton<ApplicationContext>()

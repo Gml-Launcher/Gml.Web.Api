@@ -1,5 +1,5 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
@@ -23,7 +23,7 @@ public class LauncherHub : BaseHub
         _onlineUsers = onlineUsers;
     }
 
-    public Task AddUserLauncher(string userName)
+    public async Task AddUserLauncher(string userName)
     {
         Debug.WriteLine($"Launcher connected: {userName}");
 
@@ -33,10 +33,12 @@ public class LauncherHub : BaseHub
                 ExpiredDate = DateTimeOffset.Now + TimeSpan.FromSeconds(30)
             });
 
-        return Task.CompletedTask;
+        await Clients.Caller.SendAsync("RequestLauncherHash");
+
+        StartChecking(userName);
     }
 
-    public async Task UpdateUserLauncher(string userName)
+    public Task UpdateUserLauncher(string userName)
     {
         Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Update launcher: {userName}");
 
@@ -45,55 +47,80 @@ public class LauncherHub : BaseHub
             userInfo.ExpiredDate = DateTimeOffset.Now + TimeSpan.FromMinutes(1);
         }
 
-        await Clients.Caller.SendAsync("RequestLauncherHash");
-        StartLauncherTimer(userName);
+        return Task.CompletedTask;
     }
 
-    public void ConfirmLauncherHash(string userName)
+    public async Task ConfirmLauncherHash(string userName)
     {
         Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Dispose timer: {userName}");
+
         if (_onlineUsers.Timers.TryRemove(userName, out var timer))
         {
             timer?.Dispose();
         }
-    }
 
-    private void StartLauncherTimer(string userName)
-    {
-        Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Start timer: {userName}");
-        _onlineUsers.Timers.AddOrUpdate(userName,
-            Observable.Timer(TimeSpan.FromSeconds(30)).Subscribe(next =>
-            {
-                if (_onlineUsers.Timers.TryRemove(userName, out var timer))
-                {
-                    timer?.Dispose();
-                    Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Kick from timer: {userName}");
-                    _hubEvents.KickUser.OnNext(userName);
-                    _onlineUsers.TryRemove(userName, out _);
-                }
-            }),
-            (key, oldValue) =>
-            {
-                oldValue?.Dispose();
-
-                return Observable.Timer(TimeSpan.FromSeconds(30)).Subscribe(next =>
-                {
-                    if (_onlineUsers.Timers.TryRemove(userName, out var timer))
-                    {
-                        timer?.Dispose();
-                        Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Kick from timer: {userName}");
-                        _hubEvents.KickUser.OnNext(userName);
-                        _onlineUsers.TryRemove(userName, out _);
-                    }
-                });
-            });
+        await UpdateUserLauncher(userName);
     }
 
     public Task RemoveUserLauncher(string userName)
     {
         Debug.WriteLine($"Launcher disconnected: {userName}");
-        _onlineUsers.TryRemove(userName, out _);
+
+        StopChecking(userName);
+
+        KickUser(userName);
 
         return Task.CompletedTask;
+    }
+
+    public void StartChecking(string userName)
+    {
+        var caller = Clients.Caller;
+        var scheduler = Observable.Interval(TimeSpan.FromSeconds(20));
+
+        async void CreateScheduler(long next)
+        {
+            await caller.SendAsync("RequestLauncherHash");
+            StartLauncherTimer(userName);
+        }
+
+        _onlineUsers.Schedulers.AddOrUpdate(
+            userName,
+            scheduler.Subscribe(CreateScheduler),
+            (_, oldValue) =>
+            {
+                oldValue?.Dispose();
+                return scheduler.Subscribe(CreateScheduler);
+            });
+    }
+
+    private void StartLauncherTimer(string userName)
+    {
+        Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Start timer: {userName}");
+
+        var timer = Observable.Timer(TimeSpan.FromSeconds(30)).Subscribe(next =>
+        {
+            StopChecking(userName);
+
+            KickUser(userName);
+        });
+
+        _onlineUsers.Timers.TryAdd(userName, timer);
+    }
+
+    private void KickUser(string userName)
+    {
+        Debug.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss:fff}] Kick from timer: {userName}");
+        _hubEvents.KickUser.OnNext(userName);
+    }
+
+    public void StopChecking(string userName)
+    {
+        _onlineUsers.TryRemove(userName, out _);
+        _onlineUsers.Schedulers.TryRemove(userName, out var scheduler);
+        _onlineUsers.Timers.TryRemove(userName, out var timer);
+
+        timer?.Dispose();
+        scheduler?.Dispose();
     }
 }
