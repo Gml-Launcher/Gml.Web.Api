@@ -92,6 +92,12 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
         var userConnection =
             LauncherConnections.FirstOrDefault(c => c.Value.User.Name == userName);
 
+        if (userConnection.Key is null)
+        {
+            launcherInfo = null;
+            return false;
+        }
+
         return LauncherConnections.TryGetValue(userConnection.Key, out launcherInfo);
     }
 }

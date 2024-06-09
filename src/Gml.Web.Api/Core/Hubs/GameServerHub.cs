@@ -90,18 +90,29 @@ public class GameServerHub : BaseHub
 
     public async Task OnLeft(string userName)
     {
-        var user = await _gmlManager.Users.GetUserByName(userName);
-
-        if (user is null)
+        try
         {
-            await Clients.Caller.SendAsync("BanUser", userName);
-            return;
-        }
+            if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) || launcherInfo!.ExpiredDate < DateTimeOffset.Now)
+            {
+                return;
+            }
 
-        if (!_playerController.TryGetValue(userName, out var launcherInfo))
-        {
+            var user = await _gmlManager.Users.GetUserByName(userName);
+
+            if (user is null)
+            {
+                await Clients.Caller.SendAsync("BanUser", userName);
+                return;
+            }
+
             Debug.WriteLine($"OnLeft: {userName}");
             await _gmlManager.Users.EndSession(user);
         }
+        catch (Exception e)
+        {
+            await KickUser(userName, "Произошла ошибка при попытке подключения к серверу");
+            Console.WriteLine(e);
+        }
+
     }
 }
