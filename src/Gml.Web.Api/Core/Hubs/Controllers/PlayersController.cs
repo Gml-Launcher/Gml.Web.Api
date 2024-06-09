@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Security.Claims;
 using Gml.Core.Launcher;
 using Gml.Core.User;
@@ -24,39 +25,61 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
         _gmlManager = gmlManager;
     }
 
-    public void AddPlayer(string connectionId, ISingleClientProxy connection, string userName)
+    public async Task AddLauncherConnection(string connectionId, ISingleClientProxy connection,
+        ClaimsPrincipal contextUser)
     {
-        // Launchers.TryAdd()
-        // _playerController.AddOrUpdate(userName, new UserLauncherInfo(), (_, _)
-        //     => new UserLauncherInfo
-        //     {
-        //         ExpiredDate = DateTimeOffset.Now + TimeSpan.FromSeconds(30)
-        //     });
-        //
-        // await Clients.Caller.SendAsync("RequestLauncherHash");
-        //
-        // StartChecking(userName);
-    }
-
-    public async Task AddLauncherConnection(string connectionId, ISingleClientProxy connection, ClaimsPrincipal contextUser)
-    {
-        var userName = contextUser.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value;
-
+        var userName = contextUser.FindFirstValue(JwtRegisteredClaimNames.Name);
         if (!string.IsNullOrEmpty(userName) && await _gmlManager.Users.GetUserByName(userName) is AuthUser user)
         {
             LauncherConnections.TryAdd(connectionId, new UserLauncherInfo
             {
                 User = user,
-                ExpiredDate = DateTimeOffset.Now.AddSeconds(30)
+                ExpiredDate = DateTimeOffset.Now.AddSeconds(30),
+                Connection = connection
             });
 
-            Debug.WriteLine($"New launcher connected: {user.Name} | {user.Uuid}");
-        }
+            await connection.SendAsync("RequestLauncherHash");
 
+            var timer = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(5))
+                .Subscribe(_ =>
+                {
+                    if (!LauncherConnections.TryGetValue(connectionId, out var userInfo)
+                        || DateTimeOffset.Now > userInfo.ExpiredDate)
+                    {
+                        RemoveLauncherConnection(connectionId);
+                    }
+                    else
+                    {
+                        connection.SendAsync("RequestLauncherHash");
+                    }
+                });
+
+            Timers.TryAdd(connectionId, timer);
+
+            Debug.WriteLine($"{user.Name} | {user.Uuid} | Connected");
+        }
     }
 
     public void RemoveLauncherConnection(string connectionId)
     {
-        LauncherConnections.TryRemove(connectionId, out _);
+        if (LauncherConnections.TryRemove(connectionId, out var user))
+        {
+            // Останавливаем таймер для данного лаунчера
+            if (Timers.TryRemove(connectionId, out var timer))
+            {
+                timer.Dispose();
+                Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Timer disposed");
+            }
+            Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Disconnected");
+        }
+    }
+
+    public void ConfirmLauncherHash(string connectionId, string hash)
+    {
+        if (LauncherConnections.TryGetValue(connectionId, out var user))
+        {
+            Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Session active");
+            user.ExpiredDate = DateTimeOffset.Now.AddSeconds(30);
+        }
     }
 }
