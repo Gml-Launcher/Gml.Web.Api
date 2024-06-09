@@ -41,12 +41,44 @@ public class GameServerHub : BaseHub
 
     private async Task KickUser(string userName)
     {
+        await KickUser(userName, "Не удалось идентифицировать пользователя. Перезапустите игру вместе с лаунчером!");
+    }
 
+    public async Task OnJoin(string userName)
+    {
+        try
+        {
+            if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) || launcherInfo!.ExpiredDate < DateTimeOffset.Now)
+            {
+                await KickUser(userName);
+                return;
+            }
+
+            Debug.WriteLine($"OnJoin: {userName}; ExpiredTime: {launcherInfo.ExpiredDate - DateTimeOffset.Now:g}");
+            var user = await _gmlManager.Users.GetUserByName(userName);
+
+            if (user is null)
+            {
+                await Clients.Caller.SendAsync("BanUser", userName);
+                return;
+            }
+
+            await _gmlManager.Users.StartSession(user);
+        }
+        catch (Exception e)
+        {
+            await KickUser(userName, "Произошла ошибка при попытке подключения к серверу");
+            Console.WriteLine(e);
+        }
+    }
+
+    private async Task KickUser(string userName, string message)
+    {
         foreach (var caller in _playerController.Servers.Values)
         {
             try
             {
-                await caller.SendAsync("KickUser", userName, "Не удалось идентифицировать пользователя. Перезапустите игру вместе с лаунчером!");
+                await caller.SendAsync("KickUser", userName, message);
                 Debug.WriteLine($"User Kicked: {userName}");
             }
             catch (Exception e)
@@ -54,26 +86,6 @@ public class GameServerHub : BaseHub
                 Debug.WriteLine($"Ошибка при отправке сообщения на удаление: {e}");
             }
         }
-    }
-
-    public async Task OnJoin(string userName)
-    {
-        if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) || launcherInfo!.ExpiredDate < DateTimeOffset.Now)
-        {
-            await KickUser(userName);
-            return;
-        }
-
-        Debug.WriteLine($"OnJoin: {userName}; ExpiredTime: {launcherInfo.ExpiredDate - DateTimeOffset.Now:g}");
-        var user = await _gmlManager.Users.GetUserByName(userName);
-
-        if (user is null)
-        {
-            await Clients.Caller.SendAsync("BanUser", userName);
-            return;
-        }
-
-        await _gmlManager.Users.StartSession(user);
     }
 
     public async Task OnLeft(string userName)
