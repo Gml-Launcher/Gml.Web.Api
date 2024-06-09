@@ -57,18 +57,18 @@ public static class ApplicationExtensions
 
     private static ServerSettings GetServerSettings()
     {
-        var projectName = Environment.GetEnvironmentVariable("ProjectName")
-                      ?? throw new Exception("Project name not found");
+        var projectName = Environment.GetEnvironmentVariable("PROJECT_NAME")
+                          ?? throw new Exception("Project name not found");
 
-        var projectDescription = Environment.GetEnvironmentVariable("ProjectDescription");
+        var projectDescription = Environment.GetEnvironmentVariable("PROJECT_DESCRIPTION");
 
-        var policyName = Environment.GetEnvironmentVariable("PolicyName")
-                     ?? throw new Exception("Policy name not found");
+        var policyName = Environment.GetEnvironmentVariable("PROJECT_POLICYNAME")
+                         ?? throw new Exception("Policy name not found");
 
-        var projectPath = Environment.GetEnvironmentVariable("ProjectPath")
-                      ?? string.Empty;
+        var projectPath = Environment.GetEnvironmentVariable("PROJECT_PATH")
+                          ?? string.Empty;
 
-        var securityKey = Environment.GetEnvironmentVariable("SecurityKey")
+        var securityKey = Environment.GetEnvironmentVariable("SECURITY_KEY")
                           ?? string.Empty;
 
         return new ServerSettings
