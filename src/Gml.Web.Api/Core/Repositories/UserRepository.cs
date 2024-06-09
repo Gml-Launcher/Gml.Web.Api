@@ -16,9 +16,9 @@ public class UserRepository : IUserRepository
 {
     private readonly ApplicationContext _context;
     private readonly DatabaseContext _databaseContext;
-    private readonly IOptions<ServerSettings> _options;
+    private readonly ServerSettings _options;
 
-    public UserRepository(DatabaseContext databaseContext, IOptions<ServerSettings> options)
+    public UserRepository(DatabaseContext databaseContext, ServerSettings options)
     {
         _databaseContext = databaseContext;
         _options = options;
@@ -73,7 +73,7 @@ public class UserRepository : IUserRepository
             Subject = new ClaimsIdentity(new[] { new Claim("id", userId) }),
             Expires = DateTime.UtcNow.AddDays(3),
             SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Value.SecretKey)),
+                new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecurityKey)),
                     SecurityAlgorithms.HmacSha256Signature)
         };
 

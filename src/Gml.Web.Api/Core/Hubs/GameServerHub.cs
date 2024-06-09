@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Gml.Web.Api.Core.Hubs.Controllers;
 using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -9,26 +10,39 @@ namespace Gml.Web.Api.Core.Hubs;
 public class GameServerHub : BaseHub
 {
     private readonly IGmlManager _gmlManager;
-    private readonly PlayersController _onlineUsers;
+    private readonly PlayersController _playerController;
     private readonly HubEvents _hubEvents;
-    private ConcurrentDictionary<ISingleClientProxy, byte> _serverCaller = new();
 
     public GameServerHub(
         IGmlManager gmlManager,
-        PlayersController onlineUsers,
+        PlayersController playerController,
         HubEvents hubEvents)
     {
         _gmlManager = gmlManager;
         _hubEvents = hubEvents;
-        _onlineUsers = onlineUsers;
+        _playerController = playerController;
 
         hubEvents.KickUser.Subscribe(async userName => await KickUser(userName));
+    }
+
+    public override Task OnConnectedAsync()
+    {
+        _playerController.Servers.TryAdd(Context.ConnectionId, Clients.Caller);
+
+        return base.OnConnectedAsync();
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        _playerController.Servers.TryRemove(Context.ConnectionId, out _);
+
+        return base.OnDisconnectedAsync(exception);
     }
 
     private async Task KickUser(string userName)
     {
 
-        foreach (var caller in _serverCaller.Keys)
+        foreach (var caller in _playerController.Servers.Values)
         {
             try
             {
@@ -37,7 +51,6 @@ public class GameServerHub : BaseHub
             }
             catch (Exception e)
             {
-                _serverCaller.TryRemove(caller, out _);
                 Debug.WriteLine($"Ошибка при отправке сообщения на удаление: {e}");
             }
         }
@@ -46,10 +59,7 @@ public class GameServerHub : BaseHub
 
     public async Task OnJoin(string userName)
     {
-        if (!_serverCaller.ContainsKey(Clients.Caller))
-            _serverCaller.TryAdd(Clients.Caller, byte.MinValue);
-
-        if (!_onlineUsers.TryGetValue(userName, out var launcherInfo) || launcherInfo.ExpiredDate < DateTimeOffset.Now)
+        if (!_playerController.TryGetValue(userName, out var launcherInfo) || launcherInfo.ExpiredDate < DateTimeOffset.Now)
         {
             await KickUser(userName);
             return;
@@ -77,7 +87,7 @@ public class GameServerHub : BaseHub
             return;
         }
 
-        if (!_onlineUsers.TryGetValue(userName, out var launcherInfo))
+        if (!_playerController.TryGetValue(userName, out var launcherInfo))
         {
             Debug.WriteLine($"OnLeft: {userName}");
             await _gmlManager.Users.EndSession(user);

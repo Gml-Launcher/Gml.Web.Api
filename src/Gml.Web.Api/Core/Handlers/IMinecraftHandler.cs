@@ -8,5 +8,5 @@ namespace Gml.Web.Api.Core.Handlers;
 public interface IMinecraftHandler
 {
     static abstract Task<IResult> GetMetaData(ISystemService systemService, IGmlManager gmlManager,
-        IOptions<ServerSettings> options);
+        ServerSettings options);
 }

@@ -7,14 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Gml.Web.Api.Core.Services;
 
-public class AccessTokenService(IOptions<ServerSettings> settings)
+public class AccessTokenService(ServerSettings settings)
 {
-    private readonly ServerSettings _settings = settings.Value;
-
     public bool ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecurityKey));
 
         try
         {

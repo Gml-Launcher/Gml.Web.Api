@@ -43,10 +43,10 @@ public class PluginMiddleware
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            Debug.WriteLine($"Clean GC: {i}/10");
+            // Debug.WriteLine($"Clean GC: {i}/10");
         }
 
-        Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
+        // Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
     }
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static async Task<WeakReference?> Process(HttpContext context)

@@ -17,9 +17,9 @@ public static class DatabaseExtensions
         var services = scope.ServiceProvider;
 
         var context = services.GetRequiredService<DatabaseContext>();
-        var settings = services.GetRequiredService<IOptions<ServerSettings>>();
+        var settings = services.GetRequiredService<ServerSettings>();
 
-        app.UseCors(settings.Value.PolicyName);
+        app.UseCors(settings.PolicyName);
 
         if (context.Database.GetPendingMigrations().Any()) context.Database.Migrate();
 

@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using System.Text;
 using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Hubs;
+using Gml.Web.Api.Core.Hubs.Controllers;
 using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
@@ -44,55 +45,45 @@ public static class ApplicationExtensions
 
     public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
     {
-        var serverSettings = GetServerSettings(builder,
-            out var projectName,
-            out var projectDescription,
-            out var policyName,
-            out var projectPath,
-            out var secretKey
-        );
+        var serverSettings = GetServerSettings();
 
-        _policyName = policyName;
+        _policyName = serverSettings.PolicyName;
 
-        builder.RegisterOptions(serverSettings);
-        builder.RegisterEndpointsInfo(projectName, projectDescription);
-        builder.RegisterSystemComponents(policyName, projectName, projectPath, secretKey);
+        builder.RegisterEndpointsInfo(serverSettings.ProjectName, serverSettings.ProjectDescription);
+        builder.RegisterSystemComponents(serverSettings);
 
         return builder;
     }
 
-    private static IConfigurationSection GetServerSettings(
-        WebApplicationBuilder builder,
-        out string projectName,
-        out string? projectDescription,
-        out string policyName,
-        out string projectPath,
-        out string secretKey
-    )
+    private static ServerSettings GetServerSettings()
     {
-        var serverConfiguration = builder.Configuration.GetSection(nameof(ServerSettings));
+        var projectName = Environment.GetEnvironmentVariable("ProjectName")
+                      ?? throw new Exception("Project name not found");
 
-        projectName = serverConfiguration.GetValue<string>("ProjectName") ??
-                      throw new Exception("Project name not found");
-        projectDescription = serverConfiguration.GetValue<string>("ProjectDescription");
-        policyName = serverConfiguration.GetValue<string>("PolicyName") ?? throw new Exception("Policy name not found");
-        projectPath = serverConfiguration.GetValue<string>("ProjectPath") ?? string.Empty;
-        secretKey = serverConfiguration.GetValue<string>("SecretKey") ?? string.Empty;
+        var projectDescription = Environment.GetEnvironmentVariable("ProjectDescription");
 
-        return serverConfiguration;
+        var policyName = Environment.GetEnvironmentVariable("PolicyName")
+                     ?? throw new Exception("Policy name not found");
+
+        var projectPath = Environment.GetEnvironmentVariable("ProjectPath")
+                      ?? string.Empty;
+
+        var securityKey = Environment.GetEnvironmentVariable("SecurityKey")
+                          ?? string.Empty;
+
+        return new ServerSettings
+        {
+            ProjectDescription = projectDescription,
+            ProjectName = projectName,
+            PolicyName = policyName,
+            ProjectVersion = "1.1.0",
+            SecurityKey = securityKey,
+            ProjectPath = projectPath
+        };
     }
 
-    public static WebApplicationBuilder RegisterOptions(this WebApplicationBuilder builder,
-        IConfigurationSection serverSettings)
-    {
-        builder.Services
-            .AddOptions<ServerSettings>()
-            .Bind(serverSettings);
-
-        return builder;
-    }
-
-    private static WebApplicationBuilder RegisterEndpointsInfo(this WebApplicationBuilder builder, string projectName,
+    private static WebApplicationBuilder RegisterEndpointsInfo(this WebApplicationBuilder builder,
+        string projectName,
         string? projectDescription)
     {
         builder.Services
@@ -102,13 +93,11 @@ public static class ApplicationExtensions
         return builder;
     }
 
-    private static WebApplicationBuilder RegisterSystemComponents(this WebApplicationBuilder builder,
-        string policyName,
-        string projectName,
-        string projectPath,
-        string secretKey)
+    private static WebApplicationBuilder RegisterSystemComponents(
+        this WebApplicationBuilder builder,
+        ServerSettings settings)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecurityKey));
 
         var tokenValidationParameters = new TokenValidationParameters
         {
@@ -137,12 +126,13 @@ public static class ApplicationExtensions
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
             .AddSingleton<IGmlManager>(_ =>
             {
-                var manager = new GmlManager(new GmlSettings(projectName, projectPath));
+                var manager = new GmlManager(new GmlSettings(settings.ProjectName, settings.SecurityKey, settings.ProjectPath));
 
                 manager.RestoreSettings<LauncherVersion>();
 
                 return manager;
             })
+            .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<HubEvents>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
@@ -162,7 +152,7 @@ public static class ApplicationExtensions
             .AddTransient<AnyAuthService>()
             .RegisterRepositories()
             .RegisterValidators()
-            .RegisterCors(policyName)
+            .RegisterCors(settings.PolicyName)
             .AddSignalR();
 
         builder.Services.AddAuthentication(options =>
