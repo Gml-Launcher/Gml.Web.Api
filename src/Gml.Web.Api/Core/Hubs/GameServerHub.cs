@@ -58,7 +58,7 @@ public class GameServerHub : BaseHub
 
     public async Task OnJoin(string userName)
     {
-        if (!_playerController.TryGetValue(userName, out var launcherInfo) || launcherInfo.ExpiredDate < DateTimeOffset.Now)
+        if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) || launcherInfo!.ExpiredDate < DateTimeOffset.Now)
         {
             await KickUser(userName);
             return;

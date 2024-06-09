@@ -86,4 +86,12 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
             user.ExpiredDate = DateTimeOffset.Now.AddSeconds(30);
         }
     }
+
+    public bool GetLauncherConnection(string userName, out UserLauncherInfo? launcherInfo)
+    {
+        var userConnection =
+            LauncherConnections.FirstOrDefault(c => c.Value.User.Name == userName);
+
+        return LauncherConnections.TryGetValue(userConnection.Key, out launcherInfo);
+    }
 }
