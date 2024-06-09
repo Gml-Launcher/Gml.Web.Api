@@ -54,7 +54,6 @@ public class GameServerHub : BaseHub
                 Debug.WriteLine($"Ошибка при отправке сообщения на удаление: {e}");
             }
         }
-
     }
 
     public async Task OnJoin(string userName)

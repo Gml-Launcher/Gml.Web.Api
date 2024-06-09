@@ -15,13 +15,15 @@ namespace Gml.Web.Api.Core.Hubs.Controllers;
 public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
 {
     private readonly IGmlManager _gmlManager;
+    private readonly HubEvents _hubEvents;
     public ConcurrentDictionary<string, IDisposable> Timers = new();
     public ConcurrentDictionary<string, IDisposable> Schedulers = new();
     public ConcurrentDictionary<string, ISingleClientProxy> Servers = new();
     public ConcurrentDictionary<string, UserLauncherInfo> LauncherConnections = new();
 
-    public PlayersController(IGmlManager gmlManager)
+    public PlayersController(IGmlManager gmlManager, HubEvents hubEvents)
     {
+        _hubEvents = hubEvents;
         _gmlManager = gmlManager;
     }
 
@@ -71,6 +73,8 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
                 Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Timer disposed");
             }
             Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Disconnected");
+
+            _hubEvents.KickUser.OnNext(user.User.Name);
         }
     }
 
