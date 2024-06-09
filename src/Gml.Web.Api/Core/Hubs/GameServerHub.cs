@@ -46,7 +46,7 @@ public class GameServerHub : BaseHub
         {
             try
             {
-                await caller.SendAsync("KickUser", userName, "Не удалось идентифицировать пользователя. Перезапустите лаунчер!");
+                await caller.SendAsync("KickUser", userName, "Не удалось идентифицировать пользователя. Перезапустите игру вместе с лаунчером!");
                 Debug.WriteLine($"User Kicked: {userName}");
             }
             catch (Exception e)
