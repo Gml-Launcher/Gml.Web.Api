@@ -11,10 +11,12 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public static async Task<IResult> GetMetaData(ISystemService systemService, IGmlManager gmlManager,
-        IOptions<ServerSettings> options)
+    public static async Task<IResult> GetMetaData(
+        ISystemService systemService,
+        IGmlManager gmlManager,
+        ServerSettings options)
     {
-        var skinsAddresses = options.Value.SkinDomains.ToList();
+        var skinsAddresses = options.SkinDomains.ToList();
         skinsAddresses.AddRange(await GetEnvironmentAddress(gmlManager));
 
         skinsAddresses = skinsAddresses.Distinct().ToList();
@@ -24,8 +26,8 @@ public class MinecraftHandler : IMinecraftHandler
             SkinDomains = skinsAddresses.ToArray(),
             Meta =
             {
-                ServerName = options.Value.ProjectName,
-                ImplementationVersion = options.Value.ProjectVersion
+                ServerName = options.ProjectName,
+                ImplementationVersion = options.ProjectVersion
             },
             SignaturePublicKey = await systemService.GetPublicKey()
         };

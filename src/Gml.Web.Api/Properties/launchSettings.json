@@ -7,7 +7,12 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://192.168.31.199:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
+        "PROJECT_NAME": "GmlServer",
+        "PROJECT_DESCRIPTION": "GmlServer Description",
+        "PROJECT_POLICYNAME": "GmlPolicy",
+        "PROJECT_PATH": ""
       }
     },
     "https": {
@@ -17,7 +22,12 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5001;http://localhost:5001",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
+        "PROJECT_NAME": "GmlServer",
+        "PROJECT_DESCRIPTION": "GmlServer Description",
+        "PROJECT_POLICYNAME": "GmlPolicy",
+        "PROJECT_PATH": ""
       }
     }
   }

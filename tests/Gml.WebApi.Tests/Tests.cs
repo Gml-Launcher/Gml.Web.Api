@@ -22,8 +22,14 @@ public class Tests
     private WebApplicationFactory<Program> _webApplicationFactory;
 
     [SetUp]
-    public void Setup()
+    public async Task Setup()
     {
+        Environment.SetEnvironmentVariable("SECURITY_KEY", "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23");
+        Environment.SetEnvironmentVariable("PROJECT_NAME", "GmlServer");
+        Environment.SetEnvironmentVariable("PROJECT_DESCRIPTION", "GmlServer Description");
+        Environment.SetEnvironmentVariable("PROJECT_POLICYNAME", "GmlPolicy");
+        Environment.SetEnvironmentVariable("PROJECT_PATH", "");
+
         _webApplicationFactory = new GmlApiApplicationFactory();
         _httpClient = _webApplicationFactory.CreateClient();
     }
@@ -61,7 +67,7 @@ public class Tests
         var profile = new MultipartFormDataContent();
         profile.Add(new StringContent(_profileName), "Name");
         profile.Add(new StringContent(Address.StreetAddress()), "Description");
-        profile.Add(new StringContent("1.19.4"), "Version");
+        profile.Add(new StringContent("1.7.10"), "Version");
         profile.Add(new StringContent(((int)GameLoader.Forge).ToString()), "GameLoader");
 
         var response = await _httpClient.PostAsync("/api/v1/profiles", profile);
@@ -78,8 +84,32 @@ public class Tests
         });
     }
 
+    // [Test]
+    // [Order(3)]
+    // public async Task RestoreProfile()
+    // {
+    //     var restoreDto = TestHelper.CreateJsonObject(new ProfileRestoreDto
+    //     {
+    //         Name = _profileName,
+    //         OsArchitecture = "64",
+    //         OsType = "3",
+    //     });
+    //
+    //     var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
+    //
+    //     var content = await response.Content.ReadAsStringAsync();
+    //
+    //     var model = JsonConvert.DeserializeObject<ResponseMessage>(content);
+    //
+    //     Assert.Multiple(() =>
+    //     {
+    //         Assert.That(model, Is.Not.Null);
+    //         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+    //     });
+    // }
+
     [Test]
-    [Order(3)]
+    [Order(4)]
     public async Task GetProfileInfo()
     {
         var profile = TestHelper.CreateJsonObject(new ProfileCreateInfoDto
@@ -113,7 +143,7 @@ public class Tests
     }
 
     [Test]
-    [Order(4)]
+    [Order(5)]
     public async Task UpdateProfile()
     {
         var profileUpdateData = new MultipartFormDataContent
@@ -137,7 +167,7 @@ public class Tests
     }
 
     [Test]
-    [Order(5)]
+    [Order(6)]
     public async Task CompileProfile()
     {
         var profile = TestHelper.CreateJsonObject(new ProfileCompileDto
@@ -158,7 +188,7 @@ public class Tests
     }
 
     [Test]
-    [Order(6)]
+    [Order(7)]
     public async Task GetSettings()
     {
         var response = await _httpClient.GetAsync("/api/v1/settings/platform");
@@ -174,7 +204,7 @@ public class Tests
     }
 
     [Test]
-    [Order(7)]
+    [Order(8)]
     public async Task UpdateSettings()
     {
         var httpContent = TestHelper.CreateJsonObject(new SettingsUpdateDto
@@ -195,7 +225,7 @@ public class Tests
     }
 
     [Test]
-    [Order(8)]
+    [Order(9)]
     public async Task UpdateSkinsUrl()
     {
         var httpContent = TestHelper.CreateJsonObject(new UrlServiceDto(_newTextureUrl));
@@ -213,7 +243,7 @@ public class Tests
     }
 
     [Test]
-    [Order(9)]
+    [Order(10)]
     public async Task UpdateCloaksUrl()
     {
         var httpContent = TestHelper.CreateJsonObject(new UrlServiceDto(_newTextureUrl));
@@ -231,7 +261,7 @@ public class Tests
     }
 
     [Test]
-    [Order(10)]
+    [Order(11)]
     public async Task GetSkinsUrl()
     {
         var response = await _httpClient.GetAsync("/api/v1/integrations/texture/skins");
@@ -249,7 +279,7 @@ public class Tests
     }
 
     [Test]
-    [Order(11)]
+    [Order(12)]
     public async Task GetCloaksUrl()
     {
         var response = await _httpClient.GetAsync("/api/v1/integrations/texture/cloaks");
@@ -267,7 +297,7 @@ public class Tests
     }
 
     [Test]
-    [Order(12)]
+    [Order(13)]
     public async Task UpdateSentryDsn()
     {
         var httpContent = TestHelper.CreateJsonObject(new UrlServiceDto(_newSenryUrl));
@@ -285,7 +315,7 @@ public class Tests
     }
 
     [Test]
-    [Order(13)]
+    [Order(14)]
     public async Task GetSentryDsn()
     {
         var response = await _httpClient.GetAsync("/api/v1/integrations/sentry/dsn");
@@ -303,7 +333,7 @@ public class Tests
     }
 
     [Test]
-    [Order(14)]
+    [Order(15)]
     public async Task GetLauncherVersions()
     {
         var response = await _httpClient.GetAsync("/api/v1/integrations/github/launcher/versions");
@@ -321,7 +351,7 @@ public class Tests
     }
 
     [Test]
-    [Order(15)]
+    [Order(16)]
     public async Task CompileLauncherVersions()
     {
         var httpContent = TestHelper.CreateJsonObject(new LauncherCreateDto
@@ -342,7 +372,7 @@ public class Tests
     }
 
     [Test]
-    [Order(16)]
+    [Order(17)]
     public async Task DownloadLauncherVersions()
     {
         var response = await _httpClient.GetAsync("/api/v1/integrations/github/launcher/download/master");

@@ -10,13 +10,12 @@ namespace Gml.Web.Api.Core.Repositories;
 
 public class SettingsRepository(
     DatabaseContext databaseContext,
-    IOptions<ServerSettings> options,
+    ServerSettings options,
     IGmlManager gmlManager,
     ISubject<Settings> settingsObservable)
     : ISettingsRepository
 {
-    private readonly IOptions<ServerSettings> _options = options;
-    private readonly IGmlManager gmlManager = gmlManager;
+    private readonly ServerSettings _options = options;
     private readonly IObserver<Settings> _settingsObservable = settingsObservable;
 
     public async Task<Settings?> UpdateSettings(Settings settings)
