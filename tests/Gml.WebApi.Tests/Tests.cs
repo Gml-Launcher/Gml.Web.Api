@@ -24,6 +24,12 @@ public class Tests
     [SetUp]
     public async Task Setup()
     {
+        Environment.SetEnvironmentVariable("SECURITY_KEY", "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23");
+        Environment.SetEnvironmentVariable("PROJECT_NAME", "GmlServer");
+        Environment.SetEnvironmentVariable("PROJECT_DESCRIPTION", "GmlServer Description");
+        Environment.SetEnvironmentVariable("PROJECT_POLICYNAME", "GmlPolicy");
+        Environment.SetEnvironmentVariable("PROJECT_PATH", "");
+
         _webApplicationFactory = new GmlApiApplicationFactory();
         _httpClient = _webApplicationFactory.CreateClient();
     }
