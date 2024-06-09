@@ -38,8 +38,8 @@ public class LauncherHub : BaseHub
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        Debug.WriteLine($"Launcher disconnected");
         _playerController.RemoveLauncherConnection(Context.ConnectionId);
+
         return base.OnDisconnectedAsync(exception);
     }
 

@@ -50,8 +50,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
                 ExpiredDate = DateTimeOffset.Now.AddSeconds(30)
             });
 
-            Debug.WriteLine("New launcher connected");
-
+            Debug.WriteLine($"New launcher connected: {user.Name} | {user.Uuid}");
         }
 
     }
