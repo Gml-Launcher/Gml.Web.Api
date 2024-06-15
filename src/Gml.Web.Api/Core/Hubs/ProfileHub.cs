@@ -3,49 +3,54 @@ using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 
 namespace Gml.Web.Api.Core.Hubs;
 
 public class ProfileHub : BaseHub
 {
     private readonly IGmlManager _gmlManager;
-    private int lastPackProgressSended = -1;
+    private double lastPackProgress = -1;
 
-    private int lastProgressSended = -1;
+    private double lastProgress = -1;
 
     public ProfileHub(IGmlManager gmlManager)
     {
         _gmlManager = gmlManager;
     }
 
-    public async Task Build(string clientName)
+    public async Task Build(string profileName)
     {
         try
         {
-            if (string.IsNullOrEmpty(clientName))
+            if (string.IsNullOrEmpty(profileName))
                 return;
 
-            if (!_gmlManager.Profiles.CanUpdateAndRestore)
-            {
-                SendCallerMessage(
-                    "В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна");
-                return;
-            }
-
-            var profile = await _gmlManager.Profiles.GetProfile(clientName);
+            var profile = await _gmlManager.Profiles.GetProfile(profileName);
 
             if (profile is null)
                 return;
 
-            await Clients.All.SendAsync("FileChanged", "Packaging...");
+            if (profile.State == ProfileState.Loading)
+            {
+                SendCallerMessage(
+                    "В данный момент уже происходит загрузка выбранного профиля!");
+                return;
+            }
 
-            _gmlManager.Profiles.PackChanged += ChangePackProgress;
+            Log("Packaging...", profileName);
+
+            var eventInfo = _gmlManager.Profiles.PackChanged.Subscribe(percentage =>
+            {
+                ChangePackProgress(profileName, percentage);
+            });
             await _gmlManager.Profiles.PackProfile(profile);
-            _gmlManager.Profiles.PackChanged -= ChangePackProgress;
-
-            await Clients.All.SendAsync("SuccessPacked");
-            lastPackProgressSended = -1;
+            await Clients.All.SendAsync("SuccessPacked", profileName);
+            eventInfo.Dispose();
+            lastPackProgress = -1;
         }
         catch (Exception exception)
         {
@@ -54,16 +59,15 @@ public class ProfileHub : BaseHub
         }
     }
 
-    private async void ChangePackProgress(ProgressChangedEventArgs e)
+    private async void ChangePackProgress(string profileName, double percentage)
     {
         try
         {
-            if (lastPackProgressSended == e.ProgressPercentage) return;
+            if (Math.Abs(lastPackProgress - percentage) < 0.001) return;
 
-            lastProgressSended = e.ProgressPercentage;
+            lastPackProgress = percentage;
 
-            await Clients.All.SendAsync("ChangeProgress", e?.ProgressPercentage);
-            await Clients.Others.SendAsync("BlockRestore");
+            await Clients.All.SendAsync("ChangeProgress", profileName, percentage);
         }
         catch (Exception exception)
         {
@@ -84,41 +88,44 @@ public class ProfileHub : BaseHub
                 return;
             }
 
-            if (!_gmlManager.Profiles.CanUpdateAndRestore)
+            if (profile.State == ProfileState.Loading)
             {
                 SendCallerMessage(
-                    "В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна");
+                    "В данный момент уже происходит загрузка выбранного профиля!");
                 return;
             }
 
-            SendProgress(string.Empty, new ProgressChangedEventArgs(0, 0));
-
-            profile.GameLoader.ProgressChanged += SendProgress;
-
-            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+            var fullPercentage = profile.GameLoader.FullPercentages.Subscribe(percentage =>
             {
-                OsType = OsType.Linux,
-                OsArch = "64"
-            }, User.Empty);
+                SendProgress("FullProgress", profile.Name, percentage);
 
-            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+            });
+
+            var loadPercentage = profile.GameLoader.LoadPercentages.Subscribe(percentage =>
             {
-                OsType = OsType.OsX,
-                OsArch = "64"
-            }, User.Empty);
+                SendProgress("ChangeProgress", profile.Name, percentage);
+            });
 
-            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
+            var logInfo = profile.GameLoader.LoadLog.Subscribe(logs =>
             {
-                OsType = OsType.Windows,
-                OsArch = "64"
-            }, User.Empty);
+                Log(logs, profile.Name);
+            });
 
-            profile.GameLoader.ProgressChanged -= SendProgress;
+            var exception = profile.GameLoader.LoadException.Subscribe(async logs =>
+            {
+                await Clients.All.SendAsync("OnException", profile.Name, logs.ToString());
+            });
 
-            SendProgress(string.Empty, new ProgressChangedEventArgs(100, 0));
-            await Clients.All.SendAsync("SuccessInstalled");
+            await _gmlManager.Profiles.RestoreProfileInfo(profile.Name);
 
-            lastProgressSended = -1;
+            await Clients.All.SendAsync("SuccessInstalled", profile.Name);
+
+            fullPercentage.Dispose();
+            loadPercentage.Dispose();
+            logInfo.Dispose();
+            exception.Dispose();
+
+            lastProgress = -1;
         }
         catch (Exception exception)
         {
@@ -127,19 +134,38 @@ public class ProfileHub : BaseHub
         }
     }
 
-    private async void SendProgress(object sender, ProgressChangedEventArgs e)
+    private async void SendProgress(string name, string profileName, double percentage)
     {
         try
         {
-            if (lastProgressSended == e.ProgressPercentage) return;
+            if (Math.Abs(lastProgress - percentage) < 0.000) return;
 
-            lastProgressSended = e.ProgressPercentage;
-            await Clients.All.SendAsync("ChangeProgress", e?.ProgressPercentage);
-            await Clients.Others.SendAsync("BlockRestore");
+            var percentageValue = Math.Round(percentage, 2);
+
+            if (double.IsPositiveInfinity(percentageValue) || double.IsNegativeInfinity(percentageValue))
+            {
+                return;
+            }
+
+            if (double.IsNaN(percentageValue) || double.IsNaN(percentageValue))
+            {
+                return;
+            }
+
+            lastProgress = percentage;
+            await Clients.All.SendAsync(name, profileName, percentageValue);
         }
         catch (Exception exception)
         {
             Console.WriteLine(exception);
+        }
+    }
+
+    public class ConfigureJsonOptions : IConfigureOptions<JsonOptions>
+    {
+        public void Configure(JsonOptions options)
+        {
+            options.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Text;
 using Gml.Web.Api.Domains.Integrations;
 using GmlCore.Interfaces;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 
@@ -31,10 +32,15 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         var result =
             await _httpClient.PostAsync(endpoint, content);
 
+        var data = await result.Content.ReadAsStringAsync();
+
+        var jData = JObject.Parse(data);
+
         return new AuthResult
         {
             Login = login,
-            IsSuccess = result.IsSuccessStatusCode
+            IsSuccess = result.IsSuccessStatusCode,
+            Uuid = jData["user"]!["uuid"]!.ToString()
         };
     }
 }

@@ -17,7 +17,7 @@ public class Tests
 {
     private readonly string _newSenryUrl = "https://sentry.test.ru";
     private readonly string _newTextureUrl = "https://test.ru";
-    private readonly string _profileName = Name.First();
+    private readonly string _profileName = "UnitTestProfile";
     private HttpClient _httpClient;
     private WebApplicationFactory<Program> _webApplicationFactory;
 
@@ -78,35 +78,33 @@ public class Tests
 
         Assert.Multiple(() =>
         {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
             Assert.That(model, Is.Not.Null);
             Assert.That(model?.Data?.Name, Is.EqualTo(_profileName));
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         });
     }
 
-    // [Test]
-    // [Order(3)]
-    // public async Task RestoreProfile()
-    // {
-    //     var restoreDto = TestHelper.CreateJsonObject(new ProfileRestoreDto
-    //     {
-    //         Name = _profileName,
-    //         OsArchitecture = "64",
-    //         OsType = "3",
-    //     });
-    //
-    //     var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
-    //
-    //     var content = await response.Content.ReadAsStringAsync();
-    //
-    //     var model = JsonConvert.DeserializeObject<ResponseMessage>(content);
-    //
-    //     Assert.Multiple(() =>
-    //     {
-    //         Assert.That(model, Is.Not.Null);
-    //         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-    //     });
-    // }
+    [Test]
+    [Order(3)]
+    public async Task RestoreProfile()
+    {
+        var restoreDto = TestHelper.CreateJsonObject(new ProfileRestoreDto
+        {
+            Name = _profileName
+        });
+
+        var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
+
+        var content = await response.Content.ReadAsStringAsync();
+
+        var model = JsonConvert.DeserializeObject<ResponseMessage>(content);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(model, Is.Not.Null);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        });
+    }
 
     [Test]
     [Order(4)]

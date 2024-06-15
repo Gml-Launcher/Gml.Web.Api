@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Net;
 using AutoMapper;
 using FluentValidation;
+using Gml.Common;
 using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Core.Services;
@@ -38,15 +40,18 @@ public class ProfileHandler : IProfileHandler
 
     public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
     {
-        if (!Enum.TryParse<GameLoader>(gameLoader, out var loader))
-        {
-            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика",
-                HttpStatusCode.BadRequest));
-        }
+        //ToDo: Исправить
+        // if (!Enum.TryParse<GameLoader>(gameLoader, out var loader))
+        // {
+        //     return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика",
+        //         HttpStatusCode.BadRequest));
+        // }
+        //
+        // IEnumerable<string> versions = await gmlManager.GameLoader.GetAllowVersions(loader, minecraftVersion);
+        //
+        // return Results.Ok(ResponseMessage.Create(versions, "Доступные версии Minecraft", HttpStatusCode.Created));
 
-        IEnumerable<string> versions = await gmlManager.GameLoader.GetAllowVersions(loader, minecraftVersion);
-
-        return Results.Ok(ResponseMessage.Create(versions, "Доступные версии Minecraft", HttpStatusCode.Created));
+        return Results.Empty;
     }
 
 
@@ -100,6 +105,9 @@ public class ProfileHandler : IProfileHandler
         }
         catch (Exception exception)
         {
+            Console.WriteLine(exception);
+            Debug.WriteLine(exception);
+
             return Results.BadRequest(ResponseMessage.Create(exception.Message,
                 HttpStatusCode.BadRequest));
         }
@@ -180,25 +188,12 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        if (!Enum.TryParse(restoreDto.OsType, out OsType osType))
-            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид оперционной системы профиля",
-                HttpStatusCode.BadRequest));
-
-        if (!gmlManager.Profiles.CanUpdateAndRestore)
-            return Results.NotFound(ResponseMessage.Create(
-                "В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна",
-                HttpStatusCode.NotFound));
-
         var profile = await gmlManager.Profiles.GetProfile(restoreDto.Name);
 
         if (profile is null)
             return Results.NotFound(ResponseMessage.Create("Профиль не найден", HttpStatusCode.NotFound));
 
-        await gmlManager.Profiles.RestoreProfileInfo(profile.Name, new StartupOptions
-        {
-            OsType = osType,
-            OsArch = restoreDto.OsArchitecture
-        }, User.Empty);
+        await gmlManager.Profiles.RestoreProfileInfo(profile.Name);
 
         return Results.Ok(ResponseMessage.Create("Профиль успешно восстановлен", HttpStatusCode.OK));
     }
@@ -214,11 +209,6 @@ public class ProfileHandler : IProfileHandler
         if (!result.IsValid)
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
-
-        if (!gmlManager.Profiles.CanUpdateAndRestore)
-            return Results.NotFound(ResponseMessage.Create(
-                "В данный момент происходит загрузка другого профиля, восстановление и компиляция профилей недоступна",
-                HttpStatusCode.NotFound));
 
         var profile = await gmlManager.Profiles.GetProfile(profileDto.Name);
 
@@ -247,6 +237,8 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид оперционной системы профиля",
                 HttpStatusCode.BadRequest));
 
+        var osName = SystemHelper.GetStringOsType(osType);
+
         var profile = await gmlManager.Profiles.GetProfile(createInfoDto.ProfileName);
 
         if (profile is null)
@@ -262,7 +254,8 @@ public class ProfileHandler : IProfileHandler
             ScreenWidth = createInfoDto.WindowWidth,
             MaximumRamMb = createInfoDto.RamSize,
             MinimumRamMb = createInfoDto.RamSize,
-            OsType = osType
+            OsName = osName,
+            OsArch = createInfoDto.OsArchitecture
         }, new User
         {
             Name = createInfoDto.UserName,

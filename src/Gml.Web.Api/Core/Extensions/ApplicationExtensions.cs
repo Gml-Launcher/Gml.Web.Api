@@ -51,6 +51,7 @@ public static class ApplicationExtensions
 
         builder.RegisterEndpointsInfo(serverSettings.ProjectName, serverSettings.ProjectDescription);
         builder.RegisterSystemComponents(serverSettings);
+        builder.Services.ConfigureOptions<ProfileHub.ConfigureJsonOptions>();
 
         return builder;
     }
