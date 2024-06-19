@@ -1,6 +1,11 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Prng;
+using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Security;
 
 namespace Gml.Web.Api.Core.Services;
 
@@ -27,7 +32,7 @@ public class SystemService : ISystemService
         csp.ImportFromPem(privateKey);
 
         var inputBytes = Encoding.UTF8.GetBytes(data);
-        var signatureBytes = csp.SignData(inputBytes, "SHA1");
+        var signatureBytes = csp.SignData(inputBytes, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
 
         return Convert.ToBase64String(signatureBytes);
     }
@@ -51,27 +56,53 @@ public class SystemService : ISystemService
         return await reader.ReadToEndAsync();
     }
 
-    private void GenerateKeyPair()
+    private void GenerateKeyPair(int keySize = 4096)
     {
-        var startInfo = new ProcessStartInfo
+        CryptoApiRandomGenerator randomGenerator = new CryptoApiRandomGenerator();
+        SecureRandom secureRandom = new SecureRandom(randomGenerator);
+        RsaKeyPairGenerator keyPairGen = new RsaKeyPairGenerator();
+        keyPairGen.Init(new KeyGenerationParameters(secureRandom, keySize));
+        AsymmetricCipherKeyPair keyPair = keyPairGen.GenerateKeyPair();
+
+        // Catch any exceptions when trying to write keys to files
+        try
         {
-            FileName = "openssl",
-            Arguments = $"genrsa -out {privateKeyPath} 4096",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            WorkingDirectory = new FileInfo(privateKeyPath).Directory!.FullName
-        };
+            ExportKeyPair(privateKeyPath, publicKeyPath, keyPair);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while trying to write keys to files: {ex.Message}");
+        }
+    }
 
-        var process = new Process { StartInfo = startInfo };
-        process.Start();
-        process.WaitForExit();
+    private static void ExportKeyPair(string privateKeyFile, string publicKeyFile, AsymmetricCipherKeyPair keyPair)
+    {
+        try
+        {
+            using (TextWriter textWriter = new StreamWriter(privateKeyFile))
+            {
+                PemWriter pemWriter = new PemWriter(textWriter);
+                pemWriter.WriteObject(keyPair.Private);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to write to private key file: {ex.Message}");
+            throw;
+        }
 
-        startInfo.Arguments = $"rsa -in {privateKeyPath} -out {publicKeyPath} -pubout";
-
-        var processSecondCommand = new Process { StartInfo = startInfo }; // Create new Process instance
-        processSecondCommand.Start();
-        processSecondCommand.WaitForExit();
+        try
+        {
+            using (TextWriter textWriter = new StreamWriter(publicKeyFile))
+            {
+                PemWriter pemWriter = new PemWriter(textWriter);
+                pemWriter.WriteObject(keyPair.Public);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to write to public key file: {ex.Message}");
+            throw;
+        }
     }
 }
