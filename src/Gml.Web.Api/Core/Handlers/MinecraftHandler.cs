@@ -71,7 +71,7 @@ public class MinecraftHandler : IMinecraftHandler
 
         var profile = new Profile
         {
-            Id = user.Uuid,
+            Id = user.Uuid.ToLower(),
             Name = user.Name,
             Properties = []
         };
@@ -80,27 +80,30 @@ public class MinecraftHandler : IMinecraftHandler
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
-            ProfileId = user.Uuid,
+            ProfileId = user.Uuid.ToLower().Replace("-", string.Empty),
+            SignatureRequired = true,
             Textures = new Textures
             {
                 Skin = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetSkinServiceAsync())
-                        .Replace("{userName}",user.Name)
-                        .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
+                          .Replace("{userName}", user.Name)
+                          .Replace("{userUuid}", user.Uuid)
+                          + $"?uuid/{user.Uuid}-cloak"
                 },
                 Cape = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetCloakServiceAsync())
-                        .Replace("{userName}", user.Name)
-                        .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
+                          .Replace("{userName}", user.Name)
+                          .Replace("{userUuid}", user.Uuid)
+                          + $"?uuid/{user.Uuid}-skin"
                 }
             }
         };
 
         var jsonData = JsonConvert.SerializeObject(texture);
+
+        Console.WriteLine($"HasJoined: {jsonData}");
 
         var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
         var signature = await systemService.GetSignature(base64Value);
@@ -148,7 +151,7 @@ public class MinecraftHandler : IMinecraftHandler
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
-            ProfileId = uuid,
+            ProfileId = user.Uuid.ToLower().Replace("-", string.Empty),
             SignatureRequired = unsigned == false,
             Textures = new Textures
             {
@@ -157,19 +160,21 @@ public class MinecraftHandler : IMinecraftHandler
                     Url = (await gmlManager.Integrations.GetSkinServiceAsync())
                         .Replace("{userName}", user.Name)
                         .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
+                        + $"?uuid/{user.Uuid}-cloak"
                 },
                 Cape = new SkinCape
                 {
                     Url = (await gmlManager.Integrations.GetCloakServiceAsync())
                         .Replace("{userName}", user.Name)
                         .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
+                        + $"?uuid/{user.Uuid}-skin"
                 }
             }
         };
 
-        var jsonData = JsonConvert.SerializeObject(texture);
+        var jsonData = System.Text.Json.JsonSerializer.Serialize(texture);
+
+        Console.WriteLine($"Profile: {jsonData}");
 
         var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
         var signature = await systemService.GetSignature(base64Value);

@@ -11,9 +11,5 @@ public class ProfileRestoreDtoValidator : AbstractValidator<ProfileRestoreDto>
             .NotEmpty().WithMessage("Имя обязательно.")
             .Matches("^[a-zA-Z0-9]*$").WithMessage("Имя может содержать только английские буквы и цифры.")
             .Length(2, 100).WithMessage("Длина имени должна быть от 2 до 100 символов.");
-        RuleFor(x => x.OsArchitecture)
-            .NotEmpty().WithMessage("Архитектура ОС обязательна.")
-            .Length(2, 100).WithMessage("Длина архитектуры ОС должна быть от 2 до 100 символов.");
-        RuleFor(x => x.OsType);
     }
 }
