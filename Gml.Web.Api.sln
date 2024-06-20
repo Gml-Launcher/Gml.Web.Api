@@ -4,7 +4,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{F9F807
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		.gitmodules = .gitmodules
-		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
 		Dockerfile = Dockerfile
 		.github\workflows\docker-package-publish.yml = .github\workflows\docker-package-publish.yml
 	EndProjectSection
