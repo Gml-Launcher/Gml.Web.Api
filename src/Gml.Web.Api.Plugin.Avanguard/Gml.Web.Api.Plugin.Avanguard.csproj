@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
+      <Folder Include="Assets\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Assets\" />
+      <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
