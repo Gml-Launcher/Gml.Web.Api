@@ -77,7 +77,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
         IGmlManager gmlManager)
     {
         var login = context.Request.Form["Login"].FirstOrDefault();
-        var token = context.Request.Headers.Authorization.FirstOrDefault()?.Split(' ').FirstOrDefault();
+        var token = context.Request.Headers.Authorization.First()?.Split(' ').LastOrDefault();
 
         if (string.IsNullOrEmpty(login))
         {
