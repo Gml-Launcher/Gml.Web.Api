@@ -14,8 +14,4 @@
       <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Command="copy $(TargetDir)Gml.Web.Api.Plugin.Avanguard.* ..\src\Gml.Web.Api\bin\Debug\net8.0\plugins " />
-    </Target>
-
 </Project>
