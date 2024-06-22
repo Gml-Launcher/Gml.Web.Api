@@ -23,4 +23,10 @@
     <ProjectReference Include="..\..\src\Gml.Web.Api\Gml.Web.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="skin.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

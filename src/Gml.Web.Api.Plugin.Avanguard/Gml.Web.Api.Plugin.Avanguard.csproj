@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>12</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Assets\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
+    </ItemGroup>
+
+</Project>
