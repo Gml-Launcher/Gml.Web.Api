@@ -82,6 +82,7 @@ public class Tests
         profile.Add(new StringContent(Address.StreetAddress()), "Description");
         profile.Add(new StringContent("1.7.10"), "Version");
         profile.Add(new StringContent(((int)GameLoader.Forge).ToString()), "GameLoader");
+        profile.Add(new StringContent("10.13.4.1614"), "LoaderVersion");
 
         var response = await _httpClient.PostAsync("/api/v1/profiles", profile);
 
