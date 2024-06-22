@@ -6,6 +6,7 @@ using Gml.Common;
 using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Core.Services;
+using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Profile;
@@ -40,15 +41,27 @@ public class ProfileHandler : IProfileHandler
 
     public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
     {
-        if (!Enum.TryParse<GameLoader>(gameLoader, out var loader))
+        try
         {
-            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика",
-                HttpStatusCode.BadRequest));
+            if (!Enum.TryParse<GameLoader>(gameLoader, out var loader))
+            {
+                return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика",
+                    HttpStatusCode.BadRequest));
+            }
+
+            var versions = await gmlManager.Profiles.GetAllowVersions(loader, minecraftVersion);
+
+            return Results.Ok(ResponseMessage.Create(versions, "Доступные версии Minecraft", HttpStatusCode.OK));
         }
-
-        IEnumerable<string> versions = await gmlManager.Profiles.GetAllowVersions(loader, minecraftVersion);
-
-        return Results.Ok(ResponseMessage.Create(versions, "Доступные версии Minecraft", HttpStatusCode.Created));
+        catch (VersionNotLoadedException versionNotLoadedException)
+        {
+            return Results.NotFound(ResponseMessage.Create(versionNotLoadedException.InnerExceptionMessage, HttpStatusCode.NotFound));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
 
@@ -71,6 +84,7 @@ public class ProfileHandler : IProfileHandler
                 Name = context.Request.Form["Name"],
                 Description = context.Request.Form["Description"],
                 Version = context.Request.Form["Version"],
+                LoaderVersion = context.Request.Form["LoaderVersion"],
                 GameLoader = gameLoader
             };
 
@@ -86,14 +100,14 @@ public class ProfileHandler : IProfileHandler
                 return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем уже существует",
                     HttpStatusCode.BadRequest));
 
-            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version))
+            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader))
                 return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
                     HttpStatusCode.BadRequest));
 
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
 
-            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.GameLoader,
+            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader,
                 createDto.IconBase64, createDto.Description);
 
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
@@ -280,7 +294,7 @@ public class ProfileHandler : IProfileHandler
         {
             var profile = await gmlManager.Profiles.GetProfile(profileName);
 
-            if (profile == null)
+            if (profile == null || profile.State == ProfileState.Loading)
                 notRemovedProfiles.Add(profileName);
             else
                 await gmlManager.Profiles.RemoveProfile(profile, removeFiles);
