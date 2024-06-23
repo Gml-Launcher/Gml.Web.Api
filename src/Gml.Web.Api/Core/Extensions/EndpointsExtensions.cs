@@ -392,7 +392,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение списка версий Minecraft")
             .WithName("Minecraft versions")
             .WithTags("Profiles")
-            .Produces<ResponseMessage<List<ProfileReadDto>>>()
+            .Produces<ResponseMessage<List<string>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
