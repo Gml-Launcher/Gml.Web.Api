@@ -3,6 +3,7 @@ using System.Net;
 using AutoMapper;
 using FluentValidation;
 using Gml.Common;
+using Gml.Core;
 using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Core.Services;
