@@ -50,7 +50,9 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Uuid,
                     context.Request.Headers["X-HWID"]);
 
-                player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync()).Replace("{userName}", player.Name);
+                player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
+                    .Replace("{userName}", player.Name)
+                    .Replace("{userUuid}", player.Uuid);
 
                 return Results.Ok(ResponseMessage.Create(
                     mapper.Map<PlayerReadDto>(player),

@@ -104,7 +104,7 @@ public class ProfileHandler : IProfileHandler
             if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader))
                 return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
                     HttpStatusCode.BadRequest));
-
+            
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
 

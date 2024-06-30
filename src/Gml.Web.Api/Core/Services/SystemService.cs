@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Crypto;
@@ -6,6 +5,87 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
+using System.IO;
+using System.Threading.Tasks;
+
+// namespace Gml.Web.Api.Core.Services
+// {
+//     public class SystemService : ISystemService
+//     {
+//         private static readonly string _publicKeyPath = Path.Combine(AppContext.BaseDirectory, "public.pem");
+//         private static readonly string _privateKeyPath = Path.Combine(AppContext.BaseDirectory, "private.pem");
+//
+//         public async Task<string> GetPublicKey()
+//         {
+//             return await ReadKeyFile(_publicKeyPath);
+//         }
+//
+//         public async Task<string> GetPrivateKey()
+//         {
+//             return await ReadKeyFile(_privateKeyPath);
+//         }
+//
+//         public async Task<string> GetSignature(string data)
+//         {
+//             var privateKey = await GetPrivateKey();
+//             var rsa = RSA.Create();
+//             rsa.ImportFromPem(privateKey.ToCharArray());
+//
+//             var inputBytes = Encoding.UTF8.GetBytes(data);
+//             var signatureBytes = rsa.SignData(inputBytes, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+//
+//             return Convert.ToBase64String(signatureBytes);
+//         }
+//
+//         public async Task<string> GetBase64FromImageFile(MemoryStream ms)
+//         {
+//             var fileBytes = ms.ToArray();
+//             var base64 = Convert.ToBase64String(fileBytes);
+//
+//             return base64;
+//         }
+//
+//         private async Task<string> ReadKeyFile(string path)
+//         {
+//             if (!File.Exists(path)) GenerateKeyPair();
+//
+//             using var reader = new StreamReader(path);
+//             return await reader.ReadToEndAsync();
+//         }
+//
+//         private void GenerateKeyPair(int keySize = 4096)
+//         {
+//             var randomGenerator = new CryptoApiRandomGenerator();
+//             var secureRandom = new SecureRandom(randomGenerator);
+//             var keyPairGen = new RsaKeyPairGenerator();
+//             keyPairGen.Init(new KeyGenerationParameters(secureRandom, keySize));
+//             var keyPair = keyPairGen.GenerateKeyPair();
+//
+//             ExportKeyPair(_privateKeyPath, _publicKeyPath, keyPair);
+//         }
+//
+//         private static void ExportKeyPair(string privateKeyFile, string publicKeyFile, AsymmetricCipherKeyPair keyPair)
+//         {
+//             using (var textWriter = new StreamWriter(privateKeyFile))
+//             {
+//                 var pemWriter = new PemWriter(textWriter);
+//                 // Export private key in PKCS#8 format
+//                 pemWriter.WriteObject(keyPair.Private);
+//             }
+//
+//             using (var textWriter = new StreamWriter(publicKeyFile))
+//             {
+//                 var pemWriter = new PemWriter(textWriter);
+//                 // Export public key in X.509 SPKI format
+//                 pemWriter.WriteObject(keyPair.Public);
+//             }
+//         }
+//     }
+// }
+
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Gml.Web.Api.Core.Services;
 
@@ -32,7 +112,7 @@ public class SystemService : ISystemService
         csp.ImportFromPem(privateKey);
 
         var inputBytes = Encoding.UTF8.GetBytes(data);
-        var signatureBytes = csp.SignData(inputBytes, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+        var signatureBytes = csp.SignData(inputBytes, "SHA1");
 
         return Convert.ToBase64String(signatureBytes);
     }
@@ -56,53 +136,27 @@ public class SystemService : ISystemService
         return await reader.ReadToEndAsync();
     }
 
-    private void GenerateKeyPair(int keySize = 4096)
+    private void GenerateKeyPair()
     {
-        CryptoApiRandomGenerator randomGenerator = new CryptoApiRandomGenerator();
-        SecureRandom secureRandom = new SecureRandom(randomGenerator);
-        RsaKeyPairGenerator keyPairGen = new RsaKeyPairGenerator();
-        keyPairGen.Init(new KeyGenerationParameters(secureRandom, keySize));
-        AsymmetricCipherKeyPair keyPair = keyPairGen.GenerateKeyPair();
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "openssl",
+            Arguments = $"genrsa -out {privateKeyPath} 4096",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WorkingDirectory = new FileInfo(privateKeyPath).Directory!.FullName
+        };
 
-        // Catch any exceptions when trying to write keys to files
-        try
-        {
-            ExportKeyPair(privateKeyPath, publicKeyPath, keyPair);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred while trying to write keys to files: {ex.Message}");
-        }
-    }
+        var process = new Process { StartInfo = startInfo };
+        process.Start();
+        process.WaitForExit();
 
-    private static void ExportKeyPair(string privateKeyFile, string publicKeyFile, AsymmetricCipherKeyPair keyPair)
-    {
-        try
-        {
-            using (TextWriter textWriter = new StreamWriter(privateKeyFile))
-            {
-                PemWriter pemWriter = new PemWriter(textWriter);
-                pemWriter.WriteObject(keyPair.Private);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to write to private key file: {ex.Message}");
-            throw;
-        }
+        startInfo.Arguments = $"rsa -in {privateKeyPath} -out {publicKeyPath} -pubout";
 
-        try
-        {
-            using (TextWriter textWriter = new StreamWriter(publicKeyFile))
-            {
-                PemWriter pemWriter = new PemWriter(textWriter);
-                pemWriter.WriteObject(keyPair.Public);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to write to public key file: {ex.Message}");
-            throw;
-        }
+        var processSecondCommand = new Process { StartInfo = startInfo }; // Create new Process instance
+        processSecondCommand.Start();
+        processSecondCommand.WaitForExit();
     }
 }
