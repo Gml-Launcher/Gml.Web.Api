@@ -53,7 +53,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
                 
                 eventObservable.Dispose();
                 
-                SendCallerMessage("лаунчер успешно скомпилирован");
+                SendCallerMessage("Лаунчер успешно скомпилирован");
             }
         }
         catch (Exception e)
