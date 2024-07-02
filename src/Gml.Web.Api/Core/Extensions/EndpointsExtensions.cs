@@ -589,7 +589,7 @@ public static class EndpointsExtensions
 
         #region Launcher
 
-        app.MapPost("/api/v1/launcher/upload/{osType}", LauncherUpdateHandler.UploadLauncherVersion)
+        app.MapPost("/api/v1/launcher/upload", LauncherUpdateHandler.UploadLauncherVersion)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Зарузка новой версии лаунчера";

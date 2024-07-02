@@ -13,11 +13,19 @@ public class LauncherUpdateHandler : ILauncherUpdateHandler
         return Results.Ok(ResponseMessage.Create(gmlManager.LauncherInfo.ActualLauncherVersion, string.Empty, HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> UploadLauncherVersion(string osType, HttpContext context, IGmlManager gmlManager)
+    public static async Task<IResult> UploadLauncherVersion(HttpContext context, IGmlManager gmlManager)
     {
+        var osType = context.Request.Form["Version"].FirstOrDefault() ?? string.Empty;
+        var osArch = context.Request.Form["Arch"].FirstOrDefault() ?? string.Empty;
+        
         if (!Enum.TryParse<OsType>(osType, out var osTypeEnum))
         {
             return Results.BadRequest(ResponseMessage.Create($"Не удалось определить тип операционной системы", HttpStatusCode.InternalServerError));
+        }
+
+        if (string.IsNullOrEmpty(osArch))
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Не удалось определить архитектуру процессора", HttpStatusCode.InternalServerError));
         }
 
         var minecraftVersion = new LauncherVersion
@@ -25,6 +33,7 @@ public class LauncherUpdateHandler : ILauncherUpdateHandler
             Version = context.Request.Form["Version"].FirstOrDefault() ?? string.Empty,
             Title = context.Request.Form["Title"].FirstOrDefault() ?? string.Empty,
             Description = context.Request.Form["Description"].FirstOrDefault() ?? string.Empty,
+            OsArch = osArch,
             OsType = osTypeEnum,
             File = context.Request.Form.Files["File"] is null
                 ? null

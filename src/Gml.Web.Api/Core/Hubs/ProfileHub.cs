@@ -98,7 +98,6 @@ public class ProfileHub : BaseHub
             var fullPercentage = profile.GameLoader.FullPercentages.Subscribe(percentage =>
             {
                 SendProgress("FullProgress", profile.Name, percentage);
-
             });
 
             var loadPercentage = profile.GameLoader.LoadPercentages.Subscribe(percentage =>

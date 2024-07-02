@@ -39,4 +39,16 @@ public class BaseHub : Hub
             Console.WriteLine(exception);
         }
     }
+
+    protected async void Log(string message)
+    {
+        try
+        {
+            await Clients.All.SendAsync("Log", message);
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+        }
+    }
 }

@@ -10,6 +10,7 @@ public class LauncherVersion : IVersionFile
     public string Version { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
+    public string OsArch { get; set; }
     public Stream? File { get; set; }
     public string Guid { get; set; }
     public OsType OsType { get; set; }
