@@ -1,8 +1,11 @@
 using System.Net;
+using AutoMapper;
 using Gml.Web.Api.Domains.Launcher;
 using Gml.Web.Api.Domains.System;
+using Gml.Web.Api.Dto.Launcher;
 using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -11,6 +14,13 @@ public class LauncherUpdateHandler : ILauncherUpdateHandler
     public static IResult GetActualVersion(IGmlManager gmlManager)
     {
         return Results.Ok(ResponseMessage.Create(gmlManager.LauncherInfo.ActualLauncherVersion, string.Empty, HttpStatusCode.OK));
+    }
+    
+    public static async Task<IResult> GetBuilds(IGmlManager gmlManager, IMapper mapper)
+    {
+        var builds = await gmlManager.LauncherInfo.GetBuilds();
+        
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<LauncherBuildReadDto>>(builds), string.Empty, HttpStatusCode.OK));
     }
 
     public static async Task<IResult> UploadLauncherVersion(HttpContext context, IGmlManager gmlManager)

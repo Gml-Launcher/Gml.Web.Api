@@ -610,6 +610,16 @@ public static class EndpointsExtensions
             .WithName("Get actual launcher version")
             .WithTags("Launcher");
 
+        app.MapGet("/api/v1/launcher/builds", LauncherUpdateHandler.GetBuilds)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка сборок";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка сборок")
+            .WithName("Get launcher builds")
+            .WithTags("Launcher");
+
         #endregion
 
         return app;
