@@ -2,16 +2,24 @@ using System.IO;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Storage;
 using Microsoft.Extensions.Primitives;
+using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Web.Api.Domains.Launcher;
 
-public class LauncherVersion : IVersionFile
+public struct LauncherVersion : IVersionFile
 {
     public string Version { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
-    public string OsArch { get; set; }
-    public Stream? File { get; set; }
     public string Guid { get; set; }
-    public OsType OsType { get; set; }
+    public object Clone()
+    {
+        return new LauncherVersion
+        {
+            Version = Version,
+            Title = Title,
+            Description = Description,
+            Guid = Guid,
+        };
+    }
 }

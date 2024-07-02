@@ -25,34 +25,30 @@ public class LauncherUpdateHandler : ILauncherUpdateHandler
 
     public static async Task<IResult> UploadLauncherVersion(HttpContext context, IGmlManager gmlManager)
     {
-        var osType = context.Request.Form["Version"].FirstOrDefault() ?? string.Empty;
-        var osArch = context.Request.Form["Arch"].FirstOrDefault() ?? string.Empty;
+        var buildName = context.Request.Form["LauncherBuild"].ToString();
         
-        if (!Enum.TryParse<OsType>(osType, out var osTypeEnum))
+        if (string.IsNullOrEmpty(buildName))
         {
-            return Results.BadRequest(ResponseMessage.Create($"Не удалось определить тип операционной системы", HttpStatusCode.InternalServerError));
+            return Results.BadRequest(ResponseMessage.Create($"Не удалось определить версию сборки", HttpStatusCode.BadRequest));
         }
 
-        if (string.IsNullOrEmpty(osArch))
+        var build = await gmlManager.LauncherInfo.GetBuild(buildName);
+        
+        if (build is null)
         {
-            return Results.BadRequest(ResponseMessage.Create($"Не удалось определить архитектуру процессора", HttpStatusCode.InternalServerError));
+            return Results.BadRequest(ResponseMessage.Create($"Указанная версия не найдена", HttpStatusCode.BadRequest));
         }
-
+        
         var minecraftVersion = new LauncherVersion
         {
             Version = context.Request.Form["Version"].FirstOrDefault() ?? string.Empty,
             Title = context.Request.Form["Title"].FirstOrDefault() ?? string.Empty,
-            Description = context.Request.Form["Description"].FirstOrDefault() ?? string.Empty,
-            OsArch = osArch,
-            OsType = osTypeEnum,
-            File = context.Request.Form.Files["File"] is null
-                ? null
-                : context.Request.Form.Files["File"]!.OpenReadStream()
+            Description = context.Request.Form["Description"].FirstOrDefault() ?? string.Empty
         };
 
         try
         {
-            var versions = await gmlManager.Launcher.CreateVersion(minecraftVersion, osTypeEnum);
+            var versions = await gmlManager.Launcher.CreateVersion(minecraftVersion, build);
 
             return Results.Ok(ResponseMessage.Create("Версия лаунчера успешно обновлена!", HttpStatusCode.OK));
         }
