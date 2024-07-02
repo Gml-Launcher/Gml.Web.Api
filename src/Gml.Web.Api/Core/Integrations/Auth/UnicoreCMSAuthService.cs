@@ -40,7 +40,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode,
-            Uuid = jData["user"]!["uuid"]!.ToString()
+            Uuid = jData["user"]?["uuid"]?.ToString()
         };
     }
 }
