@@ -9,6 +9,7 @@ public class ProfileReadInfoDto
     public string ProfileName { get; set; }
     public string MinecraftVersion { get; set; }
     public string ClientVersion { get; set; }
+    public string LaunchVersion { get; set; }
     public string IconBase64 { get; set; }
     public string Description { get; set; }
     public string Arguments { get; set; }
