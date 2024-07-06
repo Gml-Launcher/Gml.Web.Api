@@ -1,7 +1,5 @@
 using System.Net;
-using System.Net.Http.Headers;
 using Faker;
-using Gml.Core.User;
 using Gml.Models.Auth;
 using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Domains.System;
@@ -17,7 +15,6 @@ using Gml.Web.Api.Dto.Texture;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Gml.WebApi.Tests;
@@ -27,12 +24,12 @@ public class Tests
     private readonly string _newSenryUrl = "https://sentry.test.ru";
     private readonly string _newTextureUrl = "https://test.ru";
     private readonly string _profileName = "UnitTestProfile";
-    private HttpClient _httpClient;
-    private WebApplicationFactory<Program> _webApplicationFactory;
-    private string? _sentryDsn;
-    private string? _skinUrl;
     private string? _cloakUrl;
-    private string _serverUuid = Guid.NewGuid().ToString();
+    private HttpClient _httpClient;
+    private string? _sentryDsn;
+    private readonly string _serverUuid = Guid.NewGuid().ToString();
+    private string? _skinUrl;
+    private WebApplicationFactory<Program> _webApplicationFactory;
 
     [SetUp]
     public async Task Setup()
@@ -102,11 +99,11 @@ public class Tests
     [Order(3)]
     public async Task RestoreProfile()
     {
-        return;
         var restoreDto = TestHelper.CreateJsonObject(new ProfileRestoreDto
         {
             Name = _profileName
         });
+        return;
 
         var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
 
@@ -397,7 +394,7 @@ public class Tests
             Assert.That(response.IsSuccessStatusCode, Is.True);
         });
     }
-    
+
     [Test]
     [Order(18)]
     public async Task SetAuthService()
@@ -420,7 +417,7 @@ public class Tests
 
         Assert.Multiple(() => { Assert.That(result.IsSuccess, Is.True); });
     }
-    
+
     private async Task<(ResponseMessage<PlayerReadDto>? User, bool IsSuccess)> Auth(string login, string password)
     {
         var httpContent = TestHelper.CreateJsonObject(new UserAuthDto
@@ -428,14 +425,14 @@ public class Tests
             Login = "GamerVII",
             Password = "MegaPassword"
         });
-        
+
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
             $"Gml.Launcher-Client-GmlClientManager/1.0 (OS: {Environment.OSVersion};)");
-        
+
         var response = await _httpClient.PostAsync("/api/v1/integrations/auth/signin", httpContent);
 
         var content = await response.Content.ReadAsStringAsync();
-        
+
         return (JsonConvert.DeserializeObject<ResponseMessage<PlayerReadDto>>(content), response.IsSuccessStatusCode);
     }
 
@@ -518,11 +515,7 @@ public class Tests
 
         var response = await _httpClient.PutAsync("/api/v1/integrations/texture/cloaks", httpContent);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(response.IsSuccessStatusCode, Is.True);
-        });
-        
+        Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
     }
 
     [Test]
@@ -539,7 +532,6 @@ public class Tests
         {
             Assert.That(response.IsSuccessStatusCode, Is.True);
             Assert.That(data?.Data?.Url, Is.EqualTo(_cloakUrl));
-
         });
     }
 
@@ -548,16 +540,16 @@ public class Tests
     public async Task UpdateUserSkin()
     {
         var user = await Auth("GamerVII", "MegaPassword");
-        
+
         using var fileStream = File.OpenRead("skin.png");
         using var fileContent = new StreamContent(fileStream);
         using var formData = new MultipartFormDataContent();
 
         formData.Add(fileContent, "Texture", Path.GetFileName(fileStream.Name));
         formData.Add(new StringContent("GamerVII"), "Login");
-        
+
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", user.User!.Data!.AccessToken);
-        
+
         // ToDo: Edit
         return;
         var response = await _httpClient.PostAsync("/api/v1/integrations/texture/skins/load", formData);
@@ -595,7 +587,7 @@ public class Tests
     public async Task JoinMinecraftSession()
     {
         var user = await Auth("GamerVII", "MegaPassword");
-        
+
         var httpContent = TestHelper.CreateJsonObject(new JoinRequest
         {
             AccessToken = user.User!.Data!.AccessToken,
@@ -615,10 +607,10 @@ public class Tests
     public async Task HasJoinedMinecraftSession()
     {
         var user = await Auth("GamerVII", "MegaPassword");
-        
+
         var serverId = _serverUuid;
         var userName = user.User!.Data!.Name;
-        
+
         var response =
             await _httpClient.GetAsync(
                 $"/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/hasJoined?username={userName}&serverId={serverId}");
@@ -631,7 +623,7 @@ public class Tests
     public async Task GetMinecraftProfile()
     {
         var user = await Auth("GamerVII", "MegaPassword");
-        
+
         var response =
             await _httpClient.GetAsync(
                 $"/api/v1/integrations/authlib/minecraft/sessionserver/session/minecraft/profile/{user.User!.Data!.Uuid}");
@@ -672,7 +664,7 @@ public class Tests
         var content = await response.Content.ReadAsStringAsync();
 
         var data = JsonConvert.DeserializeObject<ResponseMessage<List<AuthServiceReadDto>>>(content);
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -690,7 +682,7 @@ public class Tests
         var content = await response.Content.ReadAsStringAsync();
 
         var data = JsonConvert.DeserializeObject<ResponseMessage<AuthServiceReadDto>>(content);
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -722,10 +714,7 @@ public class Tests
     {
         var response = await _httpClient.GetAsync($"/api/v1/profiles/versions/{GameLoader.Vanilla}/Vanilla");
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(response.IsSuccessStatusCode, Is.True);
-        });
+        Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
     }
 
     [Test]
@@ -761,7 +750,7 @@ public class Tests
         var content = await profileResponse.Content.ReadAsStringAsync();
 
         var model = JsonConvert.DeserializeObject<ResponseMessage<ProfileReadInfoDto>>(content);
-        
+
         var httpContent = TestHelper.CreateJsonObject(new FileWhiteListDto
         {
             ProfileName = model.Data.ProfileName,
@@ -770,15 +759,16 @@ public class Tests
 
         var response = await _httpClient.PostAsync("/api/v1/file/whiteList", httpContent);
 
-        Assert.Multiple(() => { Assert.That(response.StatusCode, Is.Not.EqualTo(HttpStatusCode.InternalServerError)); });
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.Not.EqualTo(HttpStatusCode.InternalServerError));
+        });
     }
 
     [Test]
     [Order(49)]
     public async Task RemoveFromWhiteList()
     {
-        
-        
         var profile = TestHelper.CreateJsonObject(new ProfileCreateInfoDto
         {
             ProfileName = _profileName,
@@ -799,16 +789,19 @@ public class Tests
         var content = await profileResponse.Content.ReadAsStringAsync();
 
         var model = JsonConvert.DeserializeObject<ResponseMessage<ProfileReadInfoDto>>(content);
-        
+
         var httpContent = TestHelper.CreateJsonObject(new FileWhiteListDto
         {
             ProfileName = model.Data.ProfileName,
             Hash = model.Data.Files.FirstOrDefault()?.Hash
         });
-        
+
         var response = await _httpClient.DeleteAsync("/api/v1/file/whiteList");
-        
-        Assert.Multiple(() => { Assert.That(response.StatusCode, Is.Not.EqualTo(HttpStatusCode.InternalServerError)); });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.Not.EqualTo(HttpStatusCode.InternalServerError));
+        });
     }
 
     [Test]
@@ -843,7 +836,7 @@ public class Tests
     public async Task InstallPlugin()
     {
         return;
-        var httpContent = TestHelper.CreateJsonObject(new 
+        var httpContent = TestHelper.CreateJsonObject(new
         {
             // Fill in with necessary properties
         });
@@ -875,9 +868,8 @@ public class Tests
     [Order(55)]
     public async Task UploadLauncherVersion()
     {
-        
         return;
-        
+
         MultipartFormDataContent httpContent = default;
 
         var response = await _httpClient.PostAsync("/api/v1/launcher/upload/{osType}", httpContent);
