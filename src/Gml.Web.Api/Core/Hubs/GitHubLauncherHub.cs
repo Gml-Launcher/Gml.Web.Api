@@ -45,14 +45,16 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
     {
         try
         {
+            Log("Start compilling...");
+
             if (await gmlManager.LauncherInfo.Settings.SystemProcedures.InstallDotnet())
             {
                 var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
-                
+
                 await gmlManager.Launcher.Build("dev");
-                
+
                 eventObservable.Dispose();
-                
+
                 SendCallerMessage("Лаунчер успешно скомпилирован");
             }
         }
