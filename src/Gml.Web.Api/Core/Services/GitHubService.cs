@@ -32,7 +32,7 @@ public class GitHubService : IGitHubService
             return branches.Select(jt => jt["name"].ToString()).ToList();
         }
 
-        return new List<string> { "main", "dev-new" };
+        return new List<string> { "main", "dev" };
     }
 
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
