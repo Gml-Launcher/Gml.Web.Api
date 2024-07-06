@@ -8,6 +8,7 @@ using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -38,8 +39,15 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     "Не удалось определить устройство, с которого произошла авторизация",
                     HttpStatusCode.BadRequest));
 
+            if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.Password))
+            {
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Не указан пароль при авторизации!",
+                    HttpStatusCode.BadRequest));
+            }
 
-            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is { IsSuccess: true } authResult)
+            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is
+                { IsSuccess: true } authResult)
             {
                 var player = await gmlManager.Users.GetAuthData(
                     authResult.Login ?? authDto.Login,
