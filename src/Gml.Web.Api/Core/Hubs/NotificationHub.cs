@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Gml.Web.Api.Core.Hubs.Controllers;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
@@ -6,36 +7,37 @@ namespace Gml.Web.Api.Core.Hubs;
 
 public class NotificationHub : BaseHub
 {
-    private ConcurrentDictionary<string, ISingleClientProxy> _connections = new();
+    private readonly NotificationController _notificationController;
     private static IDisposable? _event;
-    
-    public NotificationHub(IGmlManager gmlManager)
+
+    public NotificationHub(IGmlManager gmlManager, NotificationController notificationController)
     {
+        _notificationController = notificationController;
         _event ??= gmlManager.Notifications.Notifications.Subscribe(notify =>
         {
-            try
+            foreach (var connection in _notificationController.Connections)
             {
-                foreach (var connection in _connections.Values)
+                try
                 {
                     connection.SendAsync("Notifications", notify);
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         });
     }
 
     public override Task OnConnectedAsync()
     {
-        _connections.TryAdd(Context.ConnectionId, Clients.Caller);
+        _notificationController.Add(Context.ConnectionId, Clients.Caller);
         return base.OnConnectedAsync();
     }
-    
+
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        _connections.TryRemove(Context.ConnectionId, out _);
+        _notificationController.Remove(Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
     }
 }
