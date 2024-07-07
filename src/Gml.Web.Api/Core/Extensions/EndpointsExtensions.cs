@@ -3,10 +3,12 @@ using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Domains.Plugins;
+using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
+using Gml.Web.Api.Dto.Servers;
 using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
 
@@ -619,6 +621,33 @@ public static class EndpointsExtensions
             .WithDescription("Получение списка сборок")
             .WithName("Get launcher builds")
             .WithTags("Launcher");
+
+        #endregion
+
+        #region Launcher
+
+        app.MapGet("/api/v1/servers/{profileName}", ServersHandler.GetServers)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка серверов у профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка серверов у профиля")
+            .WithName("Get profile game servers")
+            .WithTags("MinecraftServers")
+            .Produces<ResponseMessage<List<ServerReadDto>>>()
+            .RequireAuthorization();
+
+        app.MapPost("/api/v1/servers/{profileName}", ServersHandler.CreateServer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Создание сервера у профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Создание сервера у профиля")
+            .WithName("Create server to game profile")
+            .WithTags("MinecraftServers")
+            .RequireAuthorization();
 
         #endregion
 

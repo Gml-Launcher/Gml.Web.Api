@@ -129,6 +129,9 @@
     <Compile Update="Core\Handlers\LauncherUpdateHandler.cs">
       <DependentUpon>ILauncherUpdateHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\ServersHandler.cs">
+      <DependentUpon>IServersHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
