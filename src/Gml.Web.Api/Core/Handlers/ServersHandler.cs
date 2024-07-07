@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using AutoMapper;
 using FluentValidation;
 using Gml.Models.Servers;
@@ -24,6 +25,43 @@ internal abstract class ServersHandler
                 HttpStatusCode.BadRequest));
 
         return Results.Ok(ResponseMessage.Create(mapper.Map<List<ServerReadDto>>(profile.Servers), string.Empty, HttpStatusCode.OK));
+    }
+    
+    public static async Task<IResult> RemoveServer(IGmlManager gmlManager, string profileName, string serverNamesString)
+    {
+        if (string.IsNullOrEmpty(profileName))
+            return Results.BadRequest(ResponseMessage.Create("Передан пустой параметр в качестве наименования профиля",
+                HttpStatusCode.BadRequest));
+        
+        if (string.IsNullOrEmpty(serverNamesString))
+            return Results.BadRequest(ResponseMessage.Create("Передан пустой параметр в качестве наименования сервера",
+                HttpStatusCode.BadRequest));
+
+        var serverNames = serverNamesString.Split(',');
+        
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+        
+        if (profile is null)
+            return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем не существует",
+                HttpStatusCode.BadRequest));
+
+        int amount = 0;
+        foreach (var serverName in serverNames)
+        {
+            var server = profile.Servers.FirstOrDefault(c => c.Name == serverName);
+
+            if (server is null)
+            {
+                continue;
+            }
+        
+            profile.RemoveServer(server);
+        
+            await gmlManager.Profiles.SaveProfiles();
+            amount++;
+        }
+        
+        return Results.Ok(ResponseMessage.Create($"Обработка завершена, всего удалено: {amount}", HttpStatusCode.OK));
     }
     
     public static async Task<IResult> CreateServer(

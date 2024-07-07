@@ -649,6 +649,17 @@ public static class EndpointsExtensions
             .WithTags("MinecraftServers")
             .RequireAuthorization();
 
+        app.MapDelete("/api/v1/servers/{profileName}/{serverNames}", ServersHandler.RemoveServer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление сервера в игровом профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление сервера в игровом профиле")
+            .WithName("Remove server from game profile")
+            .WithTags("MinecraftServers")
+            .RequireAuthorization();
+
         #endregion
 
         return app;
