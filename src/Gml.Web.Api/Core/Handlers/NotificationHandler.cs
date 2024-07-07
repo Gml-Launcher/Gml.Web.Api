@@ -8,7 +8,7 @@ public class NotificationHandler : INotificationsHandler
 {
     public static Task<IResult> GetNotifications(IGmlManager gmlManager)
     {
-        var result = Results.Ok(ResponseMessage.Create(gmlManager.Notifications.History, "Список уведомлений",
+        var result = Results.Ok(ResponseMessage.Create(gmlManager.Notifications.History.TakeLast(50), "Список уведомлений",
             HttpStatusCode.OK));
 
         return Task.FromResult(result);
