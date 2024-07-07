@@ -96,7 +96,10 @@ internal abstract class ServersHandler
             
             await gmlManager.Profiles.SaveProfiles();
 
-            return Results.Created($"/api/v1/servers/{profileName}/{mappedServer.Name}", ResponseMessage.Create("Сервер успешно добавлен", HttpStatusCode.Created));
+            var resultObject = ResponseMessage.Create(mapper.Map<ServerReadDto>(mappedServer), "Сервер успешно добавлен",
+                HttpStatusCode.Created);
+            
+            return Results.Created($"/api/v1/servers/{profileName}/{mappedServer.Name}", resultObject);
         }
         catch (Exception exception)
         {
