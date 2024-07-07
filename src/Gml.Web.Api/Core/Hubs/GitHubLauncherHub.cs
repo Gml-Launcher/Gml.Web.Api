@@ -7,7 +7,7 @@ namespace Gml.Web.Api.Core.Hubs;
 
 public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlManager) : BaseHub
 {
-    private const string _launcherGitHub = "https://github.com/GamerVII-NET/Gml.Launcher";
+    private const string _launcherGitHub = "https://github.com/Gml-Launcher/Gml.Launcher";
 
     public async Task Download(string branchName, string host, string folderName)
     {

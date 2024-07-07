@@ -46,7 +46,7 @@ public class GitHubService : IGitHubService
         var zipPath = $"{projectPath}/{branchName}.zip";
         var extractPath = NormalizePath(projectPath, branchName);
 
-        var url = $"https://github.com/GamerVII-NET/Gml.Launcher/archive/refs/heads/{branchName}.zip";
+        var url = $"https://github.com/Gml-Launcher/Gml.Launcher/archive/refs/heads/{branchName}.zip";
 
         using (var request = new HttpRequestMessage(HttpMethod.Get, url))
         {
