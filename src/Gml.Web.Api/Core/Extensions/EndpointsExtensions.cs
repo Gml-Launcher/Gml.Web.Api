@@ -649,7 +649,7 @@ public static class EndpointsExtensions
             .WithTags("MinecraftServers")
             .RequireAuthorization();
 
-        app.MapDelete("/api/v1/servers/{profileName}/{serverNames}", ServersHandler.RemoveServer)
+        app.MapDelete("/api/v1/servers/{profileName}/{serverNamesString}", ServersHandler.RemoveServer)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление сервера в игровом профиле";
