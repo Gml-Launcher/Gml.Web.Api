@@ -11,6 +11,7 @@ using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.Servers;
 using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
+using GmlCore.Interfaces.Notifications;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -70,6 +71,7 @@ public static class EndpointsExtensions
         app.MapHub<GitHubLauncherHub>("/ws/launcher/build").RequireAuthorization();
         app.MapHub<GameServerHub>("/ws/gameServer");
         app.MapHub<LauncherHub>("/ws/launcher");
+        app.MapHub<NotificationHub>("/ws/notifications");
 
         #endregion
 
@@ -624,7 +626,7 @@ public static class EndpointsExtensions
 
         #endregion
 
-        #region Launcher
+        #region Servers
 
         app.MapGet("/api/v1/servers/{profileName}", ServersHandler.GetServers)
             .WithOpenApi(generatedOperation =>
@@ -658,6 +660,24 @@ public static class EndpointsExtensions
             .WithDescription("Удаление сервера в игровом профиле")
             .WithName("Remove server from game profile")
             .WithTags("MinecraftServers")
+            .RequireAuthorization();
+
+        #endregion
+        
+        
+
+        #region Servers
+
+        app.MapGet("/api/v1/notifications", NotificationHandler.GetNotifications)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка уведомлений";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка уведомлений")
+            .WithName("Get profile notifications")
+            .WithTags("Notifications")
+            .Produces<ResponseMessage<List<INotification>>>()
             .RequireAuthorization();
 
         #endregion
