@@ -624,6 +624,16 @@ public static class EndpointsExtensions
             .WithName("Get launcher builds")
             .WithTags("Launcher");
 
+        app.MapGet("/api/v1/launcher/platforms", LauncherUpdateHandler.GetPlatforms)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка платформ для сборки";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка платформ для сборки")
+            .WithName("Get launcher platforms")
+            .WithTags("Launcher");
+
         #endregion
 
         #region Servers
@@ -663,8 +673,8 @@ public static class EndpointsExtensions
             .RequireAuthorization();
 
         #endregion
-        
-        
+
+
 
         #region Servers
 

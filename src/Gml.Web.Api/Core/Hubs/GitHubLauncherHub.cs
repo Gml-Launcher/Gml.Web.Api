@@ -38,20 +38,26 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         ChangeProgress(nameof(GitHubLauncherHub), 30);
 
         ChangeProgress(nameof(GitHubLauncherHub), 100);
-        SendCallerMessage("Проект успешно создан");
+        SendCallerMessage($"Проект \"{branchName}\" успешно создан");
     }
 
-    public async Task Compile(string version)
+    public async Task Compile(string version, string[] osTypes)
     {
         try
         {
+            if (!gmlManager.Launcher.CanCompile(version, out string message))
+            {
+                SendCallerMessage(message);
+                return;
+            }
+
             Log("Start compilling...");
 
             if (await gmlManager.LauncherInfo.Settings.SystemProcedures.InstallDotnet())
             {
                 var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
 
-                await gmlManager.Launcher.Build(version);
+                await gmlManager.Launcher.Build(version, osTypes);
 
                 eventObservable.Dispose();
 
