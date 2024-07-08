@@ -22,7 +22,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher");
 
         ChangeProgress(nameof(GitHubLauncherHub), 5);
-        var allowedVersions = await gitHubService.GetRepositoryBranches("GamerVII-NET", "Gml.Launcher");
+        var allowedVersions = await gitHubService.GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
 
         if (allowedVersions.All(c => c != branchName))
         {
@@ -41,7 +41,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         SendCallerMessage("Проект успешно создан");
     }
 
-    public async Task Compile(string branchName)
+    public async Task Compile(string version)
     {
         try
         {
@@ -51,7 +51,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             {
                 var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
 
-                await gmlManager.Launcher.Build("dev");
+                await gmlManager.Launcher.Build(version);
 
                 eventObservable.Dispose();
 

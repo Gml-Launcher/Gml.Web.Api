@@ -15,7 +15,7 @@ public class GitHubIntegrationHandler : IGitHubIntegrationHandler
 
     public static async Task<IResult> GetVersions(IGitHubService gitHubService)
     {
-        var versions = await gitHubService.GetRepositoryBranches("GamerVII-NET", "Gml.Launcher");
+        var versions = await gitHubService.GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
 
         var versionsDtos = versions.Select(c => new LauncherVersionReadDto
         {
