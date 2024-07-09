@@ -4,5 +4,5 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public interface ILauncherUpdateHandler
 {
-    static abstract Task<IResult> UploadLauncherVersion(string osType, HttpContext context, IGmlManager gmlManager);
+    static abstract Task<IResult> UploadLauncherVersion(HttpContext context, IGmlManager gmlManager);
 }
