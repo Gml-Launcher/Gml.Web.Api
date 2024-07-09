@@ -612,7 +612,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение актуальной версии лаунчера")
             .WithName("Get actual launcher version")
-            .WithTags("Launcher");
+            .WithTags("Launcher")
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/launcher/builds", LauncherUpdateHandler.GetBuilds)
             .WithOpenApi(generatedOperation =>
@@ -622,7 +623,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение списка сборок")
             .WithName("Get launcher builds")
-            .WithTags("Launcher");
+            .WithTags("Launcher")
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/launcher/platforms", LauncherUpdateHandler.GetPlatforms)
             .WithOpenApi(generatedOperation =>
@@ -632,7 +634,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение списка платформ для сборки")
             .WithName("Get launcher platforms")
-            .WithTags("Launcher");
+            .WithTags("Launcher")
+            .RequireAuthorization();
 
         #endregion
 
