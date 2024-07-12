@@ -58,10 +58,10 @@ public class LauncherUpdateHandler : ILauncherUpdateHandler
 
             return Results.Ok(ResponseMessage.Create("Версия лаунчера успешно обновлена!", HttpStatusCode.OK));
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            Console.WriteLine(e);
-            return Results.BadRequest(ResponseMessage.Create($"Не удалось обновить файл лаунчера: {e.Message}", HttpStatusCode.InternalServerError));
+            await gmlManager.Notifications.SendMessage("Ошибка при публикации новой версии лаунчера", exception);
+            return Results.BadRequest(ResponseMessage.Create($"Не удалось обновить файл лаунчера: {exception.Message}", HttpStatusCode.InternalServerError));
         }
     }
 }

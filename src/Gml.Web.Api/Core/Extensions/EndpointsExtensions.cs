@@ -677,8 +677,6 @@ public static class EndpointsExtensions
 
         #endregion
 
-
-
         #region Servers
 
         app.MapGet("/api/v1/notifications", NotificationHandler.GetNotifications)
