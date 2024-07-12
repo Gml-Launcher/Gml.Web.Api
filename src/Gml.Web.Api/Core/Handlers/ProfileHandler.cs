@@ -104,12 +104,14 @@ public class ProfileHandler : IProfileHandler
             if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader))
                 return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
                     HttpStatusCode.BadRequest));
-            
+
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
 
             var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader,
                 createDto.IconBase64, createDto.Description);
+
+            await gmlManager.Notifications.SendMessage($"""Профиль "{createDto.Name}" успешно создан""", NotificationType.Info);
 
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
                 ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
@@ -182,8 +184,11 @@ public class ProfileHandler : IProfileHandler
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
-        return Results.Ok(ResponseMessage.Create(newProfile, "Профиль успешно обновлен",
-            HttpStatusCode.OK));
+        var message = $"""Профиль "{updateDto.Name}" успешно обновлен""";
+
+        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
+
+        return Results.Ok(ResponseMessage.Create(newProfile, message, HttpStatusCode.OK));
     }
 
 
@@ -308,6 +313,8 @@ public class ProfileHandler : IProfileHandler
             message += ". Было пропущено удаление:";
             message += string.Join(",", notRemovedProfiles);
         }
+
+        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
 
         return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }
