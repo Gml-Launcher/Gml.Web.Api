@@ -11,7 +11,7 @@ public class NotificationHandler : INotificationsHandler
 {
     public static Task<IResult> GetNotifications(IGmlManager gmlManager)
     {
-        FrozenSet<INotification> history = gmlManager.Notifications.History.TakeLast(50).ToFrozenSet();
+        FrozenSet<INotification> history = gmlManager.Notifications.History.ToFrozenSet();
 
         var result = Results.Ok(ResponseMessage.Create(new NotificationReadDto
             {
