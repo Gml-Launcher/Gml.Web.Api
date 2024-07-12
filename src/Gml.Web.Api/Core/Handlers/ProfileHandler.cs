@@ -312,6 +312,9 @@ public class ProfileHandler : IProfileHandler
         {
             message += ". Было пропущено удаление:";
             message += string.Join(",", notRemovedProfiles);
+        }else
+        {
+            message += $". Профили {profileNames} удалены:";
         }
 
         await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
