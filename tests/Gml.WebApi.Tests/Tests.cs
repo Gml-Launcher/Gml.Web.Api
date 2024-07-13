@@ -366,7 +366,7 @@ public class Tests
     {
         var httpContent = TestHelper.CreateJsonObject(new LauncherCreateDto
         {
-            GitHubVersions = "master",
+            GitHubVersions = "v0.1.0-beta1",
             Host = "https://localhost:5000",
             Folder = "GmlLauncher"
         });
@@ -385,7 +385,7 @@ public class Tests
     [Order(17)]
     public async Task DownloadLauncherVersions()
     {
-        var response = await _httpClient.GetAsync("/api/v1/integrations/github/launcher/download/master");
+        var response = await _httpClient.GetAsync("/api/v1/integrations/github/launcher/download/v0.1.0-beta1");
         var content = await response.Content.ReadAsStringAsync();
 
         Assert.Multiple(() =>
