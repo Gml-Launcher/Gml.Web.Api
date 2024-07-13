@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.IO.Compression;
 using GmlCore.Interfaces;
 using Newtonsoft.Json.Linq;
@@ -8,6 +9,8 @@ public class GitHubService : IGitHubService
 {
     private readonly IGmlManager _gmlManager;
     private readonly HttpClient _httpClient;
+    private FrozenSet<string> _versions;
+    private FrozenSet<string> _branches;
 
     public GitHubService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager)
     {
@@ -15,7 +18,7 @@ public class GitHubService : IGitHubService
         _httpClient = httpClientFactory.CreateClient();
     }
 
-    public async Task<List<string>> GetRepositoryBranches(string user, string repository)
+    public async Task<IEnumerable<string>> GetRepositoryBranches(string user, string repository)
     {
         var url = $"https://api.github.com/repos/{user}/{repository}/branches";
 
@@ -29,15 +32,34 @@ public class GitHubService : IGitHubService
 
             var branches = JArray.Parse(responseString);
 
-            return branches.Select(jt => jt["name"].ToString()).ToList();
+            _branches = branches.Select(jt => jt["name"].ToString()).ToFrozenSet();
         }
 
-        return new List<string> { "main", "dev-new" };
+        return _branches;
+    }
+
+    public async Task<IEnumerable<string>> GetRepositoryTags(string user, string repository)
+    {
+        var url = "https://api.github.com/repos/Gml-Launcher/Gml.Launcher/tags";
+
+        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("request");
+
+        var response = await _httpClient.GetAsync(url);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            var branches = JArray.Parse(responseString);
+
+            _versions = branches.Select(jt => jt["name"].ToString()).ToFrozenSet();
+        }
+
+        return _versions;
     }
 
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
     {
-        var httpClient = new HttpClient();
 
         var directory = new DirectoryInfo(projectPath);
 
@@ -46,15 +68,15 @@ public class GitHubService : IGitHubService
         var zipPath = $"{projectPath}/{branchName}.zip";
         var extractPath = NormalizePath(projectPath, branchName);
 
-        var url = $"https://github.com/GamerVII-NET/Gml.Launcher/archive/refs/heads/{branchName}.zip";
+        var url = $"https://github.com/Gml-Launcher/Gml.Launcher/archive/refs/tags/{branchName}.zip";
 
-        using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+        using (var client = new HttpClient())
         {
-            using (
-                Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                stream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+            var stream = await client.GetStreamAsync(url);
+
+            await using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                await contentStream.CopyToAsync(stream);
+                await stream.CopyToAsync(fileStream);
             }
         }
 
@@ -70,7 +92,6 @@ public class GitHubService : IGitHubService
 
         return new DirectoryInfo(extractPath).GetDirectories().First().FullName;
     }
-
 
     private string NormalizePath(string directory, string fileDirectory)
     {

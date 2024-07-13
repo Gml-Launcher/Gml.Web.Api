@@ -138,6 +138,7 @@ public static class ApplicationExtensions
             .AddSingleton<HubEvents>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddSingleton<PlayersController>()
+            .AddSingleton<NotificationController>()
             .AddScoped<ISystemService, SystemService>()
             .AddScoped<ISkinServiceManager, SkinServiceManager>()
             .AddSingleton<IAuthService, AuthService>()

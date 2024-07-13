@@ -10,8 +10,6 @@ public class TextureServiceDtoValidator : AbstractValidator<UrlServiceDto>
         RuleFor(x => x.Url)
             .NotEmpty().WithMessage("URL обязателен.")
             .Must(ValidateUrl).WithMessage("Невалидный URL.");
-        // .Must(ContainUserName).WithMessage("В адресной строке отсутствует обязательный атрибут {userName}, который необходим для замены текстуры пользователей.");
-        // ToDo: Create valiator for Sentry and Texture link
     }
 
     private bool ValidateUrl(string url)

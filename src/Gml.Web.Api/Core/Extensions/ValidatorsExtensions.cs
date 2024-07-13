@@ -1,5 +1,6 @@
 using FluentValidation;
 using Gml.Web.Api.Core.Validation;
+using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Launcher;
@@ -36,6 +37,9 @@ public static class ValidatorsExtensions
 
             // Launcher validator
             .AddScoped<IValidator<LauncherCreateDto>, LauncherCreateDtoValidator>()
+
+            // Servers validator
+            .AddScoped<IValidator<CreateServerDto>, CreateServerDtoValidator>()
 
             // Texture validator
             .AddScoped<IValidator<UrlServiceDto>, TextureServiceDtoValidator>();

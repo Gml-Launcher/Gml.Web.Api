@@ -6,7 +6,7 @@ public static class HttpClientsExtensions
 {
     public static IServiceCollection AddNamedHttpClients(this IServiceCollection services)
     {
-        string? skinsServiceUrl = Environment.GetEnvironmentVariable("SkinServiceUrl"); //ToDo: To Env
+        string? skinsServiceUrl = Environment.GetEnvironmentVariable("SkinServiceUrl");
 
         var dockerEnv = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
 

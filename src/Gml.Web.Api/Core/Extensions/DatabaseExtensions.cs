@@ -21,7 +21,8 @@ public static class DatabaseExtensions
 
         app.UseCors(settings.PolicyName);
 
-        if (context.Database.GetPendingMigrations().Any()) context.Database.Migrate();
+        if (context.Database.GetPendingMigrations().Any())
+            context.Database.Migrate();
 
         EnsureCreateRecords(context, app.Services);
 
