@@ -3,12 +3,15 @@ using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Domains.Plugins;
+using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
+using Gml.Web.Api.Dto.Servers;
 using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
+using GmlCore.Interfaces.Notifications;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -68,6 +71,7 @@ public static class EndpointsExtensions
         app.MapHub<GitHubLauncherHub>("/ws/launcher/build").RequireAuthorization();
         app.MapHub<GameServerHub>("/ws/gameServer");
         app.MapHub<LauncherHub>("/ws/launcher");
+        app.MapHub<NotificationHub>("/ws/notifications");
 
         #endregion
 
@@ -608,7 +612,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение актуальной версии лаунчера")
             .WithName("Get actual launcher version")
-            .WithTags("Launcher");
+            .WithTags("Launcher")
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/launcher/builds", LauncherUpdateHandler.GetBuilds)
             .WithOpenApi(generatedOperation =>
@@ -618,7 +623,73 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение списка сборок")
             .WithName("Get launcher builds")
-            .WithTags("Launcher");
+            .WithTags("Launcher")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/launcher/platforms", LauncherUpdateHandler.GetPlatforms)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка платформ для сборки";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка платформ для сборки")
+            .WithName("Get launcher platforms")
+            .WithTags("Launcher")
+            .RequireAuthorization();
+
+        #endregion
+
+        #region Servers
+
+        app.MapGet("/api/v1/servers/{profileName}", ServersHandler.GetServers)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка серверов у профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка серверов у профиля")
+            .WithName("Get profile game servers")
+            .WithTags("MinecraftServers")
+            .Produces<ResponseMessage<List<ServerReadDto>>>()
+            .RequireAuthorization();
+
+        app.MapPost("/api/v1/servers/{profileName}", ServersHandler.CreateServer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Создание сервера у профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Создание сервера у профиля")
+            .WithName("Create server to game profile")
+            .WithTags("MinecraftServers")
+            .RequireAuthorization();
+
+        app.MapDelete("/api/v1/servers/{profileName}/{serverNamesString}", ServersHandler.RemoveServer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление сервера в игровом профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление сервера в игровом профиле")
+            .WithName("Remove server from game profile")
+            .WithTags("MinecraftServers")
+            .RequireAuthorization();
+
+        #endregion
+
+        #region Servers
+
+        app.MapGet("/api/v1/notifications", NotificationHandler.GetNotifications)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка уведомлений";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка уведомлений")
+            .WithName("Get profile notifications")
+            .WithTags("Notifications")
+            .Produces<ResponseMessage<List<INotification>>>()
+            .RequireAuthorization();
 
         #endregion
 

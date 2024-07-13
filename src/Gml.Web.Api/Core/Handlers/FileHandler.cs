@@ -51,10 +51,10 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles)
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), null);
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), new HeaderDictionary());
 
                 if (file == null)
-                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена", HttpStatusCode.NotFound));
+                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
 
                 await manager.Profiles.AddFileToWhiteList(profile, file);
             }
@@ -91,10 +91,10 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles.DistinctBy(c => c.Hash))
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), null);
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), new HeaderDictionary());
 
                 if (file == null)
-                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена",
+                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена. Возможно вы не собрали профиль.",
                         HttpStatusCode.NotFound));
 
                 await manager.Profiles.RemoveFileFromWhiteList(profile, file);
