@@ -30,6 +30,7 @@ public static class ApplicationExtensions
     {
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseRateLimiter();
 
         app.RegisterEndpoints()
             .UseCors(_policyName)
@@ -122,17 +123,12 @@ public static class ApplicationExtensions
         builder.Services
             .AddHttpClient()
             .AddNamedHttpClients()
+            .AddMemoryCache()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .AddSingleton<IGmlManager>(_ =>
-            {
-                var manager = new GmlManager(new GmlSettings(settings.ProjectName, settings.SecurityKey, settings.ProjectPath));
-
-                manager.RestoreSettings<LauncherVersion>();
-
-                return manager;
-            })
+            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath)
+            .ConfigureRateLimit()
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<HubEvents>()
