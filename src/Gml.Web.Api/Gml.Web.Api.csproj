@@ -135,6 +135,9 @@
     <Compile Update="Core\Handlers\NotificationHandler.cs">
       <DependentUpon>INotificationsHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Integrations\Auth\NamelessMCAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
