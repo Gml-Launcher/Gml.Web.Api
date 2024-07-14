@@ -612,8 +612,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение актуальной версии лаунчера")
             .WithName("Get actual launcher version")
-            .WithTags("Launcher")
-            .RequireAuthorization();
+            .WithTags("Launcher");
 
         app.MapGet("/api/v1/launcher/builds", LauncherUpdateHandler.GetBuilds)
             .WithOpenApi(generatedOperation =>
