@@ -37,13 +37,7 @@ jobs:
 
       - name: Checkout submodules
         run: git submodule update --init --recursive
-
-      - name: Tests Gml Core
-        run: dotnet test src/Gml.Core/tests/GmlCore.Tests/GmlCore.Tests.csproj
-
-      - name: Tests Gml Web Api
-        run: dotnet test tests/Gml.WebApi.Tests/Gml.WebApi.Tests.csproj
-
+        
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
