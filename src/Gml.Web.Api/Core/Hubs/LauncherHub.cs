@@ -13,6 +13,7 @@ public class LauncherHub : BaseHub
     private readonly IGmlManager _gmlManager;
     private readonly HubEvents _hubEvents;
     private readonly PlayersController _playerController;
+    private static IDisposable? _profilesChangedEvent;
 
     public LauncherHub(
         IGmlManager gmlManager,
@@ -22,6 +23,14 @@ public class LauncherHub : BaseHub
         _gmlManager = gmlManager;
         _hubEvents = hubEvents;
         _playerController = playerController;
+
+        _profilesChangedEvent ??= gmlManager.Profiles.ProfilesChanged.Subscribe(eventType =>
+        {
+            foreach (var connection in _playerController.LauncherConnections.Values.Select(c => c.Connection).OfType<ISingleClientProxy>())
+            {
+                connection?.SendAsync("RefreshProfiles");
+            }
+        });
     }
 
     public void ConfirmLauncherHash(string hash)

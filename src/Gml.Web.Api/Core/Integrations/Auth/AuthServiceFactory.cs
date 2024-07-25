@@ -17,7 +17,6 @@ public class AuthServiceFactory(IServiceProvider serviceProvider) : IAuthService
             AuthType.EasyCabinet => serviceProvider.GetRequiredService<EasyCabinetAuthService>(),
             AuthType.UnicoreCMS => serviceProvider.GetRequiredService<UnicoreCMSAuthService>(),
             AuthType.CustomEndpoint => serviceProvider.GetRequiredService<CustomEndpointAuthService>(),
-            AuthType.NamelessMC => serviceProvider.GetRequiredService<CustomEndpointAuthService>(),
             _ => throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null)
         };
     }
