@@ -41,6 +41,9 @@ public static class ValidatorsExtensions
             // Servers validator
             .AddScoped<IValidator<CreateServerDto>, CreateServerDtoValidator>()
 
+            // Discord validator
+            .AddScoped<IValidator<DiscordRpcUpdateDto>, DiscordRpcValidator>()
+
             // Texture validator
             .AddScoped<IValidator<UrlServiceDto>, TextureServiceDtoValidator>();
 
