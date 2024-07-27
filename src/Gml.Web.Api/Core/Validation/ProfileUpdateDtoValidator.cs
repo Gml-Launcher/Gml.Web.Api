@@ -13,7 +13,7 @@ public class ProfileUpdateDtoValidator : AbstractValidator<ProfileUpdateDto>
             .Length(2, 100).WithMessage("Длина имени должна быть от 2 до 100 символов.");
         RuleFor(x => x.Description)
             .NotEmpty().WithMessage("Описание обязательно.")
-            .Length(2, 1000).WithMessage("Длина описания должна быть от 2 до 1000 символов.");
+            .Length(2, 255).WithMessage("Длина описания должна быть от 2 до 255 символов.");
         RuleFor(x => x.OriginalName)
             .NotEmpty().WithMessage("Оригинальное имя обязательно.")
             .Length(2, 100).WithMessage("Длина оригинального имени должна быть от 2 до 100 символов.");

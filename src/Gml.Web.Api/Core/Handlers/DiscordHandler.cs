@@ -1,5 +1,6 @@
 using System.Net;
 using AutoMapper;
+using FluentValidation;
 using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
@@ -21,8 +22,14 @@ public class DiscordHandler : IDiscordHandler
     }
 
     [Authorize]
-    public static async Task<IResult> UpdateInfo(IGmlManager gmlManager, IMapper mapper, DiscordRpcUpdateDto discordRpcUpdateDto)
+    public static async Task<IResult> UpdateInfo(IGmlManager gmlManager, IMapper mapper, IValidator<DiscordRpcUpdateDto> validator, DiscordRpcUpdateDto discordRpcUpdateDto)
     {
+        var result = await validator.ValidateAsync(discordRpcUpdateDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
         await gmlManager.Integrations.UpdateDiscordRpc(mapper.Map<DiscordRpcClient>(discordRpcUpdateDto));
 
         return Results.Ok(ResponseMessage.Create("Сервис DiscordRPC успешно обновлен", HttpStatusCode.OK));
