@@ -4,6 +4,7 @@ using FluentValidation;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -128,9 +129,9 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            foreach (var folderPath in profileFolders.DistinctBy(c => c))
+            foreach (var folderPath in profileFolders.DistinctBy(c => c.Path))
             {
-                await manager.Profiles.AddFolderToWhiteList(profile, folderPath.Path);
+                await manager.Profiles.AddFolderToWhiteList(profile, folderPath);
             }
         }
 
@@ -161,9 +162,9 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            foreach (var folderPath in profileFolders.DistinctBy(c => c))
+            foreach (var folderPath in profileFolders.DistinctBy(c => c.Path))
             {
-                await manager.Profiles.RemoveFolderFromWhiteList(profile, folderPath.Path);
+                await manager.Profiles.RemoveFolderFromWhiteList(profile, folderPath);
             }
         }
 

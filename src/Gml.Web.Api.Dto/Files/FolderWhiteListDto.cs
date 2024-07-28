@@ -1,6 +1,8 @@
-﻿namespace Gml.Web.Api.Dto.Files;
+﻿using GmlCore.Interfaces.System;
 
-public class FolderWhiteListDto
+namespace Gml.Web.Api.Dto.Files;
+
+public class FolderWhiteListDto : IFolderInfo
 {
     public string ProfileName { get; set; }
     public string Path { get; set; }
