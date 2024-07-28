@@ -5,7 +5,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://192.168.31.199:5000",
+      "applicationUrl": "http://192.168.2.50:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",

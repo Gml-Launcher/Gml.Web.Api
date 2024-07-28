@@ -34,6 +34,7 @@ public static class ValidatorsExtensions
 
             // Files validator
             .AddScoped<IValidator<List<FileWhiteListDto>>, FileWhiteListValidator>()
+            .AddScoped<IValidator<List<FolderWhiteListDto>>, FolderWhiteListValidator>()
 
             // Launcher validator
             .AddScoped<IValidator<LauncherCreateDto>, LauncherCreateDtoValidator>()

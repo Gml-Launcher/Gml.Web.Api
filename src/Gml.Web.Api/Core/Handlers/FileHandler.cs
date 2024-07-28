@@ -104,4 +104,32 @@ public class FileHandler : IFileHandler
         return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно удалено из White-Листа",
             HttpStatusCode.OK));
     }
+
+    public static async Task<IResult> AddFolderWhiteList(
+        IGmlManager manager,
+        IValidator<List<FolderWhiteListDto>> validator,
+        [FromBody] List<FolderWhiteListDto> folderDto)
+    {
+        var result = await validator.ValidateAsync(folderDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
+        return Results.Ok(ResponseMessage.Create("", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> RemoveFolderWhiteList(
+        IGmlManager manager,
+        IValidator<List<FolderWhiteListDto>> validator,
+        [FromBody] List<FolderWhiteListDto> folderDto)
+    {
+        var result = await validator.ValidateAsync(folderDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
+        return Results.Ok(ResponseMessage.Create("", HttpStatusCode.OK));
+    }
 }
