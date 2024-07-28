@@ -15,10 +15,7 @@ public class FolderWhiteListValidator : AbstractValidator<List<FolderWhiteListDt
                 .Length(2, 100).WithMessage("Длина имени профиля должна быть от 2 до 100 символов.");
 
             child.RuleFor(x => x.Path)
-                .NotEmpty().WithMessage("Путь обязателен.")
-                .Matches("^[a-zA-Z0-9]*$")
-                .WithMessage("Путь может содержать только английские буквы и цифры.")
-                .Length(2, 100).WithMessage("Длина пути должна быть от 2 до 100 символов.");
+                .NotEmpty().WithMessage("Путь обязателен.");
         });
     }
 }

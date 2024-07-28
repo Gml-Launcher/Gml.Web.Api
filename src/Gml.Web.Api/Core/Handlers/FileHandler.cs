@@ -116,7 +116,26 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        return Results.Ok(ResponseMessage.Create("", HttpStatusCode.OK));
+        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
+
+        var profileNames = folderDto.GroupBy(c => c.ProfileName);
+
+        foreach (var profileFolders in profileNames)
+        {
+            var profile = await manager.Profiles.GetProfile(profileFolders.Key);
+
+            if (profile == null)
+                return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
+                    HttpStatusCode.NotFound));
+
+            foreach (var folderPath in profileFolders.DistinctBy(c => c))
+            {
+                await manager.Profiles.AddFolderToWhiteList(profile, folderPath.Path);
+            }
+        }
+
+        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно добавлено в White-Листа",
+            HttpStatusCode.OK));
     }
 
     public static async Task<IResult> RemoveFolderWhiteList(
@@ -130,6 +149,25 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        return Results.Ok(ResponseMessage.Create("", HttpStatusCode.OK));
+        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
+
+        var profileNames = folderDto.GroupBy(c => c.ProfileName);
+
+        foreach (var profileFolders in profileNames)
+        {
+            var profile = await manager.Profiles.GetProfile(profileFolders.Key);
+
+            if (profile == null)
+                return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
+                    HttpStatusCode.NotFound));
+
+            foreach (var folderPath in profileFolders.DistinctBy(c => c))
+            {
+                await manager.Profiles.RemoveFolderFromWhiteList(profile, folderPath.Path);
+            }
+        }
+
+        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно удалено из White-Листа",
+            HttpStatusCode.OK));
     }
 }
