@@ -22,4 +22,14 @@ public class NotificationHandler : INotificationsHandler
 
         return Task.FromResult(result);
     }
+
+    public static Task<IResult> ClearNotification(IGmlManager gmlManager)
+    {
+        gmlManager.Notifications.Clear();
+
+        var result = Results.Ok(ResponseMessage.Create("Уведомления успешно очищены",
+            HttpStatusCode.OK));
+
+        return Task.FromResult(result);
+    }
 }

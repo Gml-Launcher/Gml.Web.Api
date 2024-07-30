@@ -714,6 +714,18 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<List<INotification>>>()
             .RequireAuthorization();
 
+        app.MapDelete("/api/v1/notifications", NotificationHandler.ClearNotification)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление всех уведомлений";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление всех уведомлений")
+            .WithName("Delete all notifications")
+            .WithTags("Notifications")
+            .Produces<ResponseMessage>()
+            .RequireAuthorization();
+
         #endregion
 
         return app;
