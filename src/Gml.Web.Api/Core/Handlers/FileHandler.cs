@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Net;
 using System.Net.Http.Headers;
 using FluentValidation;
@@ -29,8 +30,8 @@ public class FileHandler : IFileHandler
     [Authorize]
     public static async Task<IResult> AddFileWhiteList(
         IGmlManager manager,
-        IValidator<List<FileWhiteListDto>> validator,
-        [FromBody] List<FileWhiteListDto> fileDto)
+        IValidator<FrozenSet<FileWhiteListDto>> validator,
+        [FromBody] FrozenSet<FileWhiteListDto> fileDto)
     {
         var result = await validator.ValidateAsync(fileDto);
 
@@ -38,7 +39,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
+        fileDto = fileDto.DistinctBy(c => c.Hash).ToFrozenSet();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -69,8 +70,8 @@ public class FileHandler : IFileHandler
     [Authorize]
     public static async Task<IResult> RemoveFileWhiteList(
         IGmlManager manager,
-        IValidator<List<FileWhiteListDto>> validator,
-        [FromBody] List<FileWhiteListDto> fileDto)
+        IValidator<FrozenSet<FileWhiteListDto>> validator,
+        [FromBody] FrozenSet<FileWhiteListDto> fileDto)
     {
         var result = await validator.ValidateAsync(fileDto);
 
@@ -78,7 +79,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
+        fileDto = fileDto.DistinctBy(c => c.Hash).ToFrozenSet();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -108,8 +109,8 @@ public class FileHandler : IFileHandler
 
     public static async Task<IResult> AddFolderWhiteList(
         IGmlManager manager,
-        IValidator<List<FolderWhiteListDto>> validator,
-        [FromBody] List<FolderWhiteListDto> folderDto)
+        IValidator<FrozenSet<FolderWhiteListDto>> validator,
+        [FromBody] FrozenSet<FolderWhiteListDto> folderDto)
     {
         var result = await validator.ValidateAsync(folderDto);
 
@@ -117,7 +118,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
+        folderDto = folderDto.DistinctBy(x => x.Path).ToFrozenSet();
 
         var profileNames = folderDto.GroupBy(c => c.ProfileName);
 
@@ -129,20 +130,17 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            foreach (var folderPath in profileFolders.DistinctBy(c => c.Path))
-            {
-                await manager.Profiles.AddFolderToWhiteList(profile, folderPath);
-            }
+            await manager.Profiles.AddFolderToWhiteList(profile, profileFolders.DistinctBy(c => c.Path));
         }
 
-        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно добавлено в White-Листа",
+        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно добавлено в White-Лист",
             HttpStatusCode.OK));
     }
 
     public static async Task<IResult> RemoveFolderWhiteList(
         IGmlManager manager,
-        IValidator<List<FolderWhiteListDto>> validator,
-        [FromBody] List<FolderWhiteListDto> folderDto)
+        IValidator<FrozenSet<FolderWhiteListDto>> validator,
+        [FromBody] FrozenSet<FolderWhiteListDto> folderDto)
     {
         var result = await validator.ValidateAsync(folderDto);
 
@@ -150,7 +148,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
+        folderDto = folderDto.DistinctBy(x => x.Path).ToFrozenSet();
 
         var profileNames = folderDto.GroupBy(c => c.ProfileName);
 
@@ -162,13 +160,10 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            foreach (var folderPath in profileFolders.DistinctBy(c => c.Path))
-            {
-                await manager.Profiles.RemoveFolderFromWhiteList(profile, folderPath);
-            }
+            await manager.Profiles.RemoveFolderFromWhiteList(profile, profileFolders.DistinctBy(c => c.Path));
         }
 
-        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно удалено из White-Листа",
+        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно удалено из White-Лист",
             HttpStatusCode.OK));
     }
 }
