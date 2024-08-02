@@ -30,7 +30,7 @@ public static class ApplicationExtensions
     {
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseRateLimiter();
+        // app.UseRateLimiter();
 
         app.RegisterEndpoints()
             .UseCors(_policyName)
