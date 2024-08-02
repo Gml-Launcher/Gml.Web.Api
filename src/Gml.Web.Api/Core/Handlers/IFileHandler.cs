@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using FluentValidation;
 using Gml.Web.Api.Dto.Files;
 using GmlCore.Interfaces;
@@ -13,11 +14,21 @@ public interface IFileHandler
 
     static abstract Task<IResult> AddFileWhiteList(
         IGmlManager manager,
-        IValidator<List<FileWhiteListDto>> validator,
-        List<FileWhiteListDto> fileDto);
+        IValidator<FrozenSet<FileWhiteListDto>> validator,
+        FrozenSet<FileWhiteListDto> fileDto);
 
     static abstract Task<IResult> RemoveFileWhiteList(
         IGmlManager manager,
-        IValidator<List<FileWhiteListDto>> validator,
-        List<FileWhiteListDto> fileDto);
+        IValidator<FrozenSet<FileWhiteListDto>> validator,
+        FrozenSet<FileWhiteListDto> fileDto);
+
+    static abstract Task<IResult> AddFolderWhiteList(
+        IGmlManager manager,
+        IValidator<FrozenSet<FolderWhiteListDto>> validator,
+        FrozenSet<FolderWhiteListDto> folderDto);
+
+    static abstract Task<IResult> RemoveFolderWhiteList(
+        IGmlManager manager,
+        IValidator<FrozenSet<FolderWhiteListDto>> validator,
+        FrozenSet<FolderWhiteListDto> folderDto);
 }

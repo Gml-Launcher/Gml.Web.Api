@@ -16,6 +16,5 @@ public class ProfileMapper : Profile
         CreateMap<MinecraftServer, ServerReadDto>();
         CreateMap<GameProfile, ProfileReadDto>();
         CreateMap<GameProfileInfo, ProfileReadInfoDto>();
-        CreateMap<LocalFileInfo, ProfileFileReadDto>();
     }
 }

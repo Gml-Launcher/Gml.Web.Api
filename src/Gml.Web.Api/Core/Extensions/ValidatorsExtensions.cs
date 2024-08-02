@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using FluentValidation;
 using Gml.Web.Api.Core.Validation;
 using Gml.Web.Api.Domains.Servers;
@@ -33,7 +34,8 @@ public static class ValidatorsExtensions
             .AddScoped<IValidator<IntegrationUpdateDto>, IntegrationValidator>()
 
             // Files validator
-            .AddScoped<IValidator<List<FileWhiteListDto>>, FileWhiteListValidator>()
+            .AddScoped<IValidator<FrozenSet<FileWhiteListDto>>, FileWhiteListValidator>()
+            .AddScoped<IValidator<FrozenSet<FolderWhiteListDto>>, FolderWhiteListValidator>()
 
             // Launcher validator
             .AddScoped<IValidator<LauncherCreateDto>, LauncherCreateDtoValidator>()
