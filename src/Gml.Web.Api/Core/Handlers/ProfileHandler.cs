@@ -141,7 +141,8 @@ public class ProfileHandler : IProfileHandler
             Name = context.Request.Form["Name"],
             Description = context.Request.Form["Description"],
             OriginalName = context.Request.Form["OriginalName"],
-            JvmArguments = context.Request.Form["JvmArguments"]
+            JvmArguments = context.Request.Form["JvmArguments"],
+            GameArguments = context.Request.Form["GameArguments"]
         };
 
         var result = await validator.ValidateAsync(updateDto);
@@ -179,7 +180,8 @@ public class ProfileHandler : IProfileHandler
             background,
             updateDto.Description,
             updateDto.IsEnabled,
-            updateDto.JvmArguments);
+            updateDto.JvmArguments,
+            updateDto.GameArguments);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
