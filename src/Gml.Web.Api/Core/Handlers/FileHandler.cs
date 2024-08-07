@@ -14,7 +14,7 @@ public class FileHandler : IFileHandler
     {
         var response = context.Response;
 
-        (var file, var fileName, var length) = await gmlManager.Files.GetFileStream(fileHash);
+        var (file, fileName, length) = await gmlManager.Files.GetFileStream(fileHash);
 
         response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
         response.Headers.Append("Content-Length", length.ToString());
