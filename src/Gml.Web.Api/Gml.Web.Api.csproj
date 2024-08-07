@@ -138,6 +138,9 @@
     <Compile Update="Core\Integrations\Auth\NamelessMCAuthService.cs">
       <DependentUpon>IPlatformAuthService.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\SentryHandler.cs">
+      <DependentUpon>ISentryHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

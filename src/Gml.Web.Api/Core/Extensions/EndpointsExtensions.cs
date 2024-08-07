@@ -129,6 +129,16 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
+        app.MapPost("/api/{projectId}/envelope", SentryHandler.GetMessage)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение ошибок Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Получение ошибок Sentry")
+            .WithName("Get sentry message")
+            .WithTags("Integration/Sentry");
+
         #endregion
 
         #region Discord
