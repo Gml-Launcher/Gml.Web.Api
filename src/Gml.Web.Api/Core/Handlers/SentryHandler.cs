@@ -24,11 +24,17 @@ public abstract class SentryHandler : ISentryHandler
 
         string uncompressedContent = await CompressionService.Uncompress(compressedData);
 
-        string[] jsonObjects = uncompressedContent.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
+        string[] jsonObjects = uncompressedContent.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
         var sentryEvent = JsonConvert.DeserializeObject<SentryEventDto>(jsonObjects[0]);
         var sentryLength = JsonConvert.DeserializeObject<SentryEventLengthDto>(jsonObjects[1]);
         var sentryModules = JsonConvert.DeserializeObject<SentryModulesDto>(jsonObjects[2]);
+        var fileContent = string.Empty;
+
+        if (jsonObjects.Length >= 4)
+        {
+            fileContent = string.Join('\n', jsonObjects.Skip(4).Take(jsonObjects.Length - 4).ToArray());
+        }
 
         if (sentryModules is not null && sentryModules.User.IpAddress.Equals("{{auto}}"))
         {
@@ -37,7 +43,7 @@ public abstract class SentryHandler : ISentryHandler
 
         gmlManager.BugTracker.CaptureException(new BugInfo
         {
-            
+
         });
 
         return Results.Empty;
