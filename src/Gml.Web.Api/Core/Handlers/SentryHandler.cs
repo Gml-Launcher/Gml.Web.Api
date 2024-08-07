@@ -24,7 +24,7 @@ public abstract class SentryHandler : ISentryHandler
 
         string uncompressedContent = await CompressionService.Uncompress(compressedData);
 
-        string[] jsonObjects = uncompressedContent.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        string[] jsonObjects = uncompressedContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
 
         var sentryEvent = JsonConvert.DeserializeObject<SentryEventDto>(jsonObjects[0]);
         var sentryLength = JsonConvert.DeserializeObject<SentryEventLengthDto>(jsonObjects[1]);
