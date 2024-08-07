@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using FluentValidation;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Messages;
@@ -15,14 +14,13 @@ public class FileHandler : IFileHandler
     {
         var response = context.Response;
 
-        (Stream file, string fileName, long length) = await gmlManager.Files.GetFileStream(fileHash);
+        var (file, fileName, length) = await gmlManager.Files.GetFileStream(fileHash);
 
         response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
         response.Headers.Append("Content-Length", length.ToString());
         response.ContentType = "application/octet-stream";
 
         await file.CopyToAsync(response.Body);
-
     }
 
     [Authorize]
@@ -51,14 +49,15 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles)
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), new HeaderDictionary());
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
+                    new HeaderDictionary());
 
                 if (file == null)
-                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
+                    return Results.NotFound(ResponseMessage.Create(
+                        "Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
 
                 await manager.Profiles.AddFileToWhiteList(profile, file);
             }
-
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно добавлено в White-Лист",
@@ -91,10 +90,12 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles.DistinctBy(c => c.Hash))
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), new HeaderDictionary());
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
+                    new HeaderDictionary());
 
                 if (file == null)
-                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена. Возможно вы не собрали профиль.",
+                    return Results.NotFound(ResponseMessage.Create(
+                        "Информация по файлу не найдена. Возможно вы не собрали профиль.",
                         HttpStatusCode.NotFound));
 
                 await manager.Profiles.RemoveFileFromWhiteList(profile, file);
@@ -102,6 +103,66 @@ public class FileHandler : IFileHandler
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно удалено из White-Листа",
+            HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> AddFolderWhiteList(
+        IGmlManager manager,
+        IValidator<List<FolderWhiteListDto>> validator,
+        [FromBody] List<FolderWhiteListDto> folderDto)
+    {
+        var result = await validator.ValidateAsync(folderDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
+        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
+
+        var profileNames = folderDto.GroupBy(c => c.ProfileName);
+
+        foreach (var profileFolders in profileNames)
+        {
+            var profile = await manager.Profiles.GetProfile(profileFolders.Key);
+
+            if (profile == null)
+                return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
+                    HttpStatusCode.NotFound));
+
+            await manager.Profiles.AddFolderToWhiteList(profile, profileFolders.DistinctBy(c => c.Path));
+        }
+
+        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно добавлено в White-Лист",
+            HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> RemoveFolderWhiteList(
+        IGmlManager manager,
+        IValidator<List<FolderWhiteListDto>> validator,
+        [FromBody] List<FolderWhiteListDto> folderDto)
+    {
+        var result = await validator.ValidateAsync(folderDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
+        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
+
+        var profileNames = folderDto.GroupBy(c => c.ProfileName);
+
+        foreach (var profileFolders in profileNames)
+        {
+            var profile = await manager.Profiles.GetProfile(profileFolders.Key);
+
+            if (profile == null)
+                return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
+                    HttpStatusCode.NotFound));
+
+            await manager.Profiles.RemoveFolderFromWhiteList(profile, profileFolders.DistinctBy(c => c.Path));
+        }
+
+        return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно удалено из White-Лист",
             HttpStatusCode.OK));
     }
 }

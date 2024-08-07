@@ -528,6 +528,30 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .RequireAuthorization();
 
+        app.MapPost("/api/v1/folder/whiteList", FileHandler.AddFolderWhiteList)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Добавление папок в White-Лист";
+                return generatedOperation;
+            })
+            .WithDescription("Добавление папок в White-Лист")
+            .WithName("Add folder to white list")
+            .WithTags("Files")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization();
+
+        app.MapDelete("/api/v1/folder/whiteList", FileHandler.RemoveFolderWhiteList)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление папок из White-Листа";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление папок из White-Лист")
+            .WithName("Remove folder from white list")
+            .WithTags("Files")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization();
+
         #endregion
 
         #region Settings
@@ -698,6 +722,18 @@ public static class EndpointsExtensions
             .WithName("Get profile notifications")
             .WithTags("Notifications")
             .Produces<ResponseMessage<List<INotification>>>()
+            .RequireAuthorization();
+
+        app.MapDelete("/api/v1/notifications", NotificationHandler.ClearNotification)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление всех уведомлений";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление всех уведомлений")
+            .WithName("Delete all notifications")
+            .WithTags("Notifications")
+            .Produces<ResponseMessage>()
             .RequireAuthorization();
 
         #endregion
