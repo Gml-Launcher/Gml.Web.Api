@@ -1,11 +1,8 @@
-using System.Collections.Frozen;
 using System.Net;
-using System.Net.Http.Headers;
 using FluentValidation;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,21 +14,20 @@ public class FileHandler : IFileHandler
     {
         var response = context.Response;
 
-        (Stream file, string fileName, long length) = await gmlManager.Files.GetFileStream(fileHash);
+        (var file, var fileName, var length) = await gmlManager.Files.GetFileStream(fileHash);
 
         response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
         response.Headers.Append("Content-Length", length.ToString());
         response.ContentType = "application/octet-stream";
 
         await file.CopyToAsync(response.Body);
-
     }
 
     [Authorize]
     public static async Task<IResult> AddFileWhiteList(
         IGmlManager manager,
-        IValidator<FrozenSet<FileWhiteListDto>> validator,
-        [FromBody] FrozenSet<FileWhiteListDto> fileDto)
+        IValidator<List<FileWhiteListDto>> validator,
+        [FromBody] List<FileWhiteListDto> fileDto)
     {
         var result = await validator.ValidateAsync(fileDto);
 
@@ -39,7 +35,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToFrozenSet();
+        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -53,14 +49,15 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles)
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), new HeaderDictionary());
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
+                    new HeaderDictionary());
 
                 if (file == null)
-                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
+                    return Results.NotFound(ResponseMessage.Create(
+                        "Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
 
                 await manager.Profiles.AddFileToWhiteList(profile, file);
             }
-
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{fileDto.Count}\" файлов было успешно добавлено в White-Лист",
@@ -70,8 +67,8 @@ public class FileHandler : IFileHandler
     [Authorize]
     public static async Task<IResult> RemoveFileWhiteList(
         IGmlManager manager,
-        IValidator<FrozenSet<FileWhiteListDto>> validator,
-        [FromBody] FrozenSet<FileWhiteListDto> fileDto)
+        IValidator<List<FileWhiteListDto>> validator,
+        [FromBody] List<FileWhiteListDto> fileDto)
     {
         var result = await validator.ValidateAsync(fileDto);
 
@@ -79,7 +76,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToFrozenSet();
+        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -93,10 +90,12 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles.DistinctBy(c => c.Hash))
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(), new HeaderDictionary());
+                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
+                    new HeaderDictionary());
 
                 if (file == null)
-                    return Results.NotFound(ResponseMessage.Create("Информация по файлу не найдена. Возможно вы не собрали профиль.",
+                    return Results.NotFound(ResponseMessage.Create(
+                        "Информация по файлу не найдена. Возможно вы не собрали профиль.",
                         HttpStatusCode.NotFound));
 
                 await manager.Profiles.RemoveFileFromWhiteList(profile, file);
@@ -109,8 +108,8 @@ public class FileHandler : IFileHandler
 
     public static async Task<IResult> AddFolderWhiteList(
         IGmlManager manager,
-        IValidator<FrozenSet<FolderWhiteListDto>> validator,
-        [FromBody] FrozenSet<FolderWhiteListDto> folderDto)
+        IValidator<List<FolderWhiteListDto>> validator,
+        [FromBody] List<FolderWhiteListDto> folderDto)
     {
         var result = await validator.ValidateAsync(folderDto);
 
@@ -118,7 +117,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        folderDto = folderDto.DistinctBy(x => x.Path).ToFrozenSet();
+        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
 
         var profileNames = folderDto.GroupBy(c => c.ProfileName);
 
@@ -139,8 +138,8 @@ public class FileHandler : IFileHandler
 
     public static async Task<IResult> RemoveFolderWhiteList(
         IGmlManager manager,
-        IValidator<FrozenSet<FolderWhiteListDto>> validator,
-        [FromBody] FrozenSet<FolderWhiteListDto> folderDto)
+        IValidator<List<FolderWhiteListDto>> validator,
+        [FromBody] List<FolderWhiteListDto> folderDto)
     {
         var result = await validator.ValidateAsync(folderDto);
 
@@ -148,7 +147,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        folderDto = folderDto.DistinctBy(x => x.Path).ToFrozenSet();
+        folderDto = folderDto.DistinctBy(x => x.Path).ToList();
 
         var profileNames = folderDto.GroupBy(c => c.ProfileName);
 

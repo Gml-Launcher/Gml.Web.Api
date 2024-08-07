@@ -4,7 +4,7 @@ using Gml.Web.Api.Dto.Files;
 
 namespace Gml.Web.Api.Core.Validation;
 
-public class FileWhiteListValidator : AbstractValidator<FrozenSet<FileWhiteListDto>>
+public class FileWhiteListValidator : AbstractValidator<List<FileWhiteListDto>>
 {
     public FileWhiteListValidator()
     {
