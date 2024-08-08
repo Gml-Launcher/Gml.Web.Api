@@ -56,19 +56,19 @@ public abstract class SentryHandler : ISentryHandler
                 Id = x.Id,
                 Crashed = x.Crashed,
                 Current = x.Current,
-                StackTrace = x.Stacktrace.Frames.Select(x => new StackTrace
+                StackTrace = x.Stacktrace?.Frames.Select(frame => new StackTrace
                 {
-                    Filename = x.Filename,
-                    Function = x.Function,
-                    Lineno = x.Lineno,
-                    Colno = x.Colno,
-                    AbsPath = x.AbsPath,
-                    InApp = x.InApp,
-                    Package = x.Package,
-                    InstructionAddr = x.InstructionAddr,
-                    AddrMode = x.AddrMode,
-                    FunctionId = x.FunctionId
-                }),
+                    Filename = frame.Filename,
+                    Function = frame.Function,
+                    Lineno = frame.Lineno,
+                    Colno = frame.Colno,
+                    AbsPath = frame.AbsPath,
+                    InApp = frame.InApp,
+                    Package = frame.Package,
+                    InstructionAddr = frame.InstructionAddr,
+                    AddrMode = frame.AddrMode,
+                    FunctionId = frame.FunctionId
+                }) ?? [],
 
             }),
             SendAt = sentryEvent.SentAt,
