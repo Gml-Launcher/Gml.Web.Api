@@ -48,6 +48,4 @@ public abstract class SentryHandler : ISentryHandler
 
         return Results.Empty;
     }
-
-
 }

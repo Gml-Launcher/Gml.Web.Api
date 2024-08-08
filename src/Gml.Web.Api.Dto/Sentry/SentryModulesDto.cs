@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Gml.Web.Api.Dto.Sentry;
 
@@ -138,7 +139,7 @@ public class MemoryInfo
 
     [JsonProperty("concurrent")] public bool Concurrent { get; set; }
 
-    [JsonProperty("pause_durations")] public List<int> PauseDurations { get; set; }
+    [JsonProperty("pause_durations")] public List<double> PauseDurations { get; set; }
 }
 
 public class Modules
@@ -245,6 +246,7 @@ public class Package
 
 public class Request
 {
+    [JsonProperty("query_string")] public string QueryString { get; set; }
 }
 
 public class SentryModulesDto
