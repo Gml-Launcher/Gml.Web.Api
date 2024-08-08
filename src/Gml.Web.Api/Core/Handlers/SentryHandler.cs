@@ -1,8 +1,4 @@
-﻿using System.Buffers;
-using System.IO.Compression;
-using System.Text;
-using System.Text.Json;
-using Gml.Core.Launcher;
+﻿using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Sentry;
 using GmlCore.Interfaces;
@@ -32,14 +28,10 @@ public abstract class SentryHandler : ISentryHandler
         var fileContent = string.Empty;
 
         if (jsonObjects.Length >= 4)
-        {
             fileContent = string.Join('\n', jsonObjects.Skip(4).Take(jsonObjects.Length - 4).ToArray());
-        }
 
         if (sentryModules is not null && sentryModules.User.IpAddress.Equals("{{auto}}"))
-        {
             sentryModules.User.IpAddress = context.Request.Headers["X-Forwarded-For"];
-        }
 
         gmlManager.BugTracker.CaptureException(new BugInfo
         {

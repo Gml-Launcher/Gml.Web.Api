@@ -124,7 +124,7 @@ public class Image
 
 public class MemoryInfo
 {
-    [JsonProperty("allocated_bytes")] public int AllocatedBytes { get; set; }
+    [JsonProperty("allocated_bytes")] public long AllocatedBytes { get; set; }
 
     [JsonProperty("high_memory_load_threshold_bytes")]
     public long HighMemoryLoadThresholdBytes { get; set; }
