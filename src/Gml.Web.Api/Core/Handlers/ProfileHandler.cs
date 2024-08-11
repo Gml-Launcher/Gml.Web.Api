@@ -141,7 +141,8 @@ public class ProfileHandler : IProfileHandler
             Name = context.Request.Form["Name"],
             Description = context.Request.Form["Description"],
             OriginalName = context.Request.Form["OriginalName"],
-            JvmArguments = context.Request.Form["JvmArguments"]
+            JvmArguments = context.Request.Form["JvmArguments"],
+            GameArguments = context.Request.Form["GameArguments"]
         };
 
         var result = await validator.ValidateAsync(updateDto);
@@ -179,7 +180,8 @@ public class ProfileHandler : IProfileHandler
             background,
             updateDto.Description,
             updateDto.IsEnabled,
-            updateDto.JvmArguments);
+            updateDto.JvmArguments,
+            updateDto.GameArguments);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
@@ -251,7 +253,7 @@ public class ProfileHandler : IProfileHandler
                 ResponseMessage.Create(result.Errors, "Ошибка валидации", HttpStatusCode.BadRequest));
 
         if (!Enum.TryParse(createInfoDto.OsType, out OsType osType))
-            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид оперционной системы профиля",
+            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид операционной системы профиля",
                 HttpStatusCode.BadRequest));
 
         var osName = SystemHelper.GetStringOsType(osType);

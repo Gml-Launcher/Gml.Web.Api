@@ -4,7 +4,7 @@ using Gml.Web.Api.Dto.Files;
 
 namespace Gml.Web.Api.Core.Validation;
 
-public class FolderWhiteListValidator : AbstractValidator<FrozenSet<FolderWhiteListDto>>
+public class FolderWhiteListValidator : AbstractValidator<List<FolderWhiteListDto>>
 {
     public FolderWhiteListValidator()
     {
