@@ -3,4 +3,4 @@
 	url = https://github.com/Gml-Launcher/Gml.Core.git
 [submodule "src/Gml.Core"]
 	path = src/Gml.Core
-	url = https://github.com/Gml-Launcher/Gml.Core.git
+	url = https://github.com/StormofTheGalaxy/Gml.Core.Arma.git
