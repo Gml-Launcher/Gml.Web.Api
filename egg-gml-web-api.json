@@ -1,0 +1,269 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2024-08-16T10:57:43+03:00",
+    "name": "Gml.Web.Api",
+    "author": "josdekurk@gmail.com",
+    "uuid": "8f85d773-3664-4194-acd1-ae55b0f54fe8",
+    "description": "A generic C# (dotnet) egg that runs your C# project.",
+    "features": [],
+    "docker_images": {
+        "Dotnet_8": "ghcr.io\/parkervcp\/yolks:dotnet_8",
+        "Dotnet_7": "ghcr.io\/parkervcp\/yolks:dotnet_7",
+        "Dotnet_6": "ghcr.io\/parkervcp\/yolks:dotnet_6",
+        "Dotnet_5": "ghcr.io\/parkervcp\/yolks:dotnet_5",
+        "Dotnet_3.1": "ghcr.io\/parkervcp\/yolks:dotnet_3.1",
+        "Dotnet_2.1": "ghcr.io\/parkervcp\/yolks:dotnet_2.1"
+    },
+    "file_denylist": [],
+    "startup": "if [[ -d .git ]] && [[ {{AUTO_UPDATE}} == \"1\" ]]; then git pull && git submodule update --init --recursive; fi; cd {{PROJECT_DIR}}; dotnet restore; dotnet run --project {{PROJECT_FILE}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": [\n        \"Now listening on:\"\n    ]\n}",
+        "logs": "{}",
+        "stop": "^^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n\r\napt update\r\napt install -y git curl jq file unzip\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nif [ \"${USER_UPLOAD}\" == \"true\" ] || [ \"${USER_UPLOAD}\" == \"1\" ]; then\r\n    echo -e \"assuming user knows what they are doing have a good day.\"\r\n    exit 0\r\nfi\r\n\r\n## add git ending if it's not on the address\r\nif [[ ${GIT_ADDRESS} != *.git ]]; then\r\n    GIT_ADDRESS=${GIT_ADDRESS}.git\r\nfi\r\n\r\nif [ -z \"${USERNAME}\" ] && [ -z \"${ACCESS_TOKEN}\" ]; then\r\n    echo -e \"using anon api call\"\r\nelse\r\n    GIT_ADDRESS=\"https:\/\/${USERNAME}:${ACCESS_TOKEN}@$(echo -e ${GIT_ADDRESS} | cut -d\/ -f3-)\"\r\nfi\r\n\r\n## pull git js bot repo\r\nif [ \"$(ls -A \/mnt\/server)\" ]; then\r\n    echo -e \"\/mnt\/server directory is not empty.\"\r\n    if [ -d .git ]; then\r\n        echo -e \".git directory exists\"\r\n        if [ -f .git\/config ]; then\r\n            echo -e \"loading info from git config\"\r\n            ORIGIN=$(git config --get remote.origin.url)\r\n        else\r\n            echo -e \"files found with no git config\"\r\n            echo -e \"closing out without touching things to not break anything\"\r\n            exit 10\r\n        fi\r\n    fi\r\n\r\n    if [ \"${ORIGIN}\" == \"${GIT_ADDRESS}\" ]; then\r\n        echo \"pulling latest from github\"\r\n        git pull\r\n    fi\r\nelse\r\n    echo -e \"\/mnt\/server is empty.\\ncloning files into repo\"\r\n    if [ -z ${BRANCH} ]; then\r\n        echo -e \"cloning default branch\"\r\n        git clone ${GIT_ADDRESS} .\r\n    else\r\n        echo -e \"cloning ${BRANCH}'\"\r\n        git clone --single-branch --branch ${BRANCH} ${GIT_ADDRESS} .\r\n    fi\r\nfi\r\n\r\n## install end\r\necho \"-----------------------------------------\"\r\necho \"Installation completed...\"\r\necho \"-----------------------------------------\"",
+            "container": "ghcr.io\/parkervcp\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "[REQUIRED] Steam Username",
+            "description": "Used for installation and updates. Account does not need to own Arma 3, but MUST BE a VALID Steam account (anonymous login cannot be used). For security reasons it is recommended that you create a new Steam account just for your dedicated servers. *This info is not visible to the server owner.*",
+            "env_variable": "STEAM_USER",
+            "default_value": "your_steam_username",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "[REQUIRED] Steam Password",
+            "description": "Used for installation and updates. Steam Guard MUST be completely TURNED OFF for install to complete successfully. *This info is not visible to the server owner, BUT IS stored in PLAIN TEXT. It is NOT advised to use a personal account; best to use a dummy account.*",
+            "env_variable": "STEAM_PASS",
+            "default_value": "your_steam_password",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "Number of SteamCMD Retry Attempts",
+            "description": "How many times SteamCMD should retry downloading a server or mod after a recoverable error. (ie. A particularly large mod like CUP or RHS download times out)",
+            "env_variable": "STEAMCMD_ATTEMPTS",
+            "default_value": "3",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "Automatic Updates",
+            "description": "Quickly checks for any server or mod updates on startup, and updates if necessary. (1 Enable | 0 Disable)",
+            "env_variable": "UPDATE_SERVER",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "boolean",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "Disable Mod Downloads\/Updates",
+            "description": "If the Steam account does not own the base Arma 3 game, Steam Workshop mod downloads\/updates will not work. If so, this setting allows disabling of this feature to avoid errors. (1 Disable | 0 Enable)",
+            "env_variable": "DISABLE_MOD_UPDATES",
+            "default_value": "0",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "boolean",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "name": "Modlist File (Exported from A3 Launcher)",
+            "description": "Filename for an exported modlist. This file will be parsed for mod installation and loading. Upload your HTML file to the root directory (eg. \/home\/container\/modlist.html). Leave blank to disable loading mods from a modlist.",
+            "env_variable": "MOD_FILE",
+            "default_value": "modlist.html",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "sort": null,
+            "field_type": "text"
+        },
+        {
+            "sort": 1,
+            "name": "Git Repo Address",
+            "description": "GitHub Repo to clone\r\n\r\nI.E. https:\/\/github.com\/parkervcp\/repo_name",
+            "env_variable": "GIT_ADDRESS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "sort": 2,
+            "name": "Install Branch",
+            "description": "The branch to install.",
+            "env_variable": "BRANCH",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "sort": 3,
+            "name": "User Uploaded Files",
+            "description": "Skip all the install stuff if you are letting a user upload files.\r\n\r\n0 = false (default)\r\n1 = true",
+            "env_variable": "USER_UPLOAD",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "sort": 4,
+            "name": "Auto Update",
+            "description": "Pull the latest files on startup when using a GitHub repo.",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "sort": 5,
+            "name": "Git Username",
+            "description": "Username to auth with git.",
+            "env_variable": "USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "sort": 6,
+            "name": "Git Access Token",
+            "description": "Password to use with git.\r\n\r\nIt's best practice to use a Personal Access Token.\r\nhttps:\/\/github.com\/settings\/tokens\r\nhttps:\/\/gitlab.com\/-\/profile\/personal_access_tokens",
+            "env_variable": "ACCESS_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "sort": 7,
+            "name": "project file",
+            "description": "The main project file if multiple are present",
+            "env_variable": "PROJECT_FILE",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "sort": 8,
+            "name": "Project location",
+            "description": "The location of where the .csproj file is located. not the .sln file!",
+            "env_variable": "PROJECT_DIR",
+            "default_value": "\/home\/container",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|",
+            "field_type": "text"
+        },
+        {
+            "sort": 9,
+            "name": "Project Name",
+            "description": "\u0418\u043c\u044f \u043f\u0440\u043e\u0435\u043a\u0442\u0430",
+            "env_variable": "PROJECT_NAME",
+            "default_value": "Gml",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "sort": 10,
+            "name": "Project Description",
+            "description": "\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043f\u0440\u043e\u0435\u043a\u0442\u0430",
+            "env_variable": "PROJECT_DESCRIPTION",
+            "default_value": "MC Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "sort": 11,
+            "name": "PolicyName",
+            "description": "",
+            "env_variable": "PROJECT_POLICYNAME",
+            "default_value": "Policy",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "sort": 12,
+            "name": "Project Path",
+            "description": "",
+            "env_variable": "PROJECT_PATH",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "sort": 13,
+            "name": "SECURITY_KEY",
+            "description": "",
+            "env_variable": "SECURITY_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "sort": 14,
+            "name": "ASPNETCORE_URLS",
+            "description": "",
+            "env_variable": "ASPNETCORE_URLS",
+            "default_value": "http:\/\/+:8082;",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "sort": 15,
+            "name": "ASPNETCORE_ENVIRONMENT",
+            "description": "",
+            "env_variable": "ASPNETCORE_ENVIRONMENT",
+            "default_value": "=Development",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        }
+    ]
+}
