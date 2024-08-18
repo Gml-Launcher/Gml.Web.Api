@@ -56,7 +56,7 @@ public abstract class SentryHandler : ISentryHandler
                 Id = x.Id,
                 Crashed = x.Crashed,
                 Current = x.Current,
-                StackTrace = x.Stacktrace?.Frames.Select(frame => new StackTrace
+                StackTrace = sentryModules.Threads.Values.SelectMany(x => x.Stacktrace.Frames.Select(frame => new StackTrace
                 {
                     Filename = frame.Filename,
                     Function = frame.Function,
@@ -68,8 +68,7 @@ public abstract class SentryHandler : ISentryHandler
                     InstructionAddr = frame.InstructionAddr,
                     AddrMode = frame.AddrMode,
                     FunctionId = frame.FunctionId
-                }) ?? [],
-
+                }) ?? [])
             }),
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress,
