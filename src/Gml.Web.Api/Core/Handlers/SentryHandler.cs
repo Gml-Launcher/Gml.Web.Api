@@ -49,9 +49,9 @@ public abstract class SentryHandler : ISentryHandler
             },
             Exceptions = sentryModules.Exception.Values.Select(x => new ExceptionReport
             {
-                Type = x.Type,
-                ValueData = x.ValueData,
-                Module = x.Module,
+                Type = x.Type ?? "Not Found",
+                ValueData = x.ValueData ?? "Not Found",
+                Module = x.Module ?? "Not Found",
                 ThreadId = x.ThreadId,
                 Id = x.Id,
                 Crashed = x.Crashed,
