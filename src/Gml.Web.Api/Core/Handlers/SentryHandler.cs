@@ -68,7 +68,7 @@ public abstract class SentryHandler : ISentryHandler
                     InstructionAddr = frame.InstructionAddr,
                     AddrMode = frame.AddrMode,
                     FunctionId = frame.FunctionId
-                }) ?? [])
+                 }))
             }),
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress,
