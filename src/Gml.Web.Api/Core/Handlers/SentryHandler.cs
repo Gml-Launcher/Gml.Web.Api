@@ -1,5 +1,10 @@
-﻿using Gml.Core.Launcher;
+﻿using System.Net;
+using System.Text.Json;
+using Gml.Core.Launcher;
+using Gml.Models.Converters;
+using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Core.Services;
+using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Sentry;
 using GmlCore.Interfaces;
 using Newtonsoft.Json;
@@ -69,7 +74,7 @@ public abstract class SentryHandler : ISentryHandler
                     AddrMode = frame.AddrMode,
                     FunctionId = frame.FunctionId
                  }))
-            }),
+            }) ?? [],
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress,
             OsVeriosn = sentryModules.Contexts.Os.RawDescription,
@@ -77,5 +82,12 @@ public abstract class SentryHandler : ISentryHandler
         });
 
         return Results.Empty;
+    }
+
+    public static async Task<IResult> GetBugs(IGmlManager gmlManager)
+    {
+        var bugs = await gmlManager.BugTracker.GetAllBugs();
+
+        return Results.Ok(ResponseMessage.Create(bugs, "Bugs Retrieved", HttpStatusCode.OK));
     }
 }

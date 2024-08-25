@@ -139,6 +139,16 @@ public static class EndpointsExtensions
             .WithName("Get sentry message")
             .WithTags("Integration/Sentry");
 
+        app.MapGet("/api/v1/sentry", SentryHandler.GetBugs)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение всех багов Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Получение всех багов Sentry")
+            .WithName("Get all sentry message")
+            .WithTags("Integration/Sentry");
+
         #endregion
 
         #region Discord
