@@ -41,8 +41,8 @@ public abstract class SentryHandler : ISentryHandler
 
         gmlManager.BugTracker.CaptureException(new BugInfo
         {
-            PcName = sentryModules.ServerName,
-            Username = sentryModules.User.Username,
+            PcName = sentryModules.ServerName ?? "Not found",
+            Username = sentryModules.User.Username ?? "Not found",
             MemoryInfo = new MemoryInfo
             {
                 AllocatedBytes = sentryModules.Contexts.MemoryInfo.AllocatedBytes,
@@ -61,7 +61,7 @@ public abstract class SentryHandler : ISentryHandler
                 Id = x.Id,
                 Crashed = x.Crashed,
                 Current = x.Current,
-                StackTrace = sentryModules.Threads.Values.SelectMany(x => x.Stacktrace.Frames.Select(frame => new StackTrace
+                StackTrace = sentryModules.Exception.Values.SelectMany(x => x.Stacktrace.Frames.Select(frame => new StackTrace
                 {
                     Filename = frame.Filename,
                     Function = frame.Function,
@@ -74,7 +74,7 @@ public abstract class SentryHandler : ISentryHandler
                     AddrMode = frame.AddrMode,
                     FunctionId = frame.FunctionId
                  }))
-            }),
+            }) ?? [],
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress,
             OsVeriosn = sentryModules.Contexts.Os.RawDescription,
