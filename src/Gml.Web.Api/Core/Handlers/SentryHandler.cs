@@ -90,4 +90,14 @@ public abstract class SentryHandler : ISentryHandler
 
         return Results.Ok(ResponseMessage.Create(bugs, "Bugs Retrieved", HttpStatusCode.OK));
     }
+
+    public static async Task<IResult> GetBugId(IGmlManager gmlManager, string id)
+    {
+        var bug = await gmlManager.BugTracker.GetBugId(id);
+
+        if (bug is null)
+            return Results.BadRequest(ResponseMessage.Create("Ошибка не найдена", HttpStatusCode.BadRequest));
+
+        return Results.Ok(ResponseMessage.Create(bug, "Bug info", HttpStatusCode.OK));
+    }
 }

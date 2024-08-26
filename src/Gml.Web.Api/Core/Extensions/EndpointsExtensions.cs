@@ -146,7 +146,17 @@ public static class EndpointsExtensions
                 return generatedOperation;
             })
             .WithDescription("Получение всех багов Sentry")
-            .WithName("Get all sentry message")
+            .WithName("Get all bugs sentry")
+            .WithTags("Integration/Sentry");
+
+        app.MapGet("/api/v1/sentry/bug/{id}", SentryHandler.GetBugId)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение бага по id Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Получение бага по id Sentry")
+            .WithName("Get bug or id sentry")
             .WithTags("Integration/Sentry");
 
         #endregion
