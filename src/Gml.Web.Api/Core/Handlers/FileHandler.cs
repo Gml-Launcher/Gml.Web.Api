@@ -1,8 +1,11 @@
 using System.Net;
+using AutoMapper;
 using FluentValidation;
+using Gml.Models.System;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -108,6 +111,7 @@ public class FileHandler : IFileHandler
 
     public static async Task<IResult> AddFolderWhiteList(
         IGmlManager manager,
+        IMapper mapper,
         IValidator<List<FolderWhiteListDto>> validator,
         [FromBody] List<FolderWhiteListDto> folderDto)
     {
@@ -119,6 +123,8 @@ public class FileHandler : IFileHandler
 
         folderDto = folderDto.DistinctBy(x => x.Path).ToList();
 
+        var mappedFolders = mapper.Map<List<LocalFolderInfo>>(folderDto);
+
         var profileNames = folderDto.GroupBy(c => c.ProfileName);
 
         foreach (var profileFolders in profileNames)
@@ -129,7 +135,7 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            await manager.Profiles.AddFolderToWhiteList(profile, profileFolders.DistinctBy(c => c.Path));
+            await manager.Profiles.AddFolderToWhiteList(profile, mappedFolders);
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно добавлено в White-Лист",
@@ -138,6 +144,7 @@ public class FileHandler : IFileHandler
 
     public static async Task<IResult> RemoveFolderWhiteList(
         IGmlManager manager,
+        IMapper mapper,
         IValidator<List<FolderWhiteListDto>> validator,
         [FromBody] List<FolderWhiteListDto> folderDto)
     {
@@ -149,6 +156,8 @@ public class FileHandler : IFileHandler
 
         folderDto = folderDto.DistinctBy(x => x.Path).ToList();
 
+        var mappedFolders = mapper.Map<List<LocalFolderInfo>>(folderDto);
+
         var profileNames = folderDto.GroupBy(c => c.ProfileName);
 
         foreach (var profileFolders in profileNames)
@@ -159,7 +168,7 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFolders.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            await manager.Profiles.RemoveFolderFromWhiteList(profile, profileFolders.DistinctBy(c => c.Path));
+            await manager.Profiles.RemoveFolderFromWhiteList(profile, mappedFolders);
         }
 
         return Results.Ok(ResponseMessage.Create($"\"{folderDto.Count}\" папок было успешно удалено из White-Лист",
