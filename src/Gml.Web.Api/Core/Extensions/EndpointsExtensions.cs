@@ -152,10 +152,10 @@ public static class EndpointsExtensions
         app.MapGet("/api/v1/sentry/bug/{id}", SentryHandler.GetBugId)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение бага по id Sentry";
+                generatedOperation.Summary = "Получение бага по Guid Sentry";
                 return generatedOperation;
             })
-            .WithDescription("Получение бага по id Sentry")
+            .WithDescription("Получение бага по Guid Sentry")
             .WithName("Get bug or id sentry")
             .WithTags("Integration/Sentry");
 

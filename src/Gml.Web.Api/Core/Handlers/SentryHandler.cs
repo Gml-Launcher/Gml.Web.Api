@@ -67,16 +67,16 @@ public abstract class SentryHandler : ISentryHandler
                     Function = frame.Function,
                     Lineno = frame.Lineno,
                     Colno = frame.Colno,
-                    AbsPath = frame.AbsPath,
+                    AbsPath = frame.AbsPath ?? "Not Found",
                     InApp = frame.InApp,
                     Package = frame.Package,
                     InstructionAddr = frame.InstructionAddr,
                     AddrMode = frame.AddrMode,
                     FunctionId = frame.FunctionId
-                 }))
-            }) ?? [],
+                 })) ?? [],
+            }),
             SendAt = sentryEvent.SentAt,
-            IpAddress = sentryModules.User.IpAddress,
+            IpAddress = sentryModules.User.IpAddress ?? "Not found",
             OsVeriosn = sentryModules.Contexts.Os.RawDescription,
             OsIdentifier = sentryModules.Contexts.Runtime.Type
         });
