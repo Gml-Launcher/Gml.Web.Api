@@ -2,7 +2,7 @@
 
 namespace Gml.Web.Api.Dto.Files;
 
-public class FolderWhiteListDto : IFolderInfo
+public class FolderWhiteListDto
 {
     public string ProfileName { get; set; }
     public string Path { get; set; }
