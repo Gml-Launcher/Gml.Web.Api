@@ -1,4 +1,7 @@
 using System.Collections.Frozen;
+using System.Collections.Frozen;
+using System.Collections.Frozen;
+using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Dto.Files;
 using GmlCore.Interfaces;
@@ -24,11 +27,13 @@ public interface IFileHandler
 
     static abstract Task<IResult> AddFolderWhiteList(
         IGmlManager manager,
+        IMapper mapper,
         IValidator<List<FolderWhiteListDto>> validator,
         List<FolderWhiteListDto> folderDto);
 
     static abstract Task<IResult> RemoveFolderWhiteList(
         IGmlManager manager,
+        IMapper mapper,
         IValidator<List<FolderWhiteListDto>> validator,
         List<FolderWhiteListDto> folderDto);
 }
