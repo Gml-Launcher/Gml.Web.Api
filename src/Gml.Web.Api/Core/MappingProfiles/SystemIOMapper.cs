@@ -9,6 +9,7 @@ public class SystemIOMapper : Profile
     public SystemIOMapper()
     {
         CreateMap<LocalFileInfo, ProfileFileReadDto>();
-        CreateMap<FolderWhiteListDto, FolderReadDto>();
+        CreateMap<LocalFolderInfo, ProfileFolderReadDto>();
+        CreateMap<FolderWhiteListDto, LocalFolderInfo>();
     }
 }

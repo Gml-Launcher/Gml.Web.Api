@@ -1,6 +1,6 @@
 ﻿namespace Gml.Web.Api.Dto.Files;
 
-public class FolderReadDto
+public class ProfileFolderReadDto
 {
     public string Path { get; set; }
 }
