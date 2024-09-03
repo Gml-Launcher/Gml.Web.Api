@@ -116,6 +116,39 @@ public abstract class SentryHandler : ISentryHandler
         return Results.Ok(ResponseMessage.Create(error, "Bugs Retrieved", HttpStatusCode.OK));
     }
 
+    public static async Task<IResult> GetByException(IGmlManager gmlManager, string exception)
+    {
+        var bugs = await gmlManager.BugTracker.GetAllBugs();
+
+        var error = new BaseSentryError
+        {
+            Bugs = bugs
+                .GroupBy(bug => bug.Exceptions!.FirstOrDefault()!.Type == exception ? bug.Exceptions!.FirstOrDefault()!.Type : null)
+                .Select(group => new SentryBugs
+                {
+                    Exception = group.Key,
+                    Count = group.Count(),
+                    CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
+                    Graphics = group
+                        .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, 1))
+                        .Select(monthGroup => new SentryGraphic
+                        {
+                            Date = monthGroup.Key,
+                            Count = monthGroup.Count()
+                        })
+                        .ToList()
+                })
+                .ToList(),
+            CountUsers = bugs.Select(x => x.PcName).Distinct().Count(),
+            Count = bugs.Count()
+        };
+
+        if (error is null)
+            return Results.BadRequest(ResponseMessage.Create("Ошибка не найдена", HttpStatusCode.BadRequest));
+
+        return Results.Ok(ResponseMessage.Create(error, "Bug info", HttpStatusCode.OK));
+    }
+
     public static async Task<IResult> GetBugId(IGmlManager gmlManager, string id)
     {
         var bug = await gmlManager.BugTracker.GetBugId(id);
