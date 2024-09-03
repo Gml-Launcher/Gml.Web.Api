@@ -4,6 +4,7 @@ using Gml.Core.Launcher;
 using Gml.Models.Converters;
 using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Core.Services;
+using Gml.Web.Api.Domains.Sentry;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Sentry;
 using GmlCore.Interfaces;
@@ -61,19 +62,20 @@ public abstract class SentryHandler : ISentryHandler
                 Id = x.Id,
                 Crashed = x.Crashed,
                 Current = x.Current,
-                StackTrace = sentryModules.Exception.Values.SelectMany(x => x.Stacktrace.Frames.Select(frame => new StackTrace
-                {
-                    Filename = frame.Filename,
-                    Function = frame.Function,
-                    Lineno = frame.Lineno,
-                    Colno = frame.Colno,
-                    AbsPath = frame.AbsPath ?? "Not Found",
-                    InApp = frame.InApp,
-                    Package = frame.Package,
-                    InstructionAddr = frame.InstructionAddr,
-                    AddrMode = frame.AddrMode,
-                    FunctionId = frame.FunctionId
-                 })) ?? [],
+                StackTrace = sentryModules.Exception.Values.SelectMany(x => x.Stacktrace.Frames.Select(frame =>
+                    new StackTrace
+                    {
+                        Filename = frame.Filename,
+                        Function = frame.Function,
+                        Lineno = frame.Lineno,
+                        Colno = frame.Colno,
+                        AbsPath = frame.AbsPath ?? "Not Found",
+                        InApp = frame.InApp,
+                        Package = frame.Package,
+                        InstructionAddr = frame.InstructionAddr,
+                        AddrMode = frame.AddrMode,
+                        FunctionId = frame.FunctionId
+                    }) ?? []) ?? [],
             }),
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress ?? "Not found",
@@ -88,7 +90,30 @@ public abstract class SentryHandler : ISentryHandler
     {
         var bugs = await gmlManager.BugTracker.GetAllBugs();
 
-        return Results.Ok(ResponseMessage.Create(bugs, "Bugs Retrieved", HttpStatusCode.OK));
+        var error = new BaseSentryError
+        {
+            Bugs = bugs
+                .GroupBy(bug => bug.Exceptions!.FirstOrDefault()!.Type)
+                .Select(group => new SentryBugs
+                {
+                    Exception = group.Key,
+                    Count = group.Count(),
+                    CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
+                    Graphics = group
+                        .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, 1))
+                        .Select(monthGroup => new SentryGraphic
+                        {
+                            Date = monthGroup.Key,
+                            Count = monthGroup.Count()
+                        })
+                        .ToList()
+                })
+                .ToList(),
+            CountUsers = bugs.Select(x => x.PcName).Distinct().Count(),
+            Count = bugs.Count()
+        };
+
+        return Results.Ok(ResponseMessage.Create(error, "Bugs Retrieved", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetBugId(IGmlManager gmlManager, string id)
