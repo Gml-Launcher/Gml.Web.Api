@@ -1,10 +1,12 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Gml.Core.Launcher;
 using Gml.Models.Converters;
 using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Sentry;
+using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Sentry;
 using GmlCore.Interfaces;
@@ -120,33 +122,31 @@ public abstract class SentryHandler : ISentryHandler
     {
         var bugs = await gmlManager.BugTracker.GetAllBugs();
 
-        var error = new BaseSentryError
-        {
-            Bugs = bugs
-                .GroupBy(bug => bug.Exceptions!.FirstOrDefault()!.Type == exception ? bug.Exceptions!.FirstOrDefault()!.Type : null)
-                .Select(group => new SentryBugs
-                {
-                    Exception = group.Key,
-                    Count = group.Count(),
-                    CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
-                    Graphics = group
-                        .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, 1))
-                        .Select(monthGroup => new SentryGraphic
-                        {
-                            Date = monthGroup.Key,
-                            Count = monthGroup.Count()
-                        })
-                        .ToList()
-                })
-                .ToList(),
-            CountUsers = bugs.Select(x => x.PcName).Distinct().Count(),
-            Count = bugs.Count()
-        };
+        var exceptions = bugs.GroupBy(bug => bug.Exceptions!.FirstOrDefault()!.Type == exception)
+            .Select(group => new SentryExceptionReadDto
+            {
+                Count = group.Count(),
+                CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
+                OperationSystems = group
+                    .Select(x => x.OsVeriosn)
+                    .GroupBy(os => os)
+                    .Select(bug => new SentryOperationSystem
+                    {
+                        Count = bug.Count(), // Количество элементов в группе
+                        OsType = bug.Key
+                    }),
+                Graphic = group
+                    .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, 1))
+                    .Select(monthGroup => new SentryGraphic
+                    {
+                        Date = monthGroup.Key,
+                        Count = monthGroup.Count()
+                    })
+                    .ToList(),
+                BugInfo = group.FirstOrDefault()
+            });
 
-        if (error is null)
-            return Results.BadRequest(ResponseMessage.Create("Ошибка не найдена", HttpStatusCode.BadRequest));
-
-        return Results.Ok(ResponseMessage.Create(error, "Bug info", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(exceptions, "Bug info", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetBugId(IGmlManager gmlManager, string id)

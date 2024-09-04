@@ -149,7 +149,7 @@ public static class EndpointsExtensions
             .WithName("Get all bugs sentry")
             .WithTags("Integration/Sentry");
 
-        app.MapGet("/api/v1/sentry/{exception}", SentryHandler.GetBugId)
+        app.MapGet("/api/v1/sentry/{exception}", SentryHandler.GetByException)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение exception в Sentry";
