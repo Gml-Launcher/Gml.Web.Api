@@ -147,7 +147,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение всех багов Sentry")
             .WithName("Get all bugs sentry")
-            .WithTags("Integration/Sentry");
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/sentry/{exception}", SentryHandler.GetByException)
             .WithOpenApi(generatedOperation =>
@@ -157,7 +158,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение exception в Sentry")
             .WithName("Get exception on sentry")
-            .WithTags("Integration/Sentry");
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
 
         app.MapGet("/api/v1/sentry/bug/{id}", SentryHandler.GetBugId)
             .WithOpenApi(generatedOperation =>
@@ -167,7 +169,8 @@ public static class EndpointsExtensions
             })
             .WithDescription("Получение бага по Guid Sentry")
             .WithName("Get bug or id sentry")
-            .WithTags("Integration/Sentry");
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
 
         #endregion
 
