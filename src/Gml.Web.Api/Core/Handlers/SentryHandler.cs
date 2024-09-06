@@ -115,7 +115,7 @@ public abstract class SentryHandler : ISentryHandler
             Count = bugs.Count()
         };
 
-        return Results.Ok(ResponseMessage.Create(error, "Bugs Retrieved", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(error, "Все ошибки", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetByException(IGmlManager gmlManager, string exception)
@@ -146,7 +146,7 @@ public abstract class SentryHandler : ISentryHandler
                 BugInfo = group.FirstOrDefault()
             });
 
-        return Results.Ok(ResponseMessage.Create(exceptions, "Bug info", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(exceptions, "Информация об ошибке", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetBugId(IGmlManager gmlManager, string id)
