@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Gml.Core.Launcher;
@@ -102,10 +103,10 @@ public abstract class SentryHandler : ISentryHandler
                     Count = group.Count(),
                     CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
                     Graphics = group
-                        .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, 1))
+                        .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, bug.SendAt.Day))
                         .Select(monthGroup => new SentryGraphic
                         {
-                            Date = monthGroup.Key,
+                            Month = monthGroup.Key,
                             Count = monthGroup.Count()
                         })
                         .ToList()
@@ -136,10 +137,10 @@ public abstract class SentryHandler : ISentryHandler
                         OsType = bug.Key
                     }),
                 Graphic = group
-                    .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, 1))
+                    .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, bug.SendAt.Day))
                     .Select(monthGroup => new SentryGraphic
                     {
-                        Date = monthGroup.Key,
+                        Month = monthGroup.Key,
                         Count = monthGroup.Count()
                     })
                     .ToList(),
