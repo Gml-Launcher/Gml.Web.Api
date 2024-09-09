@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using AutoMapper;
 using Gml.Core.Launcher;
 using Gml.Models.Converters;
 using Gml.Web.Api.Core.Repositories;
@@ -11,7 +12,10 @@ using Gml.Web.Api.Domains.Sentry;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Sentry;
+using Gml.Web.Api.Dto.Sentry.Stats;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Sentry;
 using Newtonsoft.Json;
 using MemoryInfo = Gml.Core.Launcher.MemoryInfo;
 
@@ -46,6 +50,7 @@ public abstract class SentryHandler : ISentryHandler
 
         gmlManager.BugTracker.CaptureException(new BugInfo
         {
+            ProjectType = ProjectType.Launcher,
             PcName = sentryModules.ServerName ?? "Not found",
             Username = sentryModules.User.Username ?? "Not found",
             MemoryInfo = new MemoryInfo
@@ -121,6 +126,92 @@ public abstract class SentryHandler : ISentryHandler
         return Results.Ok(ResponseMessage.Create(error, "Все ошибки", HttpStatusCode.OK));
     }
 
+    public static async Task<IResult> GetFilterSentry(IGmlManager gmlManager, SentryFilterDto filter)
+    {
+        var minDate = filter.DateFrom ?? DateTime.MinValue;
+        var maxDate = filter.DateTo?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
+
+        var bugs = await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate);
+
+        return Results.Ok(ResponseMessage.Create(bugs, "Отфильтрованные ошибки", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetLastSentryErrors(IGmlManager gmlManager, IMapper mapper)
+    {
+        var maxDate = DateTime.Now;
+        var minDate = maxDate.AddMonths(-3);
+
+        var bugs = await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate);
+
+        var mappedBugs = bugs
+            .GroupBy(b => b.SendAt.Date)
+            .Select(g => new ProjectLastStatsReadDto
+            {
+                Date = g.Key,
+                Launcher = g.Count(b => b.ProjectType == ProjectType.Launcher),
+                Backend = g.Count(b => b.ProjectType == ProjectType.Backend)
+            })
+            .ToList();
+
+        return Results.Ok(ResponseMessage.Create(mappedBugs, "Отфильтрованные ошибки", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetSummarySentryErrors(IGmlManager gmlManager, IMapper mapper)
+    {
+        var today = DateTime.Today.AddDays(1).AddTicks(-1);
+        var thisMonthStart = new DateTime(today.Year, today.Month, 1);
+        var lastMonthStart = thisMonthStart.AddMonths(-1);
+        var lastMonthEnd = thisMonthStart.AddDays(-1);
+        var yesterday = today.AddDays(-1);
+
+        // Получение всех багов за последние два месяца
+        var allBugs = (await gmlManager.BugTracker.GetFilteredBugs(b => b.Date >= lastMonthStart && b.Date <= today)).ToFrozenSet();
+
+        // Общее количество ошибок
+        int totalBugs = allBugs.Count();
+
+        // Ошибки за этот месяц
+        int bugsThisMonth = allBugs.Count(b => b.SendAt >= thisMonthStart);
+
+        // Ошибки за прошлый месяц
+        int bugsLastMonth = allBugs.Count(b => b.SendAt >= lastMonthStart && b.SendAt <= lastMonthEnd);
+
+        // Расчет процента изменения за месяц
+        double percentageChangeMonth = CalculatePercentageChange(bugsLastMonth, bugsThisMonth);
+
+        // Ошибки за сегодня
+        int bugsToday = allBugs.Count(b => b.SendAt.Date == today.Date);
+
+        // Ошибки за вчера
+        int bugsYesterday = allBugs.Count(b => b.SendAt.Date == yesterday.Date);
+
+        // Расчет процента изменения за день
+        double percentageChangeDay = CalculatePercentageChange(bugsYesterday, bugsToday);
+
+        var result = new BugStatisticsReadDto
+        {
+            TotalBugs = totalBugs,
+            BugsThisMonth = bugsThisMonth,
+            PercentageChangeMonth = percentageChangeMonth,
+            BugsToday = bugsToday,
+            PercentageChangeDay = percentageChangeDay,
+            FixBugs = 0,
+            PercentageChangeDayFixBugs = 0,
+        };
+
+        return Results.Ok(ResponseMessage.Create(result, "Статистика", HttpStatusCode.OK));
+    }
+
+    private static double CalculatePercentageChange(int previousValue, int currentValue)
+    {
+        if (previousValue == 0)
+        {
+            return currentValue == 0 ? 0 : 100;
+        }
+
+        return ((double)(currentValue - previousValue) / previousValue) * 100;
+    }
+
     public static async Task<IResult> GetByException(IGmlManager gmlManager, string exception)
     {
         var bugs = (await gmlManager.BugTracker.GetAllBugs()).ToFrozenSet();
@@ -154,7 +245,7 @@ public abstract class SentryHandler : ISentryHandler
 
     public static async Task<IResult> GetBugId(IGmlManager gmlManager, string id)
     {
-        var bug = await gmlManager.BugTracker.GetBugId(id);
+        var bug = await gmlManager.BugTracker.GetBugId(Guid.Parse(id));
 
         if (bug is null)
             return Results.BadRequest(ResponseMessage.Create("Ошибка не найдена", HttpStatusCode.BadRequest));

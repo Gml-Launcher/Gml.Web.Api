@@ -150,6 +150,39 @@ public static class EndpointsExtensions
             .WithTags("Integration/Sentry")
             .RequireAuthorization();
 
+        app.MapPost("/api/v1/sentry/filter", SentryHandler.GetFilterSentry)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение отфильтрованного списка ошибок";
+                return generatedOperation;
+            })
+            .WithDescription("Получение отфильтрованного списка ошибок")
+            .WithName("Get filtered bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/sentry/stats/last", SentryHandler.GetLastSentryErrors)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка ошибок за последние 3 месяца";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка ошибок за последние 3 месяца")
+            .WithName("Get last bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/sentry/stats/summary", SentryHandler.GetSummarySentryErrors)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получить сводку ошибок";
+                return generatedOperation;
+            })
+            .WithDescription("Получить сводку ошибок")
+            .WithName("Get summary bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
         app.MapGet("/api/v1/sentry/{exception}", SentryHandler.GetByException)
             .WithOpenApi(generatedOperation =>
             {
