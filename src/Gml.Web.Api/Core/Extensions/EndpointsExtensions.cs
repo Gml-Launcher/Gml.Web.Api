@@ -394,6 +394,18 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<PlayerReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapPost("/api/v1/integrations/auth/checkToken", AuthIntegrationHandler.AuthWithToken)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Проверка актуальности токена авторизации";
+                return generatedOperation;
+            })
+            .WithDescription("Проверка актуальности токена авторизации")
+            .WithName("Auth with access token")
+            .WithTags("Integration/Auth")
+            .Produces<ResponseMessage<PlayerReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         app.MapPut("/api/v1/integrations/auth", AuthIntegrationHandler.SetAuthService)
             .WithOpenApi(generatedOperation =>
             {
