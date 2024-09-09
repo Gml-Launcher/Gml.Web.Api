@@ -133,7 +133,9 @@ public abstract class SentryHandler : ISentryHandler
 
         var bugs = await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate);
 
-        return Results.Ok(ResponseMessage.Create(bugs, "Отфильтрованные ошибки", HttpStatusCode.OK));
+        var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
+
+        return Results.Ok(ResponseMessage.Create(byProject, "Отфильтрованные ошибки", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetLastSentryErrors(IGmlManager gmlManager, IMapper mapper)
@@ -147,13 +149,29 @@ public abstract class SentryHandler : ISentryHandler
             .GroupBy(b => b.SendAt.Date)
             .Select(g => new ProjectLastStatsReadDto
             {
-                Date = g.Key,
+                Date = g.Key.Date,
                 Launcher = g.Count(b => b.ProjectType == ProjectType.Launcher),
                 Backend = g.Count(b => b.ProjectType == ProjectType.Backend)
             })
             .ToList();
 
-        return Results.Ok(ResponseMessage.Create(mappedBugs, "Отфильтрованные ошибки", HttpStatusCode.OK));
+        var dateRange = Enumerable.Range(0, (maxDate - minDate).Days + 1)
+            .Select(offset => minDate.AddDays(offset).Date)
+            .ToList();
+
+        var completeStats = dateRange.GroupJoin(
+                mappedBugs,
+                date => date,
+                stats => stats.Date,
+                (date, statsGroup) => new ProjectLastStatsReadDto
+                {
+                    Date = date,
+                    Launcher = statsGroup.Any() ? statsGroup.First().Launcher : 0,
+                    Backend = statsGroup.Any() ? statsGroup.First().Backend : 0
+                })
+            .ToList();
+
+        return Results.Ok(ResponseMessage.Create(completeStats, "Отфильтрованные ошибки", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetSummarySentryErrors(IGmlManager gmlManager, IMapper mapper)
