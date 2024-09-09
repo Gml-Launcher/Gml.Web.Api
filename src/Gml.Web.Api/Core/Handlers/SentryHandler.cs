@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Frozen;
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -18,7 +19,7 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public abstract class SentryHandler : ISentryHandler
 {
-    public static async Task<IResult> GetMessage(HttpContext context, IGmlManager gmlManager, int projectId)
+    public static async Task<IResult> CreateBugInfo(HttpContext context, IGmlManager gmlManager, int projectId)
     {
         byte[] compressedData;
 
@@ -91,12 +92,13 @@ public abstract class SentryHandler : ISentryHandler
 
     public static async Task<IResult> GetBugs(IGmlManager gmlManager)
     {
-        var bugs = await gmlManager.BugTracker.GetAllBugs();
+        var bugs = (await gmlManager.BugTracker.GetAllBugs()).ToFrozenSet();
 
         var error = new BaseSentryError
         {
             Bugs = bugs
-                .GroupBy(bug => bug.Exceptions!.FirstOrDefault()!.Type)
+                .Where(c => c.Exceptions.Any())
+                .GroupBy(bug => bug.Exceptions.First().Type)
                 .Select(group => new SentryBugs
                 {
                     Exception = group.Key,
@@ -113,7 +115,7 @@ public abstract class SentryHandler : ISentryHandler
                 })
                 .ToList(),
             CountUsers = bugs.Select(x => x.PcName).Distinct().Count(),
-            Count = bugs.Count()
+            Count = bugs.Count
         };
 
         return Results.Ok(ResponseMessage.Create(error, "Все ошибки", HttpStatusCode.OK));
@@ -121,9 +123,9 @@ public abstract class SentryHandler : ISentryHandler
 
     public static async Task<IResult> GetByException(IGmlManager gmlManager, string exception)
     {
-        var bugs = await gmlManager.BugTracker.GetAllBugs();
+        var bugs = (await gmlManager.BugTracker.GetAllBugs()).ToFrozenSet();
 
-        var exceptions = bugs.GroupBy(bug => bug.Exceptions!.FirstOrDefault()!.Type == exception)
+        var exceptions = bugs.GroupBy(bug => bug.Exceptions.First().Type == exception)
             .Select(group => new SentryExceptionReadDto
             {
                 Count = group.Count(),
