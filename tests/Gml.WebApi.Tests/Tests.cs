@@ -104,7 +104,6 @@ public class Tests
         {
             Name = _profileName
         });
-        return;
 
         var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
 
