@@ -15,6 +15,7 @@ using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -264,6 +265,15 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{createInfoDto.ProfileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
+
+        if (user is null)
+        {
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+        }
+
+        user.Manager = gmlManager;
+
         var profileInfo = await gmlManager.Profiles.GetProfileInfo(profile.Name, new StartupOptions
         {
             FullScreen = createInfoDto.IsFullScreen,
@@ -275,12 +285,7 @@ public class ProfileHandler : IProfileHandler
             MinimumRamMb = createInfoDto.RamSize,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
-        }, new User
-        {
-            Name = createInfoDto.UserName,
-            Uuid = createInfoDto.UserUuid,
-            AccessToken = createInfoDto.UserAccessToken
-        });
+        },user);
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
