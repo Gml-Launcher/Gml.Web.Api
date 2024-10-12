@@ -95,7 +95,7 @@ public class MinecraftHandler : IMinecraftHandler
                 },
                 Cape = new SkinCape
                 {
-                    Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureCloakGuid}")
+                    Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
                 }
             }
         };
