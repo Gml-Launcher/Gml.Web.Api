@@ -178,7 +178,6 @@ public static class ApplicationExtensions
 
     private static string GetEnvironmentVariable(string name)
     {
-        return Environment.GetEnvironmentVariable(name) ??
-               throw new Exception($"{name} environment variable not found");
+        return Environment.GetEnvironmentVariable(name) ?? string.Empty;
     }
 }

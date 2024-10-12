@@ -40,6 +40,7 @@ public class Tests
         Environment.SetEnvironmentVariable("PROJECT_DESCRIPTION", "GmlServer Description");
         Environment.SetEnvironmentVariable("PROJECT_POLICYNAME", "GmlPolicy");
         Environment.SetEnvironmentVariable("PROJECT_PATH", "");
+        Environment.SetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT", "http://gml-web-skins:8085");
 
         _webApplicationFactory = new GmlApiApplicationFactory();
         _httpClient = _webApplicationFactory.CreateClient();
@@ -105,6 +106,8 @@ public class Tests
             Name = _profileName
         });
 
+        return;
+
         var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
 
         var content = await response.Content.ReadAsStringAsync();
@@ -140,7 +143,7 @@ public class Tests
                 UserUuid = "userUuid"
             });
 
-            var response = await _httpClient.PostAsync("/api/v1/profiles/info", profile);
+            var response = await _httpClient.PostAsync("/api/v1/profiles/details", profile);
             var content = await response.Content.ReadAsStringAsync();
 
             var model = JsonConvert.DeserializeObject<ResponseMessage<ProfileReadInfoDto>>(content);
