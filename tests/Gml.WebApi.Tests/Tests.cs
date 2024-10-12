@@ -145,13 +145,13 @@ public class Tests
 
             var model = JsonConvert.DeserializeObject<ResponseMessage<ProfileReadInfoDto>>(content);
 
-            // Assert.Multiple(() =>
-            // {
-            //     Assert.That(model, Is.Not.Null);
-            //     Assert.IsTrue(response.IsSuccessStatusCode);
-            //     Assert.That(model?.Data?.ProfileName, Is.Not.Empty);
-            //     Assert.That(model?.Data?.ProfileName, Is.EqualTo(_profileName));
-            // });
+            Assert.Multiple(() =>
+            {
+                Assert.That(model, Is.Not.Null);
+                Assert.IsTrue(response.IsSuccessStatusCode);
+                Assert.That(model?.Data?.ProfileName, Is.Not.Empty);
+                Assert.That(model?.Data?.ProfileName, Is.EqualTo(_profileName));
+            });
         }
         catch (Exception e)
         {
