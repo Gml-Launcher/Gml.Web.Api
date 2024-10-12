@@ -59,19 +59,13 @@ public static class ApplicationExtensions
 
     private static ServerSettings GetServerSettings()
     {
-        var projectName = Environment.GetEnvironmentVariable("PROJECT_NAME")
-                          ?? throw new Exception("Project name not found");
+        var projectName = GetEnvironmentVariable("PROJECT_NAME");
+        var projectDescription = GetEnvironmentVariable("PROJECT_DESCRIPTION");
+        var policyName = GetEnvironmentVariable("PROJECT_POLICYNAME");
+        var projectPath = GetEnvironmentVariable("PROJECT_PATH");
+        var securityKey = GetEnvironmentVariable("SECURITY_KEY");
 
-        var projectDescription = Environment.GetEnvironmentVariable("PROJECT_DESCRIPTION");
-
-        var policyName = Environment.GetEnvironmentVariable("PROJECT_POLICYNAME")
-                         ?? throw new Exception("Policy name not found");
-
-        var projectPath = Environment.GetEnvironmentVariable("PROJECT_PATH")
-                          ?? string.Empty;
-
-        var securityKey = Environment.GetEnvironmentVariable("SECURITY_KEY")
-                          ?? string.Empty;
+        var textureEndpoint = GetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT");
 
         return new ServerSettings
         {
@@ -80,7 +74,8 @@ public static class ApplicationExtensions
             PolicyName = policyName,
             ProjectVersion = "1.1.0",
             SecurityKey = securityKey,
-            ProjectPath = projectPath
+            ProjectPath = projectPath,
+            TextureEndpoint = textureEndpoint
         };
     }
 
@@ -127,7 +122,7 @@ public static class ApplicationExtensions
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath)
+            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath, settings.TextureEndpoint)
             .ConfigureRateLimit()
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
@@ -179,5 +174,11 @@ public static class ApplicationExtensions
         });
 
         return builder;
+    }
+
+    private static string GetEnvironmentVariable(string name)
+    {
+        return Environment.GetEnvironmentVariable(name) ??
+               throw new Exception($"{name} environment variable not found");
     }
 }

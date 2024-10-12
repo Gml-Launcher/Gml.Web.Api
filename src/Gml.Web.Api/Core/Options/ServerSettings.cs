@@ -14,4 +14,5 @@ public class ServerSettings
     public string? ProjectDescription { get; set; }
 
     public string? ProjectPath { get; set; }
+    public string? TextureEndpoint { get; set; }
 }
