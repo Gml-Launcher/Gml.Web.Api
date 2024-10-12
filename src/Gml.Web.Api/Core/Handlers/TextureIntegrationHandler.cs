@@ -5,6 +5,7 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Texture;
 using GmlCore.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Primitives;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -143,5 +144,29 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
         return await skinServiceManager.UpdateCloak(user, texture)
             ? Results.Ok(ResponseMessage.Create("Плащ успешно установлен!", HttpStatusCode.OK))
             : Results.BadRequest(ResponseMessage.Create("Не удалось обновить плащ!", HttpStatusCode.BadRequest));
+    }
+
+    public static async Task<IResult> GetUserSkin(IGmlManager gmlManager, string textureGuid)
+    {
+        var user = await gmlManager.Users.GetUserBySkinGuid(textureGuid);
+
+        if (user is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Stream(await gmlManager.Users.GetSkin(user));
+    }
+
+    public static async Task<IResult> GetUserCloak(IGmlManager gmlManager, string textureGuid)
+    {
+        var user = await gmlManager.Users.GetUserByCloakGuid(textureGuid);
+
+        if (user is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Stream(await gmlManager.Users.GetCloak(user));
     }
 }
