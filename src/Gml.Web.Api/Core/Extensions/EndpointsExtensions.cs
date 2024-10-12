@@ -488,6 +488,19 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapPost("/api/v1/profiles/details", ProfileHandler.GetProfileDetails)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение информации об игровом профиле для панели управления";
+                return generatedOperation;
+            })
+            .WithDescription("Получение информации об игровом профиле для панели управления")
+            .WithName("Get profile details")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage<ProfileReadInfoDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
+
         app.MapPost("/api/v1/profiles/compile", ProfileHandler.CompileProfile)
             .WithOpenApi(generatedOperation =>
             {

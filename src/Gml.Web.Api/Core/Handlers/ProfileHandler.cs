@@ -294,6 +294,59 @@ public class ProfileHandler : IProfileHandler
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
     }
 
+    public static async Task<IResult> GetProfileDetails(
+        HttpContext context,
+        IMapper mapper,
+        IGmlManager gmlManager,
+        IValidator<ProfileCreateInfoDto> validator,
+        ProfileCreateInfoDto createInfoDto)
+    {
+        var result = await validator.ValidateAsync(createInfoDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(
+                ResponseMessage.Create(result.Errors, "Ошибка валидации", HttpStatusCode.BadRequest));
+
+        if (!Enum.TryParse(createInfoDto.OsType, out OsType osType))
+            return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид операционной системы профиля",
+                HttpStatusCode.BadRequest));
+
+        var osName = SystemHelper.GetStringOsType(osType);
+
+        var profile = await gmlManager.Profiles.GetProfile(createInfoDto.ProfileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{createInfoDto.ProfileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var user = new AuthUser
+        {
+            AccessToken = string.Empty,
+            Name = "Admin"
+        };
+
+        user.Manager = gmlManager;
+
+        var profileInfo = await gmlManager.Profiles.GetProfileInfo(profile.Name, new StartupOptions
+        {
+            FullScreen = createInfoDto.IsFullScreen,
+            ServerIp = createInfoDto.GameAddress,
+            ServerPort = createInfoDto.GamePort,
+            ScreenHeight = createInfoDto.WindowHeight,
+            ScreenWidth = createInfoDto.WindowWidth,
+            MaximumRamMb = createInfoDto.RamSize,
+            MinimumRamMb = createInfoDto.RamSize,
+            OsName = osName,
+            OsArch = createInfoDto.OsArchitecture
+        },user);
+
+        var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
+
+        profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+
+        return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
+    }
+
     [Authorize]
     public static async Task<IResult> RemoveProfile(
         IGmlManager gmlManager,
