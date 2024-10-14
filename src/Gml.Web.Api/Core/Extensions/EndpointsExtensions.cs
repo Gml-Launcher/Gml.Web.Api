@@ -139,13 +139,13 @@ public static class EndpointsExtensions
             .WithName("Get sentry message")
             .WithTags("Integration/Sentry");
 
-        app.MapGet("/api/v1/sentry", SentryHandler.GetBugs)
+        app.MapPost("/api/v1/sentry", SentryHandler.GetBugs)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение всех багов Sentry";
+                generatedOperation.Summary = "Получение всех ошибок Sentry";
                 return generatedOperation;
             })
-            .WithDescription("Получение всех багов Sentry")
+            .WithDescription("Получение всех ошибок Sentry")
             .WithName("Get all bugs sentry")
             .WithTags("Integration/Sentry")
             .RequireAuthorization();

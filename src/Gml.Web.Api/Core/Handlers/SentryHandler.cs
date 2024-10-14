@@ -95,9 +95,11 @@ public abstract class SentryHandler : ISentryHandler
         return Results.Empty;
     }
 
-    public static async Task<IResult> GetBugs(IGmlManager gmlManager)
+    public static async Task<IResult> GetBugs(IGmlManager gmlManager, SentryFilterDto filter)
     {
-        var bugs = (await gmlManager.BugTracker.GetAllBugs()).ToFrozenSet();
+        var minDate = filter.DateFrom ?? DateTime.MinValue;
+        var maxDate = filter.DateTo?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
+        var bugs = (await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate)).ToFrozenSet();
 
         var error = new BaseSentryError
         {
