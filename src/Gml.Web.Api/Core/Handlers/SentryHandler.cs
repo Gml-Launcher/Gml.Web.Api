@@ -71,7 +71,7 @@ public abstract class SentryHandler : ISentryHandler
                 Id = x.Id,
                 Crashed = x.Crashed,
                 Current = x.Current,
-                StackTrace = sentryModules.Exception.Values.SelectMany(x => x.Stacktrace.Frames.Select(frame =>
+                StackTrace = sentryModules.Exception.Values.SelectMany(x => x.Stacktrace?.Frames.Select(frame =>
                     new StackTrace
                     {
                         Filename = frame.Filename,
@@ -136,6 +136,42 @@ public abstract class SentryHandler : ISentryHandler
         var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
 
         return Results.Ok(ResponseMessage.Create(byProject, "Отфильтрованные ошибки", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetFilterListSentry(IGmlManager gmlManager, SentryFilterDto filter)
+    {
+        var minDate = filter.DateFrom ?? DateTime.MinValue;
+        var maxDate = filter.DateTo?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
+
+        var bugs = await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate);
+
+        // var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
+
+        var exceptions = bugs.GroupBy(bug => bug.Exceptions.First().Type)
+            .Select(group => new SentryExceptionReadDto
+            {
+                Count = group.Count(),
+                CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
+                OperationSystems = group
+                    .Select(x => x.OsVeriosn)
+                    .GroupBy(os => os)
+                    .Select(bug => new SentryOperationSystem
+                    {
+                        Count = bug.Count(), // Количество элементов в группе
+                        OsType = bug.Key
+                    }),
+                Graphic = group
+                    .GroupBy(bug => new DateTime(bug.SendAt.Year, bug.SendAt.Month, bug.SendAt.Day))
+                    .Select(monthGroup => new SentryGraphic
+                    {
+                        Month = monthGroup.Key,
+                        Count = monthGroup.Count()
+                    })
+                    .ToList(),
+                BugInfo = group.FirstOrDefault()
+            });
+
+        return Results.Ok(ResponseMessage.Create(exceptions, "Отфильтрованные ошибки", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetLastSentryErrors(IGmlManager gmlManager, IMapper mapper)

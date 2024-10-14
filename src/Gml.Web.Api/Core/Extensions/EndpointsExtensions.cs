@@ -161,6 +161,17 @@ public static class EndpointsExtensions
             .WithTags("Integration/Sentry")
             .RequireAuthorization();
 
+        app.MapPost("/api/v1/sentry/filter/list", SentryHandler.GetFilterListSentry)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение отфильтрованного списка по ошибок";
+                return generatedOperation;
+            })
+            .WithDescription("Получение отфильтрованного списка по ошибок")
+            .WithName("Get filtered on bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
         app.MapGet("/api/v1/sentry/stats/last", SentryHandler.GetLastSentryErrors)
             .WithOpenApi(generatedOperation =>
             {
