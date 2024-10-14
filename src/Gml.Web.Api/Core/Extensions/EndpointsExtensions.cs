@@ -270,6 +270,28 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
+        app.MapGet("/api/v1/integrations/texture/skins/{textureGuid}", TextureIntegrationHandler.GetUserSkin)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение скина пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Получение скина пользователя")
+            .WithName("Get user skin texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/integrations/texture/capes/{textureGuid}", TextureIntegrationHandler.GetUserCloak)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение плаща пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Получение плаща пользователя")
+            .WithName("Get user cloak texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         app.MapGet("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.GetCloakUrl)
             .WithOpenApi(generatedOperation =>
             {
@@ -304,7 +326,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Textures")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapPost("/api/v1/integrations/texture/cloak/load", TextureIntegrationHandler.UpdateUserCloak)
+        app.MapPost("/api/v1/integrations/texture/cloaks/load", TextureIntegrationHandler.UpdateUserCloak)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Обновление плаща пользователя";
@@ -565,6 +587,19 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapPost("/api/v1/profiles/details", ProfileHandler.GetProfileDetails)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение информации об игровом профиле для панели управления";
+                return generatedOperation;
+            })
+            .WithDescription("Получение информации об игровом профиле для панели управления")
+            .WithName("Get profile details")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage<ProfileReadInfoDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
+
         app.MapPost("/api/v1/profiles/compile", ProfileHandler.CompileProfile)
             .WithOpenApi(generatedOperation =>
             {
@@ -719,7 +754,7 @@ public static class EndpointsExtensions
         app.MapPost("/api/v1/launcher/upload", LauncherUpdateHandler.UploadLauncherVersion)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Зарузка новой версии лаунчера";
+                generatedOperation.Summary = "Загрузка новой версии лаунчера";
                 return generatedOperation;
             })
             .WithDescription("Загрузка новой версии лаунчера")
@@ -799,7 +834,7 @@ public static class EndpointsExtensions
 
         #endregion
 
-        #region Servers
+        #region Notifications
 
         app.MapGet("/api/v1/notifications", NotificationHandler.GetNotifications)
             .WithOpenApi(generatedOperation =>

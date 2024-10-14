@@ -6,12 +6,17 @@ namespace Gml.Web.Api.Core.Extensions;
 
 public static class GmlConfigurationExtension
 {
-    public static IServiceCollection ConfigureGmlManager(this IServiceCollection services, string projectName, string securityKey, string? projectPath)
+    public static IServiceCollection ConfigureGmlManager(this IServiceCollection services, string projectName,
+        string securityKey, string? projectPath, string? textureEndpoint)
     {
         services.AddSingleton<IGmlManager>(_ =>
         {
-            var manager =
-                new GmlManager(new GmlSettings(projectName, securityKey, projectPath));
+            var settings = new GmlSettings(projectName, securityKey, projectPath)
+            {
+                TextureServiceEndpoint = textureEndpoint ?? "http://gml-web-skins:8085"
+            };
+
+            var manager = new GmlManager(settings);
 
             manager.RestoreSettings<LauncherVersion>();
 
