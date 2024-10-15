@@ -28,7 +28,8 @@
         "PROJECT_NAME": "GmlServer",
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
-        "PROJECT_PATH": ""
+        "PROJECT_PATH": "",
+        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
       }
     }
   }
