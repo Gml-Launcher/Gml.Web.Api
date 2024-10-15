@@ -321,11 +321,11 @@ public class ProfileHandler : IProfileHandler
 
         var user = new AuthUser
         {
-            AccessToken = string.Empty,
-            Name = "Admin"
+            AccessToken = new string('0', 50),
+            Uuid = Guid.NewGuid().ToString(),
+            Name = "Admin",
+            Manager = gmlManager
         };
-
-        user.Manager = gmlManager;
 
         var profileInfo = await gmlManager.Profiles.GetProfileInfo(profile.Name, new StartupOptions
         {
