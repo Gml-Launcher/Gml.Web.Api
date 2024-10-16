@@ -98,7 +98,7 @@ public class MinecraftHandler : IMinecraftHandler
             };
         }
 
-        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        if (!string.IsNullOrEmpty(user.TextureCloakGuid))
         {
             texture.Textures.Cape = new SkinCape
             {
@@ -171,7 +171,7 @@ public class MinecraftHandler : IMinecraftHandler
             };
         }
 
-        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        if (!string.IsNullOrEmpty(user.TextureCloakGuid))
         {
             texture.Textures.Cape = new SkinCape
             {
