@@ -87,18 +87,24 @@ public class MinecraftHandler : IMinecraftHandler
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
             ProfileId = user.Uuid,
-            Textures = new Textures
-            {
-                Skin = new SkinCape
-                {
-                    Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
-                },
-                Cape = new SkinCape
-                {
-                    Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
-                }
-            }
+            Textures = new Textures()
         };
+
+        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        {
+            texture.Textures.Skin = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
+            };
+        }
+
+        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        {
+            texture.Textures.Cape = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
+            };
+        }
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
@@ -154,18 +160,24 @@ public class MinecraftHandler : IMinecraftHandler
             ProfileName = user.Name,
             ProfileId = uuid,
             SignatureRequired = unsigned == false,
-            Textures = new Textures
-            {
-                Skin = new SkinCape
-                {
-                    Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
-                },
-                Cape = new SkinCape
-                {
-                    Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
-                }
-            }
+            Textures = new Textures()
         };
+
+        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        {
+            texture.Textures.Skin = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
+            };
+        }
+
+        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        {
+            texture.Textures.Cape = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
+            };
+        }
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
