@@ -80,7 +80,7 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var address = $"{context.Request.Scheme}://{context.Request.Host.Value}";
+        var address = $"https://{context.Request.Host.Value}";
 
         var texture = new PropertyTextures
         {
@@ -152,7 +152,7 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var address = $"{context.Request.Scheme}://{context.Request.Host.Value}";
+        var address = $"https://{context.Request.Host.Value}";
 
         var texture = new PropertyTextures
         {
