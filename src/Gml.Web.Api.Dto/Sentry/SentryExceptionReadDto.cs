@@ -6,6 +6,7 @@ namespace Gml.Web.Api.Dto.Sentry;
 
 public class SentryExceptionReadDto
 {
+    public string Exception { get; set; }
     public long CountUsers { get; set; }
     public long Count { get; set; }
     public IEnumerable<SentryGraphic> Graphic { get; set; }

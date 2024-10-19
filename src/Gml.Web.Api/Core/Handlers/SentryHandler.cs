@@ -88,7 +88,7 @@ public abstract class SentryHandler : ISentryHandler
             }),
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress ?? "Not found",
-            OsVeriosn = sentryModules.Contexts.Os.RawDescription,
+            OsVersion = sentryModules.Contexts.Os.RawDescription,
             OsIdentifier = sentryModules.Contexts.Runtime.Type
         });
 
@@ -152,10 +152,11 @@ public abstract class SentryHandler : ISentryHandler
         var exceptions = bugs.GroupBy(bug => bug.Exceptions.First().Type)
             .Select(group => new SentryExceptionReadDto
             {
+                Exception = group.Key,
                 Count = group.Count(),
                 CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
                 OperationSystems = group
-                    .Select(x => x.OsVeriosn)
+                    .Select(x => x.OsVersion)
                     .GroupBy(os => os)
                     .Select(bug => new SentryOperationSystem
                     {
@@ -278,7 +279,7 @@ public abstract class SentryHandler : ISentryHandler
                 Count = group.Count(),
                 CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
                 OperationSystems = group
-                    .Select(x => x.OsVeriosn)
+                    .Select(x => x.OsVersion)
                     .GroupBy(os => os)
                     .Select(bug => new SentryOperationSystem
                     {
