@@ -265,9 +265,11 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{createInfoDto.ProfileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        var token = context.Request.Headers["Authorization"].FirstOrDefault();
+
         var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
 
-        if (user is null)
+        if (user is null || user.AccessToken != token)
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
