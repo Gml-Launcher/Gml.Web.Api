@@ -147,9 +147,9 @@ public abstract class SentryHandler : ISentryHandler
 
         var bugs = await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate);
 
-        // var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
+        var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
 
-        var exceptions = bugs.GroupBy(bug => bug.Exceptions.First().Type)
+        var exceptions = byProject.GroupBy(bug => bug.Exceptions.First().Type)
             .Select(group => new SentryExceptionReadDto
             {
                 Exception = group.Key,
