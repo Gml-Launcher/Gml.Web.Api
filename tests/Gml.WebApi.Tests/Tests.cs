@@ -50,9 +50,7 @@ public class Tests
     [Order(1)]
     public async Task RemoveAllProfilesEndFiles()
     {
-        var httpClient = _webApplicationFactory.CreateClient();
-
-        var response = await httpClient.GetAsync("/api/v1/profiles");
+        var response = await _httpClient.GetAsync("/api/v1/profiles");
 
         var content = await response.Content.ReadAsStringAsync();
 
@@ -60,7 +58,7 @@ public class Tests
 
         foreach (var profile in model?.Data ?? Enumerable.Empty<ProfileReadDto>())
         {
-            var deleteResponse = await httpClient.DeleteAsync($"/api/v1/profiles/{profile.Name}?removeFiles=true");
+            var deleteResponse = await _httpClient.DeleteAsync($"/api/v1/profiles/{profile.Name}?removeFiles=true");
 
             Assert.That(deleteResponse.IsSuccessStatusCode, Is.True);
         }

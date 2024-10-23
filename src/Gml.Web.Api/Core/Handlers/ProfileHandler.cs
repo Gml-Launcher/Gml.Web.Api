@@ -265,9 +265,11 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{createInfoDto.ProfileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        var token = context.Request.Headers["Authorization"].FirstOrDefault();
+
         var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
 
-        if (user is null)
+        if (user is null || user.AccessToken != token)
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
@@ -321,11 +323,11 @@ public class ProfileHandler : IProfileHandler
 
         var user = new AuthUser
         {
-            AccessToken = string.Empty,
-            Name = "Admin"
+            AccessToken = new string('0', 50),
+            Uuid = Guid.NewGuid().ToString(),
+            Name = "Admin",
+            Manager = gmlManager
         };
-
-        user.Manager = gmlManager;
 
         var profileInfo = await gmlManager.Profiles.GetProfileInfo(profile.Name, new StartupOptions
         {
