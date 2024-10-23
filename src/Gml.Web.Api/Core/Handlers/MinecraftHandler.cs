@@ -82,7 +82,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var address = $"https://{context.Request.Host.Value}";
+        var textureProtocol = gmlManager.LauncherInfo.Settings.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+
+        var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
         var texture = new PropertyTextures
         {
