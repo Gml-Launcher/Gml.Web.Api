@@ -9,5 +9,6 @@ public class Settings
     public string StorageLogin { get; set; }
     public string StoragePassword { get; set; }
     public StorageType StorageType { get; set; }
+    public TextureProtocol TextureProtocol { get; set; }
     public bool RegistrationIsEnabled { get; set; }
 }
