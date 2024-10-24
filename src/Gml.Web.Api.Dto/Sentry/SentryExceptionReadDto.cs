@@ -12,4 +12,5 @@ public class SentryExceptionReadDto
     public IEnumerable<SentryGraphic> Graphic { get; set; }
     public IEnumerable<SentryOperationSystem> OperationSystems { get; set; }
     public IBugInfo BugInfo { get; set; }
+    public string StackTrace { get; set; }
 }

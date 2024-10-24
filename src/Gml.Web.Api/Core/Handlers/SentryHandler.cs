@@ -1,6 +1,7 @@
 ﻿using System.Collections.Frozen;
 using System.Globalization;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using AutoMapper;
@@ -149,11 +150,16 @@ public abstract class SentryHandler : ISentryHandler
 
         var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
 
-        var exceptions = byProject.GroupBy(bug => bug.Exceptions.First().Type)
+        var exceptions = byProject.GroupBy(bug =>
+            new {
+                BugType = bug.Exceptions.First().Type,
+                BugInfo = bug.Exceptions.First().ValueData
+            })
             .Select(group => new SentryExceptionReadDto
             {
-                Exception = group.Key,
+                Exception = group.Key.BugType,
                 Count = group.Count(),
+                StackTrace = BuildStackTraceString(group.SelectMany(c => c.Exceptions).ToFrozenSet()),
                 CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
                 OperationSystems = group
                     .Select(x => x.OsVersion)
@@ -175,6 +181,21 @@ public abstract class SentryHandler : ISentryHandler
             });
 
         return Results.Ok(ResponseMessage.Create(exceptions, "Отфильтрованные ошибки", HttpStatusCode.OK));
+    }
+
+    private static string BuildStackTraceString(FrozenSet<IExceptionReport> stackTraceList)
+    {
+        var builder = new StringBuilder();
+        builder.Append(string.Concat(stackTraceList.SelectMany(s => s.ValueData)));
+        builder.Append(Environment.NewLine);
+        builder.Append(string.Join(Environment.NewLine,
+            stackTraceList
+                .SelectMany(c => c.StackTrace)
+                .Select(st =>
+                    $"{st.Function} at {st.Filename}:{st.Lineno} in {st.AbsPath}"
+                )));
+
+        return builder.ToString();
     }
 
     public static async Task<IResult> GetLastSentryErrors(IGmlManager gmlManager, IMapper mapper)

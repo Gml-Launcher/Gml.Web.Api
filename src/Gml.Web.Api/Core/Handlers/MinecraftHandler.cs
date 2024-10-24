@@ -82,7 +82,7 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.Settings.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
 
         var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
@@ -156,7 +156,7 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.Settings.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
 
         var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
