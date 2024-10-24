@@ -51,6 +51,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Gml.WebApi.Tests"/>
+    <InternalsVisibleTo Include="Gml.Backend.Tests"/>
   </ItemGroup>
 
   <ItemGroup>
