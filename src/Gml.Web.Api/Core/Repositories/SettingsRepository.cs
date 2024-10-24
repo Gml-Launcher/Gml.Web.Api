@@ -20,7 +20,7 @@ public class SettingsRepository(
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
-        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType,settings.StorageHost, settings.StorageLogin, settings.StoragePassword);
+        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType,settings.StorageHost, settings.StorageLogin, settings.StoragePassword, settings.TextureProtocol);
 
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();

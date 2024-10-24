@@ -41,7 +41,8 @@ public static class DatabaseExtensions
         {
             dataBaseSettings = context.Settings.Add(new Settings
             {
-                RegistrationIsEnabled = true
+                RegistrationIsEnabled = true,
+                TextureProtocol = TextureProtocol.Https
             }).Entity;
 
             context.SaveChanges();
@@ -59,5 +60,6 @@ public static class DatabaseExtensions
         gmlManager.LauncherInfo.StorageSettings.StorageHost = settings.StorageHost;
         gmlManager.LauncherInfo.StorageSettings.StorageLogin = settings.StorageLogin;
         gmlManager.LauncherInfo.StorageSettings.StoragePassword = settings.StoragePassword;
+        gmlManager.LauncherInfo.StorageSettings.TextureProtocol = settings.TextureProtocol;
     }
 }
