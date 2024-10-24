@@ -34,13 +34,6 @@ namespace Gml.Web.Api.Migrations
                 type: "INTEGER",
                 nullable: false,
                 defaultValue: 0);
-
-            migrationBuilder.AddColumn<int>(
-                name: "TextureProtocol",
-                table: "Settings",
-                type: "INTEGER",
-                nullable: false,
-                defaultValue: 0);
         }
 
         /// <inheritdoc />
@@ -60,10 +53,6 @@ namespace Gml.Web.Api.Migrations
 
             migrationBuilder.DropColumn(
                 name: "StorageType",
-                table: "Settings");
-
-            migrationBuilder.DropColumn(
-                name: "TextureProtocol",
                 table: "Settings");
         }
     }
