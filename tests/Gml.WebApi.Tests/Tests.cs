@@ -22,7 +22,7 @@ namespace Gml.WebApi.Tests;
 
 public class Tests
 {
-    private readonly string _newSenryUrl = "https://sentry.test.ru";
+    private readonly string _newSenryUrl = "https://gml@gmlb-test.recloud.tech/1";
     private readonly string _newTextureUrl = "https://test.ru";
     private readonly string _profileName = "UnitTestProfile";
     private string? _cloakUrl;
@@ -894,5 +894,42 @@ public class Tests
         var response = await _httpClient.GetAsync("/api/v1/launcher");
 
         Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
+    }
+
+    [Test]
+    [Order(57)]
+    public async Task CheckSentryException()
+    {
+        var response = await _httpClient.GetAsync("/api/v1/integrations/sentry/dsn");
+        var content = await response.Content.ReadAsStringAsync();
+
+        var model = JsonConvert.DeserializeObject<ResponseMessage<UrlServiceDto>>(content);
+
+        // var address = $"{_httpClient.BaseAddress.Scheme}://gml@gmlb-test.recloud.tech/1";
+        var address = $"{_httpClient.BaseAddress.Scheme}://gml@{_httpClient.BaseAddress.Host}/1";
+
+        SentrySdk.Init(options =>
+        {
+            options.Dsn = address;
+            options.Debug = true;
+            options.TracesSampleRate = 1.0;
+            options.DiagnosticLevel = SentryLevel.Debug;
+            options.IsGlobalModeEnabled = true;
+            options.SendDefaultPii = true;
+            options.MaxAttachmentSize = 10 * 1024 * 1024;
+        });
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        SentrySdk.CaptureException(new Exception("TestMessage"));
+
+        await Task.Delay(TimeSpan.FromSeconds(10));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(model, Is.Not.Null);
+            Assert.That(model?.Data, Is.Not.Null);
+            Assert.That(model?.Data?.Url, Is.EqualTo(_newSenryUrl));
+            Assert.That(response.IsSuccessStatusCode, Is.True);
+        });
     }
 }
