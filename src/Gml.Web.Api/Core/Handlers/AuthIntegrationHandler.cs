@@ -59,6 +59,8 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Uuid,
                     context.Request.Headers["X-HWID"]);
 
+                await gmlManager.Profiles.CreateUserSessionAsync(null, player);
+
                 player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
                     .Replace("{userName}", player.Name)
                     .Replace("{userUuid}", player.Uuid);

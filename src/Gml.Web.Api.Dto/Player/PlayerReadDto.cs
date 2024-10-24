@@ -9,4 +9,7 @@ public class PlayerReadDto
     public string Uuid { get; set; }
     public DateTime ExpiredDate { get; set; }
     public string TextureSkinUrl { get; set; }
+    public string TextureCloakUrl { get; set; }
+    public string TextureSkinGuid { get; set; }
+    public string TextureCloakGuid { get; set; }
 }
