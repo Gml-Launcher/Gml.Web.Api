@@ -1,7 +1,5 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using Gml.Web.Api.Core.Hubs.Controllers;
-using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
@@ -10,8 +8,8 @@ namespace Gml.Web.Api.Core.Hubs;
 public class GameServerHub : BaseHub
 {
     private readonly IGmlManager _gmlManager;
-    private readonly PlayersController _playerController;
     private readonly HubEvents _hubEvents;
+    private readonly PlayersController _playerController;
 
     public GameServerHub(
         IGmlManager gmlManager,
@@ -48,7 +46,8 @@ public class GameServerHub : BaseHub
     {
         try
         {
-            if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) || launcherInfo!.ExpiredDate < DateTimeOffset.Now)
+            if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) ||
+                launcherInfo!.ExpiredDate < DateTimeOffset.Now)
             {
                 await KickUser(userName);
                 return;
@@ -75,7 +74,6 @@ public class GameServerHub : BaseHub
     private async Task KickUser(string userName, string message)
     {
         foreach (var caller in _playerController.Servers.Values)
-        {
             try
             {
                 await caller.SendAsync("KickUser", userName, message);
@@ -85,17 +83,14 @@ public class GameServerHub : BaseHub
             {
                 Debug.WriteLine($"Ошибка при отправке сообщения на удаление: {e}");
             }
-        }
     }
 
     public async Task OnLeft(string userName)
     {
         try
         {
-            if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) || launcherInfo!.ExpiredDate < DateTimeOffset.Now)
-            {
-                return;
-            }
+            if (!_playerController.GetLauncherConnection(userName, out var launcherInfo) ||
+                launcherInfo!.ExpiredDate < DateTimeOffset.Now) return;
 
             var user = await _gmlManager.Users.GetUserByName(userName);
 
@@ -113,6 +108,5 @@ public class GameServerHub : BaseHub
             await KickUser(userName, "Произошла ошибка при попытке подключения к серверу");
             Console.WriteLine(e);
         }
-
     }
 }

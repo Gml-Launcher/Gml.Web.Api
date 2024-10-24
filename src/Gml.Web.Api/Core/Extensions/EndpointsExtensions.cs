@@ -3,7 +3,6 @@ using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Domains.LauncherDto;
 using Gml.Web.Api.Domains.Plugins;
-using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
@@ -709,7 +708,6 @@ public static class EndpointsExtensions
         #endregion
 
         #region Plugins
-
 
         app.MapPost("/api/v1/plugins/install", PluginHandler.InstallPlugin)
             .WithOpenApi(generatedOperation =>

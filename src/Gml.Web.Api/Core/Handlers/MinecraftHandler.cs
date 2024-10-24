@@ -5,7 +5,6 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Minecraft.AuthLib;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Extensions;
 using Newtonsoft.Json;
@@ -14,7 +13,8 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public static async Task<IResult> GetMetaData(HttpContext context, ISystemService systemService, IGmlManager gmlManager,
+    public static async Task<IResult> GetMetaData(HttpContext context, ISystemService systemService,
+        IGmlManager gmlManager,
         IOptions<ServerSettings> options)
     {
         var skinsAddresses = options.Value.SkinDomains.ToList();
@@ -66,13 +66,15 @@ public class MinecraftHandler : IMinecraftHandler
         return domains.ToArray();
     }
 
-    public static async Task<IResult> HasJoined(HttpContext context, IGmlManager gmlManager, ISystemService systemService, string userName,
+    public static async Task<IResult> HasJoined(HttpContext context, IGmlManager gmlManager,
+        ISystemService systemService, string userName,
         string serverId,
         string? ip)
     {
         var user = await gmlManager.Users.GetUserByName(userName);
 
-        if (user is null || string.IsNullOrEmpty(userName) || await gmlManager.Users.CanJoinToServer(user, serverId) == false)
+        if (user is null || string.IsNullOrEmpty(userName) ||
+            await gmlManager.Users.CanJoinToServer(user, serverId) == false)
             return Results.NoContent();
 
         var profile = new Profile
@@ -82,7 +84,8 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ??
+                              TextureProtocol.Https.GetDisplayName();
 
         var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
@@ -95,20 +98,16 @@ public class MinecraftHandler : IMinecraftHandler
         };
 
         if (!string.IsNullOrEmpty(user.TextureSkinGuid))
-        {
             texture.Textures.Skin = new SkinCape
             {
                 Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
             };
-        }
 
         if (!string.IsNullOrEmpty(user.TextureCloakGuid))
-        {
             texture.Textures.Cape = new SkinCape
             {
                 Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
             };
-        }
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
@@ -128,17 +127,16 @@ public class MinecraftHandler : IMinecraftHandler
 
     public static async Task<IResult> Join(IGmlManager gmlManager, JoinRequest joinDto)
     {
-        bool validateUser = await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.ServerId, joinDto.AccessToken);
+        var validateUser =
+            await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.ServerId, joinDto.AccessToken);
 
-        if (validateUser is false)
-        {
-            return Results.Unauthorized();
-        }
+        if (validateUser is false) return Results.Unauthorized();
 
         return Results.NoContent();
     }
 
-    public static async Task<IResult> GetProfile(HttpContext context, IGmlManager gmlManager, ISystemService systemService, string uuid,
+    public static async Task<IResult> GetProfile(HttpContext context, IGmlManager gmlManager,
+        ISystemService systemService, string uuid,
         bool unsigned = false)
     {
         var guid = Guid.Parse(uuid);
@@ -156,7 +154,8 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ??
+                              TextureProtocol.Https.GetDisplayName();
 
         var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
@@ -170,20 +169,16 @@ public class MinecraftHandler : IMinecraftHandler
         };
 
         if (!string.IsNullOrEmpty(user.TextureSkinGuid))
-        {
             texture.Textures.Skin = new SkinCape
             {
                 Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
             };
-        }
 
         if (!string.IsNullOrEmpty(user.TextureCloakGuid))
-        {
             texture.Textures.Cape = new SkinCape
             {
                 Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
             };
-        }
 
         var jsonData = JsonConvert.SerializeObject(texture);
 

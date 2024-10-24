@@ -5,7 +5,7 @@ namespace Gml.Web.Api.Core.Hubs.Controllers;
 
 public class NotificationController
 {
-    private ConcurrentDictionary<string, ISingleClientProxy> _connections = new();
+    private readonly ConcurrentDictionary<string, ISingleClientProxy> _connections = new();
 
     public IEnumerable<ISingleClientProxy> Connections => _connections.Values;
 

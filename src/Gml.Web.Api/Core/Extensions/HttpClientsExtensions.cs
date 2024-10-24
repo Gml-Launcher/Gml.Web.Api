@@ -6,7 +6,7 @@ public static class HttpClientsExtensions
 {
     public static IServiceCollection AddNamedHttpClients(this IServiceCollection services)
     {
-        string? skinsServiceUrl = Environment.GetEnvironmentVariable("SkinServiceUrl");
+        var skinsServiceUrl = Environment.GetEnvironmentVariable("SkinServiceUrl");
 
         var dockerEnv = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
 
@@ -16,10 +16,11 @@ public static class HttpClientsExtensions
         {
             client.BaseAddress = isRunningInDocker
                 ? new Uri("http://gml-web-skins:8085/")
-                : string.IsNullOrEmpty(skinsServiceUrl) ? null : new Uri(skinsServiceUrl);
+                : string.IsNullOrEmpty(skinsServiceUrl)
+                    ? null
+                    : new Uri(skinsServiceUrl);
         });
 
         return services;
     }
-
 }

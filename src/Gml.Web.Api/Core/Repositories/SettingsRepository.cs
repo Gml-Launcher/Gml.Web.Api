@@ -4,7 +4,6 @@ using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Settings;
 using GmlCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Gml.Web.Api.Core.Repositories;
 
@@ -20,7 +19,8 @@ public class SettingsRepository(
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
-        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType,settings.StorageHost, settings.StorageLogin, settings.StoragePassword, settings.TextureProtocol);
+        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType, settings.StorageHost, settings.StorageLogin,
+            settings.StoragePassword, settings.TextureProtocol);
 
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();

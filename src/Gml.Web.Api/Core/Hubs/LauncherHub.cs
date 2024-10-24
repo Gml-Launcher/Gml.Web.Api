@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Gml.Web.Api.Core.Hubs.Controllers;
-using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
@@ -10,10 +6,10 @@ namespace Gml.Web.Api.Core.Hubs;
 
 public class LauncherHub : BaseHub
 {
+    private static IDisposable? _profilesChangedEvent;
     private readonly IGmlManager _gmlManager;
     private readonly HubEvents _hubEvents;
     private readonly PlayersController _playerController;
-    private static IDisposable? _profilesChangedEvent;
 
     public LauncherHub(
         IGmlManager gmlManager,
@@ -26,10 +22,8 @@ public class LauncherHub : BaseHub
 
         _profilesChangedEvent ??= gmlManager.Profiles.ProfilesChanged.Subscribe(eventType =>
         {
-            foreach (var connection in _playerController.LauncherConnections.Values.Select(c => c.Connection).OfType<ISingleClientProxy>())
-            {
-                connection?.SendAsync("RefreshProfiles");
-            }
+            foreach (var connection in _playerController.LauncherConnections.Values.Select(c => c.Connection)
+                         .OfType<ISingleClientProxy>()) connection?.SendAsync("RefreshProfiles");
         });
     }
 
@@ -40,10 +34,7 @@ public class LauncherHub : BaseHub
 
     public override Task OnConnectedAsync()
     {
-        if (Context.User is null)
-        {
-            return Task.CompletedTask;
-        }
+        if (Context.User is null) return Task.CompletedTask;
 
         _ = _playerController.AddLauncherConnection(Context.ConnectionId, Clients.Caller, Context.User);
 

@@ -40,6 +40,5 @@ public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGm
         authResult.Uuid = model?.UserUuid;
 
         return authResult;
-
     }
 }

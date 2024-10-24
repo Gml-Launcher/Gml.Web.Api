@@ -7,7 +7,6 @@ using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.User;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gml.Web.Api.Core.Repositories;

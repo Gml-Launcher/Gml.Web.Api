@@ -27,5 +27,6 @@ public class DataLifeEngineAuthService(IHttpClientFactory httpClientFactory, IGm
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+        };
+    }
 }

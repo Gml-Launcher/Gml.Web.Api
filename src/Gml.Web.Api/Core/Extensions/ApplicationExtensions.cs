@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Text;
-using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using Gml.Web.Api.Core.Integrations.Auth;
@@ -9,16 +7,11 @@ using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
-using Gml.Web.Api.Domains.Launcher;
 using Gml.Web.Api.Domains.Settings;
-using Gml.Web.Api.Domains.User;
-using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Minio;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -122,7 +115,8 @@ public static class ApplicationExtensions
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath, settings.TextureEndpoint)
+            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath,
+                settings.TextureEndpoint)
             .ConfigureRateLimit()
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()

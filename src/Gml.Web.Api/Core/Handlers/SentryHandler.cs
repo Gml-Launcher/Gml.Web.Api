@@ -1,21 +1,14 @@
 ﻿using System.Collections.Frozen;
-using System.Globalization;
 using System.Net;
 using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using AutoMapper;
 using Gml.Core.Launcher;
-using Gml.Models.Converters;
-using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Sentry;
-using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Sentry;
 using Gml.Web.Api.Dto.Sentry.Stats;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Sentry;
 using Newtonsoft.Json;
 using MemoryInfo = Gml.Core.Launcher.MemoryInfo;
@@ -34,9 +27,9 @@ public abstract class SentryHandler : ISentryHandler
             compressedData = memoryStream.ToArray();
         }
 
-        string uncompressedContent = await CompressionService.Uncompress(compressedData);
+        var uncompressedContent = await CompressionService.Uncompress(compressedData);
 
-        string[] jsonObjects = uncompressedContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var jsonObjects = uncompressedContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
 
         var sentryEvent = JsonConvert.DeserializeObject<SentryEventDto>(jsonObjects[0]);
         var sentryLength = JsonConvert.DeserializeObject<SentryEventLengthDto>(jsonObjects[1]);
@@ -61,7 +54,7 @@ public abstract class SentryHandler : ISentryHandler
                 TotalAvailableMemoryBytes = sentryModules.Contexts.MemoryInfo.TotalAvailableMemoryBytes,
                 Compacted = sentryModules.Contexts.MemoryInfo.Compacted,
                 Concurrent = sentryModules.Contexts.MemoryInfo.Concurrent,
-                PauseDurations = sentryModules.Contexts.MemoryInfo.PauseDurations,
+                PauseDurations = sentryModules.Contexts.MemoryInfo.PauseDurations
             },
             Exceptions = sentryModules.Exception.Values.Select(x => new ExceptionReport
             {
@@ -85,7 +78,7 @@ public abstract class SentryHandler : ISentryHandler
                         InstructionAddr = frame.InstructionAddr,
                         AddrMode = frame.AddrMode,
                         FunctionId = frame.FunctionId
-                    }) ?? []) ?? [],
+                    }) ?? []) ?? []
             }),
             SendAt = sentryEvent.SentAt,
             IpAddress = sentryModules.User.IpAddress ?? "Not found",
@@ -100,7 +93,8 @@ public abstract class SentryHandler : ISentryHandler
     {
         var minDate = filter.DateFrom ?? DateTime.MinValue;
         var maxDate = filter.DateTo?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
-        var bugs = (await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate)).ToFrozenSet();
+        var bugs = (await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate))
+            .ToFrozenSet();
 
         var error = new BaseSentryError
         {
@@ -151,10 +145,11 @@ public abstract class SentryHandler : ISentryHandler
         var byProject = bugs.Where(c => (filter.ProjectType & c.ProjectType) != 0);
 
         var exceptions = byProject.GroupBy(bug =>
-            new {
-                BugType = bug.Exceptions.First().Type,
-                BugInfo = bug.Exceptions.First().ValueData
-            })
+                new
+                {
+                    BugType = bug.Exceptions.First().Type,
+                    BugInfo = bug.Exceptions.First().ValueData
+                })
             .Select(group => new SentryExceptionReadDto
             {
                 Exception = group.Key.BugType,
@@ -243,28 +238,29 @@ public abstract class SentryHandler : ISentryHandler
         var yesterday = today.AddDays(-1);
 
         // Получение всех багов за последние два месяца
-        var allBugs = (await gmlManager.BugTracker.GetFilteredBugs(b => b.Date >= lastMonthStart && b.Date <= today)).ToFrozenSet();
+        var allBugs = (await gmlManager.BugTracker.GetFilteredBugs(b => b.Date >= lastMonthStart && b.Date <= today))
+            .ToFrozenSet();
 
         // Общее количество ошибок
-        int totalBugs = allBugs.Count();
+        var totalBugs = allBugs.Count();
 
         // Ошибки за этот месяц
-        int bugsThisMonth = allBugs.Count(b => b.SendAt >= thisMonthStart);
+        var bugsThisMonth = allBugs.Count(b => b.SendAt >= thisMonthStart);
 
         // Ошибки за прошлый месяц
-        int bugsLastMonth = allBugs.Count(b => b.SendAt >= lastMonthStart && b.SendAt <= lastMonthEnd);
+        var bugsLastMonth = allBugs.Count(b => b.SendAt >= lastMonthStart && b.SendAt <= lastMonthEnd);
 
         // Расчет процента изменения за месяц
-        double percentageChangeMonth = CalculatePercentageChange(bugsLastMonth, bugsThisMonth);
+        var percentageChangeMonth = CalculatePercentageChange(bugsLastMonth, bugsThisMonth);
 
         // Ошибки за сегодня
-        int bugsToday = allBugs.Count(b => b.SendAt.Date == today.Date);
+        var bugsToday = allBugs.Count(b => b.SendAt.Date == today.Date);
 
         // Ошибки за вчера
-        int bugsYesterday = allBugs.Count(b => b.SendAt.Date == yesterday.Date);
+        var bugsYesterday = allBugs.Count(b => b.SendAt.Date == yesterday.Date);
 
         // Расчет процента изменения за день
-        double percentageChangeDay = CalculatePercentageChange(bugsYesterday, bugsToday);
+        var percentageChangeDay = CalculatePercentageChange(bugsYesterday, bugsToday);
 
         var result = new BugStatisticsReadDto
         {
@@ -274,7 +270,7 @@ public abstract class SentryHandler : ISentryHandler
             BugsToday = bugsToday,
             PercentageChangeDay = percentageChangeDay,
             FixBugs = 0,
-            PercentageChangeDayFixBugs = 0,
+            PercentageChangeDayFixBugs = 0
         };
 
         return Results.Ok(ResponseMessage.Create(result, "Статистика", HttpStatusCode.OK));
@@ -282,12 +278,9 @@ public abstract class SentryHandler : ISentryHandler
 
     private static double CalculatePercentageChange(int previousValue, int currentValue)
     {
-        if (previousValue == 0)
-        {
-            return currentValue == 0 ? 0 : 100;
-        }
+        if (previousValue == 0) return currentValue == 0 ? 0 : 100;
 
-        return ((double)(currentValue - previousValue) / previousValue) * 100;
+        return (double)(currentValue - previousValue) / previousValue * 100;
     }
 
     public static async Task<IResult> GetByException(IGmlManager gmlManager, string exception)

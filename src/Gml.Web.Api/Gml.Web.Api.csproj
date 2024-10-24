@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1"/>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0"/>
     <PackageReference Include="FluentValidation" Version="11.9.0"/>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0"/>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>
@@ -41,12 +41,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gml.Core\src\Gml.Common\Gml.Common\Gml.Common.csproj" />
-    <ProjectReference Include="..\Gml.Core\src\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
-    <ProjectReference Include="..\Gml.Core\src\Gml.Core\Gml.Core.csproj" />
+    <ProjectReference Include="..\Gml.Core\src\Gml.Common\Gml.Common\Gml.Common.csproj"/>
+    <ProjectReference Include="..\Gml.Core\src\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj"/>
+    <ProjectReference Include="..\Gml.Core\src\Gml.Core\Gml.Core.csproj"/>
     <ProjectReference Include="..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj"/>
     <ProjectReference Include="..\Gml.Web.Api.Dto\Gml.Web.Api.Dto.csproj"/>
-    <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
+    <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -150,7 +150,7 @@
     <None Remove="public.key"/>
     <None Remove="data.db-shm"/>
     <None Remove="data.db-wal"/>
-    <None Remove="builds\build-16-05-2024 16-44-44\linux-x64\Gml.Launcher" />
+    <None Remove="builds\build-16-05-2024 16-44-44\linux-x64\Gml.Launcher"/>
   </ItemGroup>
 
 </Project>

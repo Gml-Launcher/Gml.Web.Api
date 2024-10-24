@@ -1,10 +1,7 @@
-using System.Diagnostics.Tracing;
 using System.IO.Compression;
 using System.Net;
 using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Dto.Messages;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -18,7 +15,6 @@ public abstract class PluginHandler : IPluginHandler
             .FirstOrDefault(c => c.Directory!.Name == version);
 
         if (file?.Exists == true)
-        {
             try
             {
                 file.Delete();
@@ -26,9 +22,10 @@ public abstract class PluginHandler : IPluginHandler
             catch (Exception exception)
             {
                 Console.WriteLine(exception);
-                return Task.FromResult(Results.BadRequest(ResponseMessage.Create($"Произошла ошибка при удалении. Плагин не был удален.", HttpStatusCode.BadRequest)));
+                return Task.FromResult(Results.BadRequest(
+                    ResponseMessage.Create("Произошла ошибка при удалении. Плагин не был удален.",
+                        HttpStatusCode.BadRequest)));
             }
-        }
 
         return Task.FromResult(Results.Ok(ResponseMessage.Create("Плагин успешно удален", HttpStatusCode.OK)));
     }
@@ -46,7 +43,6 @@ public abstract class PluginHandler : IPluginHandler
         });
 
         return Task.FromResult(Results.Ok(ResponseMessage.Create(pluginsDto, string.Empty, HttpStatusCode.OK)));
-
     }
 
     public static async Task<IResult> InstallPlugin(HttpContext context)
@@ -57,28 +53,22 @@ public abstract class PluginHandler : IPluginHandler
         };
 
         if (string.IsNullOrEmpty(pluginFormData.Url))
-        {
             return Results.BadRequest(ResponseMessage.Create("Не указан адрес плагина", HttpStatusCode.BadRequest));
-        }
 
         var pluginsDirectory = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
 
-        if (!pluginsDirectory.Exists)
-        {
-            pluginsDirectory.Create();
-        }
+        if (!pluginsDirectory.Exists) pluginsDirectory.Create();
 
         using (var httpClient = new HttpClient())
         {
             var response = await httpClient.GetAsync(pluginFormData.Url);
 
             var contentDisposition = response.Content.Headers.ContentDisposition;
-            string? fileName = contentDisposition?.FileName?.Trim('\"');
+            var fileName = contentDisposition?.FileName?.Trim('\"');
 
             if (string.IsNullOrEmpty(fileName))
-            {
-                return Results.BadRequest(ResponseMessage.Create("Именование плагина имело неверный формат", HttpStatusCode.BadRequest));
-            }
+                return Results.BadRequest(ResponseMessage.Create("Именование плагина имело неверный формат",
+                    HttpStatusCode.BadRequest));
 
             var pluginPath = Path.Combine(pluginsDirectory.FullName, fileName);
 
@@ -90,7 +80,6 @@ public abstract class PluginHandler : IPluginHandler
             }
 
             ExtractPlugin(pluginsDirectory.FullName, pluginPath);
-
         }
 
         return Results.Ok(ResponseMessage.Create("Плагин успешно установлен", HttpStatusCode.OK));
@@ -106,10 +95,7 @@ public abstract class PluginHandler : IPluginHandler
 
         var extractPath = Path.Combine(pluginsDirectory, pluginName, $"v{pluginVersion}");
 
-        if (!Directory.Exists(extractPath))
-        {
-            Directory.CreateDirectory(extractPath);
-        }
+        if (!Directory.Exists(extractPath)) Directory.CreateDirectory(extractPath);
 
         ZipFile.ExtractToDirectory(zipPath, extractPath, true);
         File.Delete(zipPath);

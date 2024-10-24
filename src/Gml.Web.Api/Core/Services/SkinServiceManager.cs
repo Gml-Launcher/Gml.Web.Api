@@ -6,7 +6,7 @@ namespace Gml.Web.Api.Core.Services;
 
 public class SkinServiceManager(IHttpClientFactory httpClientFactory) : ISkinServiceManager
 {
-    private HttpClient _skinServiceClient = httpClientFactory.CreateClient(HttpClientNames.SkinService);
+    private readonly HttpClient _skinServiceClient = httpClientFactory.CreateClient(HttpClientNames.SkinService);
 
     public async Task<bool> UpdateSkin(AuthUser authUser, Stream texture)
     {
@@ -25,6 +25,7 @@ public class SkinServiceManager(IHttpClientFactory httpClientFactory) : ISkinSer
 
         return request.IsSuccessStatusCode;
     }
+
     public async Task<bool> UpdateCloak(AuthUser authUser, Stream texture)
     {
         var content = new MultipartFormDataContent();
@@ -42,7 +43,6 @@ public class SkinServiceManager(IHttpClientFactory httpClientFactory) : ISkinSer
 
         return request.IsSuccessStatusCode;
     }
-
 }
 
 public interface ISkinServiceManager

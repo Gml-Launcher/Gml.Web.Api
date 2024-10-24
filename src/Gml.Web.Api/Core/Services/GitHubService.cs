@@ -9,8 +9,8 @@ public class GitHubService : IGitHubService
 {
     private readonly IGmlManager _gmlManager;
     private readonly HttpClient _httpClient;
-    private FrozenSet<string> _versions;
     private FrozenSet<string> _branches;
+    private FrozenSet<string> _versions;
 
     public GitHubService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager)
     {
@@ -60,7 +60,6 @@ public class GitHubService : IGitHubService
 
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
     {
-
         var directory = new DirectoryInfo(projectPath);
 
         if (!directory.Exists) directory.Create();
@@ -93,21 +92,6 @@ public class GitHubService : IGitHubService
         return new DirectoryInfo(extractPath).GetDirectories().First().FullName;
     }
 
-    private string NormalizePath(string directory, string fileDirectory)
-    {
-        directory = directory
-            .Replace('\\', Path.DirectorySeparatorChar)
-            .Replace('/', Path.DirectorySeparatorChar);
-        // .TrimStart(Path.DirectorySeparatorChar);
-
-        fileDirectory = fileDirectory
-            .Replace('\\', Path.DirectorySeparatorChar)
-            .Replace('/', Path.DirectorySeparatorChar)
-            .TrimStart(Path.DirectorySeparatorChar);
-
-        return Path.Combine(directory, fileDirectory);
-    }
-
     public async Task EditLauncherFiles(string projectPath, string host, string folder)
     {
         var keys = new Dictionary<string, string>
@@ -131,5 +115,20 @@ public class GitHubService : IGitHubService
         foreach (var key in keys) content = content.Replace(key.Key, key.Value);
 
         await File.WriteAllTextAsync(settingsFile, content);
+    }
+
+    private string NormalizePath(string directory, string fileDirectory)
+    {
+        directory = directory
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar);
+        // .TrimStart(Path.DirectorySeparatorChar);
+
+        fileDirectory = fileDirectory
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .TrimStart(Path.DirectorySeparatorChar);
+
+        return Path.Combine(directory, fileDirectory);
     }
 }

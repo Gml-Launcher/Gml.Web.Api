@@ -18,11 +18,13 @@ public class DiscordHandler : IDiscordHandler
         if (discordRpcInfo is null)
             return Results.NotFound(ResponseMessage.Create("Сервис DiscordRPC не настроен", HttpStatusCode.NotFound));
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<DiscordRpcReadDto>(discordRpcInfo), "Сервис DiscordRPC успешно получен", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<DiscordRpcReadDto>(discordRpcInfo),
+            "Сервис DiscordRPC успешно получен", HttpStatusCode.OK));
     }
 
     [Authorize]
-    public static async Task<IResult> UpdateInfo(IGmlManager gmlManager, IMapper mapper, IValidator<DiscordRpcUpdateDto> validator, DiscordRpcUpdateDto discordRpcUpdateDto)
+    public static async Task<IResult> UpdateInfo(IGmlManager gmlManager, IMapper mapper,
+        IValidator<DiscordRpcUpdateDto> validator, DiscordRpcUpdateDto discordRpcUpdateDto)
     {
         var result = await validator.ValidateAsync(discordRpcUpdateDto);
 

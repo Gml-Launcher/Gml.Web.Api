@@ -7,7 +7,6 @@ using Gml.Core;
 using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Profile;
@@ -15,7 +14,6 @@ using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -35,21 +33,21 @@ public class ProfileHandler : IProfileHandler
         foreach (var profile in dtoProfiles)
         {
             var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
-            profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
+            profile.Background =
+                $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
         return Results.Ok(ResponseMessage.Create(dtoProfiles, string.Empty, HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
+    public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader,
+        string? minecraftVersion)
     {
         try
         {
             if (!Enum.TryParse<GameLoader>(gameLoader, out var loader))
-            {
                 return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид загрузчика",
                     HttpStatusCode.BadRequest));
-            }
 
             var versions = await gmlManager.Profiles.GetAllowVersions(loader, minecraftVersion);
 
@@ -57,7 +55,8 @@ public class ProfileHandler : IProfileHandler
         }
         catch (VersionNotLoadedException versionNotLoadedException)
         {
-            return Results.NotFound(ResponseMessage.Create(versionNotLoadedException.InnerExceptionMessage, HttpStatusCode.NotFound));
+            return Results.NotFound(ResponseMessage.Create(versionNotLoadedException.InnerExceptionMessage,
+                HttpStatusCode.NotFound));
         }
         catch (Exception e)
         {
@@ -102,17 +101,20 @@ public class ProfileHandler : IProfileHandler
                 return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем уже существует",
                     HttpStatusCode.BadRequest));
 
-            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader))
+            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion,
+                    createDto.GameLoader))
                 return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
                     HttpStatusCode.BadRequest));
 
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
 
-            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader,
+            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version,
+                createDto.LoaderVersion, createDto.GameLoader,
                 createDto.IconBase64, createDto.Description);
 
-            await gmlManager.Notifications.SendMessage($"""Профиль "{createDto.Name}" успешно создан""", NotificationType.Info);
+            await gmlManager.Notifications.SendMessage($"""Профиль "{createDto.Name}" успешно создан""",
+                NotificationType.Info);
 
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
                 ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
@@ -185,7 +187,8 @@ public class ProfileHandler : IProfileHandler
             updateDto.GameArguments);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
-        newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        newProfile.Background =
+            $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
         var message = $"""Профиль "{updateDto.Name}" успешно обновлен""";
 
@@ -269,10 +272,7 @@ public class ProfileHandler : IProfileHandler
 
         var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
 
-        if (user is null || user.AccessToken != token)
-        {
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-        }
+        if (user is null || user.AccessToken != token) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
         user.Manager = gmlManager;
 
@@ -287,13 +287,50 @@ public class ProfileHandler : IProfileHandler
             MinimumRamMb = createInfoDto.RamSize,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
-        },user);
+        }, user);
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
-        profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        profileDto.Background =
+            $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> RemoveProfile(
+        IGmlManager gmlManager,
+        string profileNames,
+        [FromQuery] bool removeFiles)
+    {
+        var profileNamesList = profileNames.Split(',');
+        var notRemovedProfiles = new List<string>();
+
+        foreach (var profileName in profileNamesList)
+        {
+            var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+            if (profile == null || profile.State == ProfileState.Loading)
+                notRemovedProfiles.Add(profileName);
+            else
+                await gmlManager.Profiles.RemoveProfile(profile, removeFiles);
+        }
+
+        var message = "Операция выполнена";
+
+        if (notRemovedProfiles.Any())
+        {
+            message += ". Было пропущено удаление:";
+            message += string.Join(",", notRemovedProfiles);
+        }
+        else
+        {
+            message += $""". Профили: "{profileNames}" удалены.""";
+        }
+
+        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
+
+        return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetProfileDetails(
@@ -340,47 +377,13 @@ public class ProfileHandler : IProfileHandler
             MinimumRamMb = createInfoDto.RamSize,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
-        },user);
+        }, user);
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
-        profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        profileDto.Background =
+            $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
-    }
-
-    [Authorize]
-    public static async Task<IResult> RemoveProfile(
-        IGmlManager gmlManager,
-        string profileNames,
-        [FromQuery] bool removeFiles)
-    {
-        var profileNamesList = profileNames.Split(',');
-        var notRemovedProfiles = new List<string>();
-
-        foreach (var profileName in profileNamesList)
-        {
-            var profile = await gmlManager.Profiles.GetProfile(profileName);
-
-            if (profile == null || profile.State == ProfileState.Loading)
-                notRemovedProfiles.Add(profileName);
-            else
-                await gmlManager.Profiles.RemoveProfile(profile, removeFiles);
-        }
-
-        var message = "Операция выполнена";
-
-        if (notRemovedProfiles.Any())
-        {
-            message += ". Было пропущено удаление:";
-            message += string.Join(",", notRemovedProfiles);
-        }else
-        {
-            message += $""". Профили: "{profileNames}" удалены.""";
-        }
-
-        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
-
-        return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }
 }

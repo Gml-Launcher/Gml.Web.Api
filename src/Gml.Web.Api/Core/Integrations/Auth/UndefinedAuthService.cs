@@ -30,5 +30,7 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+
+        };
+    }
 }

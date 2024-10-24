@@ -6,5 +6,4 @@ public interface ISystemService
     Task<string> GetPrivateKey();
     Task<string> GetSignature(string data);
     Task<string> GetBase64FromImageFile(IFormFile file);
-
 }

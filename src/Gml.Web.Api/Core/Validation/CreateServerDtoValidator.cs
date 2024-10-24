@@ -13,7 +13,8 @@ public class CreateServerDtoValidator : AbstractValidator<CreateServerDto>
 
         RuleFor(x => x.Address)
             .NotEmpty().WithMessage("Адрес сервера обязателен.")
-            .Matches(@"^([a-zA-Z0-9\.\-]+)$").WithMessage("Адрес сервера может содержать только английские буквы, цифры, точки и дефисы.")
+            .Matches(@"^([a-zA-Z0-9\.\-]+)$")
+            .WithMessage("Адрес сервера может содержать только английские буквы, цифры, точки и дефисы.")
             .Length(5, 255).WithMessage("Длина адреса сервера должна быть от 5 до 255 символов.");
 
         RuleFor(x => x.Port)

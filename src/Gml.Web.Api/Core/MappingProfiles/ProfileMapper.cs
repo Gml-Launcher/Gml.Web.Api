@@ -2,8 +2,6 @@ using AutoMapper;
 using Gml.Core.Launcher;
 using Gml.Models;
 using Gml.Models.Servers;
-using Gml.Models.System;
-using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.Servers;
 

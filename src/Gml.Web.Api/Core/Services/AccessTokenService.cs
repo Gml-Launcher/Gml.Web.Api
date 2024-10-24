@@ -1,8 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Gml.Web.Api.Core.Options;
-using Gml.Web.Api.Domains.Settings;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gml.Web.Api.Core.Services;

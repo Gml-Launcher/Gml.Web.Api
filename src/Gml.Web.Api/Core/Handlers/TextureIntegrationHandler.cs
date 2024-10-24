@@ -5,8 +5,6 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Texture;
 using GmlCore.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Primitives;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -81,27 +79,21 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
         var token = context.Request.Headers.Authorization.First()?.Split(' ').LastOrDefault();
 
         if (string.IsNullOrEmpty(login))
-        {
             return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Texture\"",
                 HttpStatusCode.BadRequest));
-        }
 
         if (await gmlManager.Users.GetUserByName(login) is not AuthUser user
             || string.IsNullOrEmpty(token)
             || string.IsNullOrEmpty(user.AccessToken)
             || !user.AccessToken.Equals(token))
-        {
             return Results.NotFound(ResponseMessage.Create("Ошибка идентификации",
                 HttpStatusCode.NotFound));
-        }
 
         var texture = context.Request.Form.Files["Texture"]?.OpenReadStream();
 
         if (texture is null)
-        {
             return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Texture\"",
                 HttpStatusCode.BadRequest));
-        }
 
         await skinServiceManager.UpdateSkin(user, texture);
 
@@ -119,27 +111,21 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
         var token = context.Request.Headers.Authorization.FirstOrDefault()?.Split(' ').FirstOrDefault();
 
         if (string.IsNullOrEmpty(login))
-        {
             return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Texture\"",
                 HttpStatusCode.BadRequest));
-        }
 
         if (await gmlManager.Users.GetUserByName(login) is not AuthUser user
             || string.IsNullOrEmpty(token)
             || string.IsNullOrEmpty(user.AccessToken)
             || !user.AccessToken.Equals(token))
-        {
             return Results.NotFound(ResponseMessage.Create("Ошибка идентификации",
                 HttpStatusCode.NotFound));
-        }
 
         var texture = context.Request.Form.Files["Texture"]?.OpenReadStream();
 
         if (texture is null)
-        {
             return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Texture\"",
                 HttpStatusCode.BadRequest));
-        }
 
         return await skinServiceManager.UpdateCloak(user, texture)
             ? Results.Ok(ResponseMessage.Create("Плащ успешно установлен!", HttpStatusCode.OK))
@@ -150,10 +136,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
     {
         var user = await gmlManager.Users.GetUserBySkinGuid(textureGuid);
 
-        if (user is null)
-        {
-            return Results.NotFound();
-        }
+        if (user is null) return Results.NotFound();
 
         return Results.Stream(await gmlManager.Users.GetSkin(user));
     }
@@ -162,10 +145,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
     {
         var user = await gmlManager.Users.GetUserByCloakGuid(textureGuid);
 
-        if (user is null)
-        {
-            return Results.NotFound();
-        }
+        if (user is null) return Results.NotFound();
 
         return Results.Stream(await gmlManager.Users.GetCloak(user));
     }

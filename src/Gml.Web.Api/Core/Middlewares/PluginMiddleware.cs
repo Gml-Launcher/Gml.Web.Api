@@ -1,21 +1,17 @@
-using System.Diagnostics;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
-using Spectre.Console;
 
 namespace Gml.Web.Api.Core.Middlewares;
 
 public class PluginMiddleware
 {
-    private readonly RequestDelegate _next;
     private static AccessTokenService _accessTokenService;
     private static IGmlManager _gmlManager;
+    private readonly RequestDelegate _next;
 
     public PluginMiddleware(RequestDelegate next, AccessTokenService accessTokenService, IGmlManager gmlManager)
     {
@@ -28,17 +24,11 @@ public class PluginMiddleware
     {
         var reference = await Process(context);
 
-        if (reference is null)
-        {
-            return;
-        }
+        if (reference is null) return;
 
-        if (!context.Response.HasStarted)
-        {
-            await _next(context);
-        }
+        if (!context.Response.HasStarted) await _next(context);
 
-        for (int i = 0; i < 10 && reference.IsAlive; i++)
+        for (var i = 0; i < 10 && reference.IsAlive; i++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -48,6 +38,7 @@ public class PluginMiddleware
 
         // Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
     }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static async Task<WeakReference?> Process(HttpContext context)
     {
@@ -58,10 +49,7 @@ public class PluginMiddleware
 
         var directoryInfo = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
 
-        if (!directoryInfo.Exists)
-        {
-            directoryInfo.Create();
-        }
+        if (!directoryInfo.Exists) directoryInfo.Create();
 
         var plugins = directoryInfo.GetFiles("*.dll", SearchOption.AllDirectories);
 
@@ -89,13 +77,11 @@ public class PluginMiddleware
                             ?.Split("Bearer ")
                             .Last();
 
-                        if (string.IsNullOrEmpty(accessToken)|| !_accessTokenService.ValidateToken(accessToken))
+                        if (string.IsNullOrEmpty(accessToken) || !_accessTokenService.ValidateToken(accessToken))
                         {
                             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                             return null;
                         }
-
-
                     }
 
                     var endpoint = Activator.CreateInstance(type) as IPluginEndpoint;
@@ -116,5 +102,4 @@ public class PluginMiddleware
 
         return new WeakReference(loadContext);
     }
-
 }

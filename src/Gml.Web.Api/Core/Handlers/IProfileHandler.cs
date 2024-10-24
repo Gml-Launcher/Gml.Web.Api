@@ -3,7 +3,6 @@ using FluentValidation;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Enums;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -52,5 +51,6 @@ public interface IProfileHandler
         string profileName,
         bool removeFiles);
 
-    static abstract Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string minecraftVersion);
+    static abstract Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader,
+        string minecraftVersion);
 }

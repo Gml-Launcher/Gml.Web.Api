@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -7,8 +6,8 @@ namespace Gml.Web.Api.Core.Hubs;
 
 public class NotificationHub : BaseHub
 {
-    private readonly NotificationController _notificationController;
     private static IDisposable? _event;
+    private readonly NotificationController _notificationController;
 
     public NotificationHub(IGmlManager gmlManager, NotificationController notificationController)
     {
@@ -16,7 +15,6 @@ public class NotificationHub : BaseHub
         _event ??= gmlManager.Notifications.Notifications.Subscribe(notify =>
         {
             foreach (var connection in _notificationController.Connections)
-            {
                 try
                 {
                     connection.SendAsync("Notifications", notify);
@@ -25,7 +23,6 @@ public class NotificationHub : BaseHub
                 {
                     Console.WriteLine(e);
                 }
-            }
         });
     }
 

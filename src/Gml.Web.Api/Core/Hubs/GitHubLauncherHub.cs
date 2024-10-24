@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -58,7 +56,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
     {
         try
         {
-            if (!gmlManager.Launcher.CanCompile(version, out string message))
+            if (!gmlManager.Launcher.CanCompile(version, out var message))
             {
                 SendCallerMessage(message);
                 return;

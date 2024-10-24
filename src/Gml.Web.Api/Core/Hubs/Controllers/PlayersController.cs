@@ -2,11 +2,9 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Security.Claims;
-using Gml.Core.Launcher;
 using Gml.Core.User;
 using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -16,10 +14,10 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
 {
     private readonly IGmlManager _gmlManager;
     private readonly HubEvents _hubEvents;
-    public ConcurrentDictionary<string, IDisposable> Timers = new();
+    public ConcurrentDictionary<string, UserLauncherInfo> LauncherConnections = new();
     public ConcurrentDictionary<string, IDisposable> Schedulers = new();
     public ConcurrentDictionary<string, ISingleClientProxy> Servers = new();
-    public ConcurrentDictionary<string, UserLauncherInfo> LauncherConnections = new();
+    public ConcurrentDictionary<string, IDisposable> Timers = new();
 
     public PlayersController(IGmlManager gmlManager, HubEvents hubEvents)
     {
@@ -47,13 +45,9 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
                 {
                     if (!LauncherConnections.TryGetValue(connectionId, out var userInfo)
                         || DateTimeOffset.Now > userInfo.ExpiredDate)
-                    {
                         RemoveLauncherConnection(connectionId);
-                    }
                     else
-                    {
                         connection.SendAsync("RequestLauncherHash");
-                    }
                 });
 
             Timers.TryAdd(connectionId, timer);
@@ -72,6 +66,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
                 timer.Dispose();
                 Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Timer disposed");
             }
+
             Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Disconnected");
 
             _hubEvents.KickUser.OnNext(user.User.Name);

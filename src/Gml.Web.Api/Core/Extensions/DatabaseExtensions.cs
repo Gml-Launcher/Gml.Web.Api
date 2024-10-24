@@ -5,7 +5,6 @@ using Gml.Web.Api.Domains.Settings;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -51,7 +50,6 @@ public static class DatabaseExtensions
         settingsSubject.OnNext(dataBaseSettings);
 
         RestoreStorage(gmlManager, dataBaseSettings);
-
     }
 
     private static void RestoreStorage(IGmlManager gmlManager, Settings settings)
