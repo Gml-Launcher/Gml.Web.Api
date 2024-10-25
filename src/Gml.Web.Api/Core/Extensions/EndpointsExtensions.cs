@@ -100,6 +100,18 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<UserAuthReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapGet("/api/v1/users/info/{userName}", AuthHandler.UserInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение общей информации о пользователе";
+                return generatedOperation;
+            })
+            .WithDescription("Получение общей информации о пользователе")
+            .WithName("User info")
+            .WithTags("Users")
+            .Produces<ResponseMessage<UserAuthReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         #endregion
 
         #region Integrations
