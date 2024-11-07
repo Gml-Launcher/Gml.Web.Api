@@ -47,8 +47,9 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is
-                { IsSuccess: true } authResult)
+            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType);
+
+            if (authResult.IsSuccess)
             {
                 var player = await gmlManager.Users.GetAuthData(
                     authResult.Login ?? authDto.Login,
@@ -70,6 +71,8 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     string.Empty,
                     HttpStatusCode.OK));
             }
+
+            return Results.BadRequest(ResponseMessage.Create(authResult.Message ?? "Неверный логин или пароль", HttpStatusCode.Unauthorized));
         }
         catch (HttpRequestException exception)
         {
@@ -82,8 +85,6 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             Console.WriteLine(exception);
             return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.InternalServerError));
         }
-
-        return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль", HttpStatusCode.Unauthorized));
     }
     public static async Task<IResult> AuthWithToken(
         HttpContext context,

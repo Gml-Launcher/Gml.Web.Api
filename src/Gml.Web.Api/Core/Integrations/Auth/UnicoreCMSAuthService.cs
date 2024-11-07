@@ -36,11 +36,21 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 
         var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
 
-        if (data is null || !result.IsSuccessStatusCode || data.User is null)
+        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null )
         {
+            if (data?.User?.Ban is {} ban)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = $"Пользователь заблокирован. Причина: {ban.Reason}"
+                };
+            }
+
             return new AuthResult
             {
                 IsSuccess = false,
+                Message = "Произошла ошибка при обработке данных с сервера авторизации."
             };
         }
 

@@ -15,6 +15,18 @@ public class UnicoreAuthResult
     public string RefreshToken { get; set; }
 }
 
+public class Ban
+{
+    [JsonProperty("reason")]
+    public string Reason { get; set; }
+
+    [JsonProperty("expires")]
+    public object Expires { get; set; }
+
+    [JsonProperty("created")]
+    public DateTime Created { get; set; }
+}
+
 public class User
 {
     [JsonProperty("uuid")]
@@ -69,5 +81,5 @@ public class User
     public object Cloak { get; set; }
 
     [JsonProperty("ban")]
-    public object Ban { get; set; }
+    public Ban Ban { get; set; }
 }
