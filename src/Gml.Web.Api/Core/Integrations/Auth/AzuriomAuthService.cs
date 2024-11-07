@@ -30,9 +30,22 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         var result =
             await _httpClient.PostAsync(endpoint, content);
 
+        var resultContent = await result.Content.ReadAsStringAsync();
+
+        var model = JsonConvert.DeserializeObject<AzuriomAuthResult>(resultContent);
+
+        if (model is null || model.Banned)
+        {
+            return new AuthResult
+            {
+                IsSuccess = false
+            };
+        }
+
         return new AuthResult
         {
-            Login = login,
+            Uuid = model.Uuid,
+            Login = model.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode
         };
     }

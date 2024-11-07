@@ -32,15 +32,23 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         var result =
             await _httpClient.PostAsync(endpoint, content);
 
-        var data = await result.Content.ReadAsStringAsync();
+        var responseResult = await result.Content.ReadAsStringAsync();
 
-        var jData = JObject.Parse(data);
+        var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
+
+        if (data is null || !result.IsSuccessStatusCode || data.User is null)
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+            };
+        }
 
         return new AuthResult
         {
-            Login = login,
+            Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
-            Uuid = jData["user"]?["uuid"]?.ToString()
+            Uuid = data.User.Uuid
         };
     }
 }
