@@ -34,11 +34,12 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
 
         var model = JsonConvert.DeserializeObject<AzuriomAuthResult>(resultContent);
 
-        if (model is null || model.Banned)
+        if (model is null || model.Banned || !result.IsSuccessStatusCode || (!result.IsSuccessStatusCode && resultContent.Contains("banned", StringComparison.OrdinalIgnoreCase)))
         {
             return new AuthResult
             {
-                IsSuccess = false
+                IsSuccess = false,
+                Message = $"Пользователь заблокирован."
             };
         }
 
