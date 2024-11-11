@@ -69,9 +69,9 @@ public static class EndpointsExtensions
 
         app.MapHub<ProfileHub>("/ws/profiles/restore").RequireAuthorization();
         app.MapHub<GitHubLauncherHub>("/ws/launcher/build").RequireAuthorization();
-        app.MapHub<GameServerHub>("/ws/gameServer");
-        app.MapHub<LauncherHub>("/ws/launcher");
-        app.MapHub<NotificationHub>("/ws/notifications");
+        app.MapHub<GameServerHub>("/ws/gameServer").RequireAuthorization();
+        app.MapHub<LauncherHub>("/ws/launcher").RequireAuthorization();
+        app.MapHub<NotificationHub>("/ws/notifications").RequireAuthorization();
 
         #endregion
 

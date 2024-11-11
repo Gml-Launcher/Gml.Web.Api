@@ -30,8 +30,8 @@ public class SettingsRepository(
         return settings;
     }
 
-    public async Task<Settings?> GetSettings()
+    public Task<Settings?> GetSettings()
     {
-        return await databaseContext.Settings.OrderBy(c => c.Id).LastOrDefaultAsync();
+        return databaseContext.Settings.OrderByDescending(c => c.Id).FirstOrDefaultAsync();
     }
 }

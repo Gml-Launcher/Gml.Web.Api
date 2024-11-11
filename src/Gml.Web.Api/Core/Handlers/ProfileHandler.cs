@@ -143,7 +143,8 @@ public class ProfileHandler : IProfileHandler
             Description = context.Request.Form["Description"],
             OriginalName = context.Request.Form["OriginalName"],
             JvmArguments = context.Request.Form["JvmArguments"],
-            GameArguments = context.Request.Form["GameArguments"]
+            GameArguments = context.Request.Form["GameArguments"],
+            IsEnabled = context.Request.Form["Enabled"] == "true"
         };
 
         var result = await validator.ValidateAsync(updateDto);
@@ -325,7 +326,7 @@ public class ProfileHandler : IProfileHandler
         {
             AccessToken = new string('0', 50),
             Uuid = Guid.NewGuid().ToString(),
-            Name = "Admin",
+            Name = "GmlAdmin",
             Manager = gmlManager
         };
 
