@@ -14,7 +14,7 @@
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
         "PROJECT_PATH": "",
-        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
+        "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     },
     "https": {
@@ -30,7 +30,7 @@
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
         "PROJECT_PATH": "",
-        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
+        "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     }
   }
