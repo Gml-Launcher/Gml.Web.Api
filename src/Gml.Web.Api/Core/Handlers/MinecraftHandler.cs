@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
@@ -11,11 +12,16 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public static async Task<IResult> GetMetaData(ISystemService systemService, IGmlManager gmlManager,
+    public static async Task<IResult> GetMetaData(HttpContext context, ISystemService systemService, IGmlManager gmlManager,
         IOptions<ServerSettings> options)
     {
         var skinsAddresses = options.Value.SkinDomains.ToList();
         skinsAddresses.AddRange(await GetEnvironmentAddress(gmlManager));
+        skinsAddresses.Add($"{context.Request.Host.Value}");
+        skinsAddresses.Add($"{context.Request.Scheme}://{context.Request.Host.Value}");
+        skinsAddresses.Add($".{context.Request.Host.Value}");
+        skinsAddresses.Add($"{context.Request.Host.Host}");
+        skinsAddresses.Add($".{context.Request.Host.Host}");
 
         skinsAddresses = skinsAddresses.Distinct().ToList();
 
@@ -58,7 +64,7 @@ public class MinecraftHandler : IMinecraftHandler
         return domains.ToArray();
     }
 
-    public static async Task<IResult> HasJoined(IGmlManager gmlManager, ISystemService systemService, string userName,
+    public static async Task<IResult> HasJoined(HttpContext context, IGmlManager gmlManager, ISystemService systemService, string userName,
         string serverId,
         string? ip)
     {
@@ -74,31 +80,35 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
+        var address = $"https://{context.Request.Host.Value}";
+
         var texture = new PropertyTextures
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
             ProfileId = user.Uuid,
-            Textures = new Textures
-            {
-                Skin = new SkinCape
-                {
-                    Url = (await gmlManager.Integrations.GetSkinServiceAsync())
-                        .Replace("{userName}",user.Name)
-                        .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
-                },
-                Cape = new SkinCape
-                {
-                    Url = (await gmlManager.Integrations.GetCloakServiceAsync())
-                        .Replace("{userName}", user.Name)
-                        .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
-                }
-            }
+            Textures = new Textures()
         };
 
+        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        {
+            texture.Textures.Skin = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
+            };
+        }
+
+        if (!string.IsNullOrEmpty(user.TextureCloakGuid))
+        {
+            texture.Textures.Cape = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
+            };
+        }
+
         var jsonData = JsonConvert.SerializeObject(texture);
+
+        Debug.WriteLine($"New user {jsonData}");
 
         var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
         var signature = await systemService.GetSignature(base64Value);
@@ -124,7 +134,7 @@ public class MinecraftHandler : IMinecraftHandler
         return Results.NoContent();
     }
 
-    public static async Task<IResult> GetProfile(IGmlManager gmlManager, ISystemService systemService, string uuid,
+    public static async Task<IResult> GetProfile(HttpContext context, IGmlManager gmlManager, ISystemService systemService, string uuid,
         bool unsigned = false)
     {
         var guid = Guid.Parse(uuid);
@@ -142,32 +152,36 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
+        var address = $"https://{context.Request.Host.Value}";
+
         var texture = new PropertyTextures
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
             ProfileId = uuid,
             SignatureRequired = unsigned == false,
-            Textures = new Textures
-            {
-                Skin = new SkinCape
-                {
-                    Url = (await gmlManager.Integrations.GetSkinServiceAsync())
-                        .Replace("{userName}", user.Name)
-                        .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
-                },
-                Cape = new SkinCape
-                {
-                    Url = (await gmlManager.Integrations.GetCloakServiceAsync())
-                        .Replace("{userName}", user.Name)
-                        .Replace("{userUuid}", user.Uuid)
-                        + $"?uuid/{Guid.NewGuid()}"
-                }
-            }
+            Textures = new Textures()
         };
 
+        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
+        {
+            texture.Textures.Skin = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
+            };
+        }
+
+        if (!string.IsNullOrEmpty(user.TextureCloakGuid))
+        {
+            texture.Textures.Cape = new SkinCape
+            {
+                Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
+            };
+        }
+
         var jsonData = JsonConvert.SerializeObject(texture);
+
+        Debug.WriteLine($"New user {jsonData}");
 
         var base64Value = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonData));
         var signature = await systemService.GetSignature(base64Value);

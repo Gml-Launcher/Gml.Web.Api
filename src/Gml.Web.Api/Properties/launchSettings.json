@@ -5,14 +5,15 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://192.168.31.199:5000",
+      "applicationUrl": "http://192.168.31.201:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
         "PROJECT_NAME": "GmlServer",
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
-        "PROJECT_PATH": ""
+        "PROJECT_PATH": "",
+        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
       }
     },
     "https": {
@@ -20,14 +21,15 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "https://192.168.31.199:5001;http://192.168.31.199:5000",
+      "applicationUrl": "https://192.168.31.201:5001;http://192.168.31.201:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
         "PROJECT_NAME": "GmlServer",
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
-        "PROJECT_PATH": ""
+        "PROJECT_PATH": "",
+        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
       }
     }
   }
