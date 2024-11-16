@@ -16,7 +16,7 @@ public class SettingsRepository(
     : ISettingsRepository
 {
     private readonly ServerSettings _options = options;
-    private readonly IObserver<Settings> _settingsObservable = settingsObservable;
+    public IObservable<Settings> SettingsUpdated => settingsObservable;
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
@@ -25,7 +25,7 @@ public class SettingsRepository(
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();
 
-        _settingsObservable.OnNext(settings);
+        settingsObservable.OnNext(settings);
 
         return settings;
     }
