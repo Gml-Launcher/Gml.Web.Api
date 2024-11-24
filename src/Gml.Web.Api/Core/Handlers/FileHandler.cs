@@ -19,11 +19,19 @@ public class FileHandler : IFileHandler
 
         var (file, fileName, length) = await gmlManager.Files.GetFileStream(fileHash);
 
-        response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
-        response.Headers.Append("Content-Length", length.ToString());
-        response.ContentType = "application/octet-stream";
+        try
+        {
+            response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
+            response.Headers.Append("Content-Length", length.ToString());
+            response.ContentType = "application/octet-stream";
 
-        await file.CopyToAsync(response.Body);
+            await file.CopyToAsync(response.Body);
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(fileName + exception);
+            gmlManager.BugTracker.CaptureException(exception);
+        }
     }
 
     [Authorize]
