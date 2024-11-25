@@ -120,6 +120,8 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     .Replace("{userName}", player.Name)
                     .Replace("{userUuid}", player.Uuid);
 
+                _ = gmlManager.Profiles.CreateUserSessionAsync(null, player);
+
                 return Results.Ok(ResponseMessage.Create(
                     mapper.Map<PlayerReadDto>(player),
                     string.Empty,
