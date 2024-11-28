@@ -69,9 +69,9 @@ public static class EndpointsExtensions
 
         app.MapHub<ProfileHub>("/ws/profiles/restore").RequireAuthorization();
         app.MapHub<GitHubLauncherHub>("/ws/launcher/build").RequireAuthorization();
-        app.MapHub<GameServerHub>("/ws/gameServer");
-        app.MapHub<LauncherHub>("/ws/launcher");
-        app.MapHub<NotificationHub>("/ws/notifications");
+        app.MapHub<GameServerHub>("/ws/gameServer").RequireAuthorization();
+        app.MapHub<LauncherHub>("/ws/launcher").RequireAuthorization();
+        app.MapHub<NotificationHub>("/ws/notifications").RequireAuthorization();
 
         #endregion
 
@@ -96,6 +96,18 @@ public static class EndpointsExtensions
             })
             .WithDescription("Авторизация")
             .WithName("Authenticate User")
+            .WithTags("Users")
+            .Produces<ResponseMessage<UserAuthReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapGet("/api/v1/users/info/{userName}", AuthHandler.UserInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение общей информации о пользователе";
+                return generatedOperation;
+            })
+            .WithDescription("Получение общей информации о пользователе")
+            .WithName("User info")
             .WithTags("Users")
             .Produces<ResponseMessage<UserAuthReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
@@ -127,6 +139,93 @@ public static class EndpointsExtensions
             .WithName("Update dsn sentry service url")
             .WithTags("Integration/Sentry")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
+
+        app.MapPost("/api/{projectId}/envelope", SentryHandler.CreateBugInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Добавление ошибок Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Добавление ошибок Sentry")
+            .WithName("Get sentry message")
+            .WithTags("Integration/Sentry");
+
+        app.MapPost("/api/v1/sentry", SentryHandler.GetBugs)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение всех ошибок Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Получение всех ошибок Sentry")
+            .WithName("Get all bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapPost("/api/v1/sentry/filter", SentryHandler.GetFilterSentry)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение отфильтрованного списка ошибок";
+                return generatedOperation;
+            })
+            .WithDescription("Получение отфильтрованного списка ошибок")
+            .WithName("Get filtered bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapPost("/api/v1/sentry/filter/list", SentryHandler.GetFilterListSentry)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение отфильтрованного списка по ошибок";
+                return generatedOperation;
+            })
+            .WithDescription("Получение отфильтрованного списка по ошибок")
+            .WithName("Get filtered on bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/sentry/stats/last", SentryHandler.GetLastSentryErrors)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка ошибок за последние 3 месяца";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка ошибок за последние 3 месяца")
+            .WithName("Get last bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/sentry/stats/summary", SentryHandler.GetSummarySentryErrors)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получить сводку ошибок";
+                return generatedOperation;
+            })
+            .WithDescription("Получить сводку ошибок")
+            .WithName("Get summary bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/sentry/{exception}", SentryHandler.GetByException)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение exception в Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Получение exception в Sentry")
+            .WithName("Get exception on sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization();
+
+        app.MapGet("/api/v1/sentry/bug/{id}", SentryHandler.GetBugId)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение бага по Guid Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Получение бага по Guid Sentry")
+            .WithName("Get bug or id sentry")
+            .WithTags("Integration/Sentry")
             .RequireAuthorization();
 
         #endregion
@@ -336,6 +435,18 @@ public static class EndpointsExtensions
             })
             .WithDescription("Аутентификация через промежуточный сервис авторизации")
             .WithName("Auth")
+            .WithTags("Integration/Auth")
+            .Produces<ResponseMessage<PlayerReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/integrations/auth/checkToken", AuthIntegrationHandler.AuthWithToken)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Проверка актуальности токена авторизации";
+                return generatedOperation;
+            })
+            .WithDescription("Проверка актуальности токена авторизации")
+            .WithName("Auth with access token")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<PlayerReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);

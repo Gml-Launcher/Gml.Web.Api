@@ -1,6 +1,7 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
+using Gml.Core.User;
 using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Dto.Integration;
@@ -46,8 +47,9 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            if (await authService.CheckAuth(authDto.Login, authDto.Password, authType) is
-                { IsSuccess: true } authResult)
+            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType);
+
+            if (authResult.IsSuccess)
             {
                 var player = await gmlManager.Users.GetAuthData(
                     authResult.Login ?? authDto.Login,
@@ -58,9 +60,67 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Uuid,
                     context.Request.Headers["X-HWID"]);
 
+                await gmlManager.Profiles.CreateUserSessionAsync(null, player);
+
                 player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
                     .Replace("{userName}", player.Name)
                     .Replace("{userUuid}", player.Uuid);
+
+                return Results.Ok(ResponseMessage.Create(
+                    mapper.Map<PlayerReadDto>(player),
+                    string.Empty,
+                    HttpStatusCode.OK));
+            }
+
+            return Results.BadRequest(ResponseMessage.Create(authResult.Message ?? "Неверный логин или пароль", HttpStatusCode.Unauthorized));
+        }
+        catch (HttpRequestException exception)
+        {
+            Console.WriteLine(exception);
+            return Results.BadRequest(ResponseMessage.Create(
+                "Произошла ошибка при обмене данных с сервисом авторизации.", HttpStatusCode.InternalServerError));
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.InternalServerError));
+        }
+    }
+    public static async Task<IResult> AuthWithToken(
+        HttpContext context,
+        IGmlManager gmlManager,
+        IMapper mapper,
+        IAuthService authService,
+        BaseUserPassword authDto)
+    {
+        try
+        {
+            var authType = await gmlManager.Integrations.GetAuthType();
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
+
+            if (string.IsNullOrWhiteSpace(userAgent))
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Не удалось определить устройство, с которого произошла авторизация",
+                    HttpStatusCode.BadRequest));
+
+            if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.Password))
+            {
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Не указан пароль при авторизации!",
+                    HttpStatusCode.BadRequest));
+            }
+
+            var user = await gmlManager.Users.GetUserByAccessToken(authDto.AccessToken);
+
+            if (user is not null && user.ExpiredDate> DateTime.Now)
+            {
+                var player = user;
+
+                player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
+                    .Replace("{userName}", player.Name)
+                    .Replace("{userUuid}", player.Uuid);
+
+                _ = gmlManager.Profiles.CreateUserSessionAsync(null, player);
 
                 return Results.Ok(ResponseMessage.Create(
                     mapper.Map<PlayerReadDto>(player),

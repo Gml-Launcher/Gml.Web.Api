@@ -11,7 +11,7 @@ public class SentryErrorSaveHandler : IErrorSaveHandler
 {
     public static async Task<IResult> GetDsnUrl(HttpContext context, IGmlManager gmlManager)
     {
-        var serviceUrl = await gmlManager.Integrations.GetSentryService() ?? string.Empty;
+        var serviceUrl = await gmlManager.Integrations.GetSentryService() ?? $"{context.Request.Scheme}://gml@{context.Request.Host.Value}/1";
 
         return Results.Ok(ResponseMessage.Create(new UrlServiceDto(serviceUrl), "Успешно", HttpStatusCode.OK));
     }

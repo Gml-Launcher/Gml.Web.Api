@@ -32,15 +32,33 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         var result =
             await _httpClient.PostAsync(endpoint, content);
 
-        var data = await result.Content.ReadAsStringAsync();
+        var responseResult = await result.Content.ReadAsStringAsync();
 
-        var jData = JObject.Parse(data);
+        var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
+
+        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null )
+        {
+            if (data?.User?.Ban is {} ban)
+            {
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    Message = $"Пользователь заблокирован. Причина: {ban.Reason}"
+                };
+            }
+
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Произошла ошибка при обработке данных с сервера авторизации."
+            };
+        }
 
         return new AuthResult
         {
-            Login = login,
+            Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
-            Uuid = jData["user"]?["uuid"]?.ToString()
+            Uuid = data.User.Uuid
         };
     }
 }

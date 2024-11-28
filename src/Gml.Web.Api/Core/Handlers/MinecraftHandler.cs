@@ -4,8 +4,10 @@ using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Minecraft.AuthLib;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Extensions;
 using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -80,7 +82,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var address = $"https://{context.Request.Host.Value}";
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+
+        var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
         var texture = new PropertyTextures
         {
@@ -152,7 +156,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var address = $"https://{context.Request.Host.Value}";
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+
+        var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
         var texture = new PropertyTextures
         {

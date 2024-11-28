@@ -6,4 +6,5 @@ public interface ISettingsRepository
 {
     Task<Settings?> UpdateSettings(Settings settings);
     Task<Settings?> GetSettings();
+    IObservable<Settings> SettingsUpdated { get; }
 }

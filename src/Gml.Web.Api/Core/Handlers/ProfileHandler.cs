@@ -143,7 +143,8 @@ public class ProfileHandler : IProfileHandler
             Description = context.Request.Form["Description"],
             OriginalName = context.Request.Form["OriginalName"],
             JvmArguments = context.Request.Form["JvmArguments"],
-            GameArguments = context.Request.Form["GameArguments"]
+            GameArguments = context.Request.Form["GameArguments"],
+            IsEnabled = context.Request.Form["Enabled"] == "true"
         };
 
         var result = await validator.ValidateAsync(updateDto);
@@ -189,7 +190,7 @@ public class ProfileHandler : IProfileHandler
 
         var message = $"""Профиль "{updateDto.Name}" успешно обновлен""";
 
-        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
+        await gmlManager.Notifications.SendMessage("Обновление профиля", message, NotificationType.Info);
 
         return Results.Ok(ResponseMessage.Create(newProfile, message, HttpStatusCode.OK));
     }
@@ -265,9 +266,11 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{createInfoDto.ProfileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        var token = context.Request.Headers["Authorization"].FirstOrDefault();
+
         var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
 
-        if (user is null)
+        if (user is null || user.AccessToken != token)
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
@@ -323,7 +326,7 @@ public class ProfileHandler : IProfileHandler
         {
             AccessToken = new string('0', 50),
             Uuid = Guid.NewGuid().ToString(),
-            Name = "Admin",
+            Name = "GmlAdmin",
             Manager = gmlManager
         };
 
@@ -377,7 +380,7 @@ public class ProfileHandler : IProfileHandler
             message += $""". Профили: "{profileNames}" удалены.""";
         }
 
-        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
+        await gmlManager.Notifications.SendMessage("Удаление профилей", message, NotificationType.Info);
 
         return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }

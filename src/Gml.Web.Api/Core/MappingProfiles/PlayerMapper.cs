@@ -9,5 +9,6 @@ public class PlayerMapper : Profile
     public PlayerMapper()
     {
         CreateMap<AuthUser, PlayerReadDto>();
+        CreateMap<AuthUser, PlayerTextureDto>();
     }
 }
