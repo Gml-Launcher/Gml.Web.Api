@@ -7,6 +7,7 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+RUN apt-get update && apt-get install -y git
 COPY ["src/Gml.Web.Api/Gml.Web.Api.csproj", "src/Gml.Web.Api/"]
 COPY ["src/Gml.Web.Api.Domains/Gml.Web.Api.Domains.csproj", "src/Gml.Web.Api.Domains/"]
 COPY ["src/Gml.Web.Api.Dto/Gml.Web.Api.Dto.csproj", "src/Gml.Web.Api.Dto/"]
