@@ -190,7 +190,7 @@ public class ProfileHandler : IProfileHandler
 
         var message = $"""Профиль "{updateDto.Name}" успешно обновлен""";
 
-        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
+        await gmlManager.Notifications.SendMessage("Обновление профиля", message, NotificationType.Info);
 
         return Results.Ok(ResponseMessage.Create(newProfile, message, HttpStatusCode.OK));
     }
@@ -380,7 +380,7 @@ public class ProfileHandler : IProfileHandler
             message += $""". Профили: "{profileNames}" удалены.""";
         }
 
-        await gmlManager.Notifications.SendMessage(message, NotificationType.Info);
+        await gmlManager.Notifications.SendMessage("Удаление профилей", message, NotificationType.Info);
 
         return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }

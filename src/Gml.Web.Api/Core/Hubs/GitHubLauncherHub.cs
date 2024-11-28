@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Gml.Web.Api.Core.Hubs;
@@ -70,11 +71,15 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             {
                 var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
 
-                await gmlManager.Launcher.Build(version, osTypes);
+                var result = await gmlManager.Launcher.Build(version, osTypes);
 
                 eventObservable.Dispose();
 
-                SendCallerMessage("Лаунчер успешно скомпилирован");
+                if (result)
+                    await gmlManager.Notifications.SendMessage("Лаунчер успешно скомпилирован!", NotificationType.Info);
+                else
+                    await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!", NotificationType.Error);
+
             }
         }
         catch (Exception exception)
