@@ -19,18 +19,21 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
 
             if (Directory.Exists(projectPath))
             {
-                SendCallerMessage("Лаунчер уже существует в папке, удалите его перед сборкой");
+                await gmlManager.Notifications
+                    .SendMessage("Лаунчер уже существует в папке, удалите его перед сборкой", NotificationType.Error);
                 return;
             }
 
             projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher");
 
             ChangeProgress(nameof(GitHubLauncherHub), 5);
-            var allowedVersions = await gitHubService.GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
+            var allowedVersions = await gitHubService
+                .GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
 
             if (allowedVersions.All(c => c != branchName))
             {
-                SendCallerMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается");
+                await gmlManager.Notifications
+                    .SendMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается", NotificationType.Error);
                 return;
             }
 

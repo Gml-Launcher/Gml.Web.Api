@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Diagnostics;
 using System.IO.Compression;
 using GmlCore.Interfaces;
 using Newtonsoft.Json.Linq;
@@ -58,39 +59,78 @@ public class GitHubService : IGitHubService
         return _versions;
     }
 
+    // public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
+    // {
+    //
+    //
+    //     var directory = new DirectoryInfo(projectPath);
+    //
+    //     if (!directory.Exists) directory.Create();
+    //
+    //     var zipPath = $"{projectPath}/{branchName}.zip";
+    //     var extractPath = NormalizePath(projectPath, branchName);
+    //
+    //     var url = $"https://github.com/Gml-Launcher/Gml.Launcher/archive/refs/tags/{branchName}.zip";
+    //
+    //     using (var client = new HttpClient())
+    //     {
+    //         var stream = await client.GetStreamAsync(url);
+    //
+    //         await using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None))
+    //         {
+    //             await stream.CopyToAsync(fileStream);
+    //         }
+    //     }
+    //
+    //     // Проверяем, существует ли уже папка для распаковки
+    //     if (!Directory.Exists(extractPath))
+    //         // Если папка не существует - создаем ее
+    //         Directory.CreateDirectory(extractPath);
+    //
+    //     // Распаковываем архив
+    //     ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+    //
+    //     File.Delete(zipPath);
+    //
+    //     return new DirectoryInfo(extractPath).GetDirectories().First().FullName;
+    // }
+
     public async Task<string> DownloadProject(string projectPath, string branchName, string repoUrl)
     {
+        var directory = new DirectoryInfo(Path.Combine(projectPath, branchName));
 
-        var directory = new DirectoryInfo(projectPath);
-
-        if (!directory.Exists) directory.Create();
-
-        var zipPath = $"{projectPath}/{branchName}.zip";
-        var extractPath = NormalizePath(projectPath, branchName);
-
-        var url = $"https://github.com/Gml-Launcher/Gml.Launcher/archive/refs/tags/{branchName}.zip";
-
-        using (var client = new HttpClient())
+        if (!directory.Exists)
         {
-            var stream = await client.GetStreamAsync(url);
-
-            await using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                await stream.CopyToAsync(fileStream);
-            }
+            directory.Create();
         }
 
-        // Проверяем, существует ли уже папка для распаковки
-        if (!Directory.Exists(extractPath))
-            // Если папка не существует - создаем ее
-            Directory.CreateDirectory(extractPath);
+        var processInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = $"clone --recursive --branch {branchName} {repoUrl} {directory.FullName}",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
 
-        // Распаковываем архив
-        ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+        using var process = new Process();
+        process.StartInfo = processInfo;
+        process.Start();
 
-        File.Delete(zipPath);
+        var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
 
-        return new DirectoryInfo(extractPath).GetDirectories().First().FullName;
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"An error occurred while cloning the repository: {error}");
+        }
+
+        Console.WriteLine(output);
+
+        return directory.FullName;
     }
 
     private string NormalizePath(string directory, string fileDirectory)
