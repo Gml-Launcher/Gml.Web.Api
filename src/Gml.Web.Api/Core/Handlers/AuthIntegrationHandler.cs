@@ -103,10 +103,10 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     "Не удалось определить устройство, с которого произошла авторизация",
                     HttpStatusCode.BadRequest));
 
-            if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.Password))
+            if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.AccessToken))
             {
                 return Results.BadRequest(ResponseMessage.Create(
-                    "Не указан пароль при авторизации!",
+                    "Не был передан AccessToken",
                     HttpStatusCode.BadRequest));
             }
 
