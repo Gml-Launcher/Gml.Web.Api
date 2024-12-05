@@ -41,9 +41,6 @@ public class User
     [JsonProperty("password")]
     public string Password { get; set; }
 
-    [JsonProperty("superuser")]
-    public bool Superuser { get; set; }
-
     [JsonProperty("activated")]
     public bool Activated { get; set; }
 
