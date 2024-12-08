@@ -10,6 +10,7 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
@@ -341,12 +342,15 @@ public class ProfileHandler : IProfileHandler
             MinimumRamMb = createInfoDto.RamSize,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
-        },user);
+        }, user);
+
+        var whiteListPlayers = await gmlManager.Users.GetUsers(profile.UserWhiteListGuid);
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
         profileDto.IsEnabled = profile.IsEnabled;
+        profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
     }
@@ -408,7 +412,7 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" уже находится белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
-        profile.UserWhiteListGuid.Add(Guid.Parse(user.Uuid));
+        profile.UserWhiteListGuid.Add(user.Uuid);
         await gmlManager.Profiles.SaveProfiles();
 
         return Results.Ok(ResponseMessage.Create("Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
@@ -436,7 +440,7 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
-        profile.UserWhiteListGuid.Remove(Guid.Parse(user.Uuid));
+        profile.UserWhiteListGuid.Remove(user.Uuid);
         await gmlManager.Profiles.SaveProfiles();
 
         return Results.Ok(ResponseMessage.Create("Пользователь успешно удален из белого списка профиля", HttpStatusCode.OK));
