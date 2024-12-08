@@ -346,6 +346,7 @@ public class ProfileHandler : IProfileHandler
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        profileDto.IsEnabled = profile.IsEnabled;
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
     }

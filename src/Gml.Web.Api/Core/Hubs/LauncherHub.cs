@@ -26,7 +26,7 @@ public class LauncherHub : BaseHub
 
         _profilesChangedEvent ??= gmlManager.Profiles.ProfilesChanged.Subscribe(eventType =>
         {
-            foreach (var connection in _playerController.LauncherConnections.Values.Select(c => c.Connection).OfType<ISingleClientProxy>())
+            foreach (var connection in _playerController.LauncherInfos.Values.Select(c => c.Connection).OfType<ISingleClientProxy>())
             {
                 connection?.SendAsync("RefreshProfiles");
             }

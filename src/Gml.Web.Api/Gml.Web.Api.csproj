@@ -142,6 +142,9 @@
     <Compile Update="Core\Handlers\SentryHandler.cs">
       <DependentUpon>ISentryHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\PlayersHandler.cs">
+      <DependentUpon>IPlayersHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

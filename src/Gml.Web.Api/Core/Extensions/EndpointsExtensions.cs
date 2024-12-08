@@ -12,6 +12,7 @@ using Gml.Web.Api.Dto.Servers;
 using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces.Notifications;
+using GmlCore.Interfaces.User;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -511,7 +512,7 @@ public static class EndpointsExtensions
         app.MapGet("/api/v1/profiles", ProfileHandler.GetProfiles)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение списка профилилей";
+                generatedOperation.Summary = "Получение списка профилей";
                 return generatedOperation;
             })
             .WithDescription("Получение списка профиля")
@@ -624,6 +625,22 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
+
+        #endregion
+
+        #region Players
+
+        app.MapGet("/api/v1/players", PlayersHandler.GetPlayers)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка игроков";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка игроков")
+            .WithName("Players list")
+            .WithTags("Players")
+            .Produces<ResponseMessage<List<IUser>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         #endregion
 
