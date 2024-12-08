@@ -305,6 +305,17 @@ public static class EndpointsExtensions
             .WithTags("Integration/Textures")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapGet("/api/v1/integrations/texture/head/{userUuid}", TextureIntegrationHandler.GetUserHead)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение текстуры лица пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Получение текстуры лица пользователя")
+            .WithName("Get user head texture url")
+            .WithTags("Integration/Textures")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         app.MapGet("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.GetCloakUrl)
             .WithOpenApi(generatedOperation =>
             {

@@ -408,7 +408,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (profile.UserWhiteListGuid.Any())
+        if (profile.UserWhiteListGuid.Any(c => c.Equals(userUuid)))
             return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" уже находится белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
@@ -436,7 +436,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (!profile.UserWhiteListGuid.Any())
+        if (!profile.UserWhiteListGuid.Any(c=> c.Equals(userUuid)))
             return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
