@@ -588,6 +588,32 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
+        app.MapPost("/api/v1/profiles/players/whitelist", ProfileHandler.AddPlayerToWhiteList)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Добавление игрока в белый список профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Добавление игрока в белый список профиля")
+            .WithName("Add users white list profile")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
+
+        app.MapDelete("/api/v1/profiles/players/whitelist", ProfileHandler.RemovePlayerFromWhiteList)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление игрока из белого списка профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление игрока из белого списка профиля")
+            .WithName("Remove user from profile white list")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization();
+
         app.MapPost("/api/v1/profiles/info", ProfileHandler.GetProfileInfo)
             .WithOpenApi(generatedOperation =>
             {

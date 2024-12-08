@@ -385,4 +385,60 @@ public class ProfileHandler : IProfileHandler
 
         return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }
+
+    [Authorize]
+    public static async Task<IResult> AddPlayerToWhiteList(
+        IGmlManager gmlManager,
+        string profileName,
+        string userUuid)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var user = await gmlManager.Users.GetUserByUuid(userUuid);
+
+        if (user is null)
+            return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
+                HttpStatusCode.NotFound));
+
+        if (profile.UserWhiteListGuid.Any())
+            return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" уже находится белом списке пользователей профиля",
+                HttpStatusCode.BadRequest));
+
+        profile.UserWhiteListGuid.Add(Guid.Parse(user.Uuid));
+        await gmlManager.Profiles.SaveProfiles();
+
+        return Results.Ok(ResponseMessage.Create("Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> RemovePlayerFromWhiteList(
+        IGmlManager gmlManager,
+        string profileName,
+        string userUuid)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var user = await gmlManager.Users.GetUserByUuid(userUuid);
+
+        if (user is null)
+            return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
+                HttpStatusCode.NotFound));
+
+        if (!profile.UserWhiteListGuid.Any())
+            return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
+                HttpStatusCode.BadRequest));
+
+        profile.UserWhiteListGuid.Remove(Guid.Parse(user.Uuid));
+        await gmlManager.Profiles.SaveProfiles();
+
+        return Results.Ok(ResponseMessage.Create("Пользователь успешно удален из белого списка профиля", HttpStatusCode.OK));
+    }
 }
