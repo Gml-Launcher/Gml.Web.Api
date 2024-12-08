@@ -599,7 +599,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
-        app.MapPost("/api/v1/profiles/players/whitelist", ProfileHandler.AddPlayerToWhiteList)
+        app.MapPost("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.AddPlayerToWhiteList)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Добавление игрока в белый список профиля";
@@ -612,7 +612,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization();
 
-        app.MapDelete("/api/v1/profiles/players/whitelist", ProfileHandler.RemovePlayerFromWhiteList)
+        app.MapDelete("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.RemovePlayerFromWhiteList)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление игрока из белого списка профиля";
