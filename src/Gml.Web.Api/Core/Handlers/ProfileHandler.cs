@@ -28,7 +28,34 @@ public class ProfileHandler : IProfileHandler
         IMapper mapper,
         IGmlManager gmlManager)
     {
-        var profiles = await gmlManager.Profiles.GetProfiles();
+        IEnumerable<IGameProfile> profiles = [];
+
+        if (context.User.IsInRole("Player"))
+        {
+            var userName = context.User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Results.BadRequest(ResponseMessage.Create("Не удалось идентифицировать пользователя",
+                    HttpStatusCode.BadRequest));
+            }
+
+            var user = await gmlManager.Users.GetUserByName(userName);
+
+            if (user is null)
+            {
+                return Results.BadRequest(ResponseMessage.Create("Не удалось идентифицировать пользователя",
+                    HttpStatusCode.BadRequest));
+            }
+
+            profiles = (await gmlManager.Profiles.GetProfiles())
+                .Where(c => c.IsEnabled || c.UserWhiteListGuid
+                    .Any(g => g.Equals(user.Uuid)));
+        }else if (context.User.IsInRole("Admin"))
+        {
+            profiles = await gmlManager.Profiles.GetProfiles();
+        }
+
         var gameProfiles = profiles as IGameProfile[] ?? profiles.ToArray();
 
         var dtoProfiles = mapper.Map<ProfileReadDto[]>(profiles);
