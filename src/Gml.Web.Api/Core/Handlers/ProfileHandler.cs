@@ -276,6 +276,9 @@ public class ProfileHandler : IProfileHandler
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
 
+        if (profile.UserWhiteListGuid.Any() && profile.UserWhiteListGuid.Any(c => c.Equals(user.Uuid)))
+            return Results.Forbid();
+
         user.Manager = gmlManager;
 
         var profileInfo = await gmlManager.Profiles.GetProfileInfo(profile.Name, new StartupOptions
