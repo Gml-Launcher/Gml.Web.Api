@@ -49,8 +49,10 @@ public class ProfileHandler : IProfileHandler
             }
 
             profiles = (await gmlManager.Profiles.GetProfiles())
-                .Where(c => c.IsEnabled || c.UserWhiteListGuid
-                    .Any(g => g.Equals(user.Uuid)));
+                .Where(c =>
+                    c is { IsEnabled: true, UserWhiteListGuid.Count: 0 } ||
+                    c.UserWhiteListGuid.Any(g => g.Equals(user.Uuid)));
+
         }else if (context.User.IsInRole("Admin"))
         {
             profiles = await gmlManager.Profiles.GetProfiles();
