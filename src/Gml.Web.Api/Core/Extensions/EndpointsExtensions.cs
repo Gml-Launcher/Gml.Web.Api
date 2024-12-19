@@ -685,6 +685,30 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapPost("/api/v1/players/ban", PlayersHandler.BanPlayer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Блокировка списка игроков";
+                return generatedOperation;
+            })
+            .WithDescription("Блокировка списка игроков")
+            .WithName("Ban players")
+            .WithTags("Players")
+            .Produces<ResponseMessage<List<IUser>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/players/pardon", PlayersHandler.PardonPlayer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Разблокировка списка игроков";
+                return generatedOperation;
+            })
+            .WithDescription("Разблокировка списка игроков")
+            .WithName("Pardon players")
+            .WithTags("Players")
+            .Produces<ResponseMessage<List<IUser>>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         #endregion
 
         #region Files
