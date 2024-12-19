@@ -298,7 +298,7 @@ public class ProfileHandler : IProfileHandler
 
         var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
 
-        if (user is null || user.AccessToken != token)
+        if (user is null || user.AccessToken != token || user.IsBanned)
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
