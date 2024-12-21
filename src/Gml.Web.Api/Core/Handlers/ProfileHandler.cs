@@ -425,6 +425,7 @@ public class ProfileHandler : IProfileHandler
     [Authorize]
     public static async Task<IResult> AddPlayerToWhiteList(
         IGmlManager gmlManager,
+        IMapper mapper,
         string profileName,
         string userUuid)
     {
@@ -447,7 +448,9 @@ public class ProfileHandler : IProfileHandler
         profile.UserWhiteListGuid.Add(user.Uuid);
         await gmlManager.Profiles.SaveProfiles();
 
-        return Results.Ok(ResponseMessage.Create("Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
+        var mappedUser = mapper.Map<PlayerReadDto>(user);
+
+        return Results.Ok(ResponseMessage.Create(mappedUser, "Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
     }
 
     [Authorize]
