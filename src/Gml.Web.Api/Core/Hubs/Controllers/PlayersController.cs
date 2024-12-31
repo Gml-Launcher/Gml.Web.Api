@@ -15,15 +15,12 @@ namespace Gml.Web.Api.Core.Hubs.Controllers;
 public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
 {
     private readonly IGmlManager _gmlManager;
-    private readonly HubEvents _hubEvents;
     public ConcurrentDictionary<string, IDisposable> Timers = new();
-    public ConcurrentDictionary<string, IDisposable> Schedulers = new();
-    public ConcurrentDictionary<string, ISingleClientProxy> Servers = new();
-    public ConcurrentDictionary<string, UserLauncherInfo> LauncherConnections = new();
+    public ConcurrentDictionary<string, ISingleClientProxy> GameServersConnections = new();
+    public ConcurrentDictionary<string, UserLauncherInfo> LauncherInfos = new();
 
-    public PlayersController(IGmlManager gmlManager, HubEvents hubEvents)
+    public PlayersController(IGmlManager gmlManager)
     {
-        _hubEvents = hubEvents;
         _gmlManager = gmlManager;
     }
 
@@ -33,7 +30,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
         var userName = contextUser.FindFirstValue(JwtRegisteredClaimNames.Name);
         if (!string.IsNullOrEmpty(userName) && await _gmlManager.Users.GetUserByName(userName) is AuthUser user)
         {
-            LauncherConnections.TryAdd(connectionId, new UserLauncherInfo
+            LauncherInfos.TryAdd(connectionId, new UserLauncherInfo
             {
                 User = user,
                 ExpiredDate = DateTimeOffset.Now.AddSeconds(30),
@@ -45,7 +42,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
             var timer = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(5))
                 .Subscribe(_ =>
                 {
-                    if (!LauncherConnections.TryGetValue(connectionId, out var userInfo)
+                    if (!LauncherInfos.TryGetValue(connectionId, out var userInfo)
                         || DateTimeOffset.Now > userInfo.ExpiredDate)
                     {
                         RemoveLauncherConnection(connectionId);
@@ -64,7 +61,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
 
     public void RemoveLauncherConnection(string connectionId)
     {
-        if (LauncherConnections.TryRemove(connectionId, out var user))
+        if (LauncherInfos.TryRemove(connectionId, out var user))
         {
             // Останавливаем таймер для данного лаунчера
             if (Timers.TryRemove(connectionId, out var timer))
@@ -74,15 +71,15 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
             }
             Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Disconnected");
 
-            _hubEvents.KickUser.OnNext(user.User.Name);
+            _ = OnKickUser(user.User.Name, "Потеряно соединение с сервером");
         }
     }
 
     public void ConfirmLauncherHash(string connectionId, string hash)
     {
-        if (LauncherConnections.TryGetValue(connectionId, out var user))
+        if (LauncherInfos.TryGetValue(connectionId, out var user))
         {
-            Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Session active");
+            Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Session active | hash: {hash}");
             user.ExpiredDate = DateTimeOffset.Now.AddSeconds(30);
         }
     }
@@ -90,7 +87,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
     public bool GetLauncherConnection(string userName, out UserLauncherInfo? launcherInfo)
     {
         var userConnection =
-            LauncherConnections.FirstOrDefault(c => c.Value.User.Name == userName);
+            LauncherInfos.FirstOrDefault(c => c.Value.User.Name == userName);
 
         if (userConnection.Key is null)
         {
@@ -98,6 +95,22 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
             return false;
         }
 
-        return LauncherConnections.TryGetValue(userConnection.Key, out launcherInfo);
+        return LauncherInfos.TryGetValue(userConnection.Key, out launcherInfo);
+    }
+
+    internal async Task OnKickUser(string userName, string message)
+    {
+        foreach (var caller in GameServersConnections.Values)
+        {
+            try
+            {
+                await caller.SendAsync("KickUser", userName, message);
+                Debug.WriteLine($"User Kicked: {userName}");
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Ошибка при отправке сообщения на удаление: {e}");
+            }
+        }
     }
 }

@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using System.Net;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Gml.Web.Api.Core.Services;
+using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
 using Spectre.Console;
@@ -26,24 +28,32 @@ public class PluginMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        var reference = await Process(context);
-
-        if (reference is null)
+        try
         {
-            return;
+            var reference = await Process(context);
+
+            if (reference is null)
+            {
+                return;
+            }
+
+            if (!context.Response.HasStarted)
+            {
+                await _next(context);
+            }
+
+            for (int i = 0; i < 10 && reference.IsAlive; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                // Debug.WriteLine($"Clean GC: {i}/10");
+            }
         }
-
-        if (!context.Response.HasStarted)
+        catch (Exception exeption)
         {
-            await _next(context);
-        }
-
-        for (int i = 0; i < 10 && reference.IsAlive; i++)
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            // Debug.WriteLine($"Clean GC: {i}/10");
+            _gmlManager.BugTracker.CaptureException(exeption);
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Сервер обработал принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
         }
 
         // Debug.WriteLine($"Unload successful: {!reference.IsAlive}");

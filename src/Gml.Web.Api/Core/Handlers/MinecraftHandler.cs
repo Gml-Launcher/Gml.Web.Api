@@ -72,7 +72,7 @@ public class MinecraftHandler : IMinecraftHandler
     {
         var user = await gmlManager.Users.GetUserByName(userName);
 
-        if (user is null || string.IsNullOrEmpty(userName) || await gmlManager.Users.CanJoinToServer(user, serverId) == false)
+        if (user is null || string.IsNullOrEmpty(userName) || user.IsBanned || await gmlManager.Users.CanJoinToServer(user, serverId) == false)
             return Results.NoContent();
 
         var profile = new Profile
@@ -147,7 +147,7 @@ public class MinecraftHandler : IMinecraftHandler
 
         var user = await gmlManager.Users.GetUserByUuid(guidUuid);
 
-        if (user is null || string.IsNullOrEmpty(guidUuid)) return Results.NoContent();
+        if (user is null || string.IsNullOrEmpty(guidUuid) || user.IsBanned) return Results.NoContent();
 
         var profile = new Profile
         {

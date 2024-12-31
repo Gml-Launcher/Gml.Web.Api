@@ -60,6 +60,13 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Uuid,
                     context.Request.Headers["X-HWID"]);
 
+                if (player.IsBanned)
+                {
+                    return Results.BadRequest(ResponseMessage.Create(
+                        "Пользователь заблокирован!",
+                        HttpStatusCode.BadRequest));
+                }
+
                 await gmlManager.Profiles.CreateUserSessionAsync(null, player);
 
                 player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
@@ -115,6 +122,13 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             if (user is not null && user.ExpiredDate> DateTime.Now)
             {
                 var player = user;
+
+                if (player.IsBanned)
+                {
+                    return Results.BadRequest(ResponseMessage.Create(
+                        "Пользователь заблокирован!",
+                        HttpStatusCode.BadRequest));
+                }
 
                 player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
                     .Replace("{userName}", player.Name)

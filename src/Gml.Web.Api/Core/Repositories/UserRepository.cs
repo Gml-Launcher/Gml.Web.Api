@@ -70,7 +70,11 @@ public class UserRepository : IUserRepository
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("id", userId) }),
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim("id", userId),
+                new Claim(ClaimTypes.Role, "Admin"),
+            }),
             Expires = DateTime.UtcNow.AddDays(3),
             SigningCredentials =
                 new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecurityKey)),

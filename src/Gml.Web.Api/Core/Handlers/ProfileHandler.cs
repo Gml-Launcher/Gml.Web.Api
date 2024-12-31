@@ -10,6 +10,7 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
@@ -27,7 +28,36 @@ public class ProfileHandler : IProfileHandler
         IMapper mapper,
         IGmlManager gmlManager)
     {
-        var profiles = await gmlManager.Profiles.GetProfiles();
+        IEnumerable<IGameProfile> profiles = [];
+
+        if (context.User.IsInRole("Player"))
+        {
+            var userName = context.User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Results.BadRequest(ResponseMessage.Create("Не удалось идентифицировать пользователя",
+                    HttpStatusCode.BadRequest));
+            }
+
+            var user = await gmlManager.Users.GetUserByName(userName);
+
+            if (user is null)
+            {
+                return Results.BadRequest(ResponseMessage.Create("Не удалось идентифицировать пользователя",
+                    HttpStatusCode.BadRequest));
+            }
+
+            profiles = (await gmlManager.Profiles.GetProfiles())
+                .Where(c =>
+                    c is { IsEnabled: true, UserWhiteListGuid.Count: 0 } ||
+                    c.UserWhiteListGuid.Any(g => g.Equals(user.Uuid)));
+
+        }else if (context.User.IsInRole("Admin"))
+        {
+            profiles = await gmlManager.Profiles.GetProfiles();
+        }
+
         var gameProfiles = profiles as IGameProfile[] ?? profiles.ToArray();
 
         var dtoProfiles = mapper.Map<ProfileReadDto[]>(profiles);
@@ -270,10 +300,13 @@ public class ProfileHandler : IProfileHandler
 
         var user = await gmlManager.Users.GetUserByName(createInfoDto.UserName);
 
-        if (user is null || user.AccessToken != token)
+        if (user is null || user.AccessToken != token || user.IsBanned)
         {
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
+
+        if (profile.UserWhiteListGuid.Count != 0 && !profile.UserWhiteListGuid.Any(c => c.Equals(user.Uuid, StringComparison.OrdinalIgnoreCase)))
+            return Results.Forbid();
 
         user.Manager = gmlManager;
 
@@ -341,11 +374,15 @@ public class ProfileHandler : IProfileHandler
             MinimumRamMb = createInfoDto.RamSize,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
-        },user);
+        }, user);
+
+        var whiteListPlayers = await gmlManager.Users.GetUsers(profile.UserWhiteListGuid);
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        profileDto.IsEnabled = profile.IsEnabled;
+        profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
     }
@@ -383,5 +420,64 @@ public class ProfileHandler : IProfileHandler
         await gmlManager.Notifications.SendMessage("Удаление профилей", message, NotificationType.Info);
 
         return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> AddPlayerToWhiteList(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string userUuid)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var user = await gmlManager.Users.GetUserByUuid(userUuid);
+
+        if (user is null)
+            return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
+                HttpStatusCode.NotFound));
+
+        if (profile.UserWhiteListGuid.Any(c => c.Equals(userUuid)))
+            return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" уже находится белом списке пользователей профиля",
+                HttpStatusCode.BadRequest));
+
+        profile.UserWhiteListGuid.Add(user.Uuid);
+        await gmlManager.Profiles.SaveProfiles();
+
+        var mappedUser = mapper.Map<PlayerReadDto>(user);
+
+        return Results.Ok(ResponseMessage.Create(mappedUser, "Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> RemovePlayerFromWhiteList(
+        IGmlManager gmlManager,
+        string profileName,
+        string userUuid)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var user = await gmlManager.Users.GetUserByUuid(userUuid);
+
+        if (user is null)
+            return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
+                HttpStatusCode.NotFound));
+
+        if (!profile.UserWhiteListGuid.Any(c=> c.Equals(userUuid)))
+            return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
+                HttpStatusCode.BadRequest));
+
+        profile.UserWhiteListGuid.Remove(user.Uuid);
+        await gmlManager.Profiles.SaveProfiles();
+
+        return Results.Ok(ResponseMessage.Create("Пользователь успешно удален из белого списка профиля", HttpStatusCode.OK));
     }
 }

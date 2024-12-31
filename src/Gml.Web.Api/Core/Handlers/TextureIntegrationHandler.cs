@@ -169,4 +169,15 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
 
         return Results.Stream(await gmlManager.Users.GetCloak(user));
     }
+
+    public static async Task<IResult> GetUserHead(IGmlManager gmlManager, string userUuid)
+    {
+        var user = await gmlManager.Users.GetUserByUuid(userUuid);
+
+        if (user is null)
+            return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
+                HttpStatusCode.NotFound));
+
+        return Results.Stream(await gmlManager.Users.GetHead(user).ConfigureAwait(false));
+    }
 }
