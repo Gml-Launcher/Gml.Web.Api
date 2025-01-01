@@ -7,8 +7,10 @@ public class ModReadDto
     public string Name { get; set; }
     public ModType Type { get; set; }
 }
+
 public class ExtendedModReadDto : ModReadDto
 {
+    public string Id { get; set; }
     public string Description { get; set; }
     public string Url { get; set; }
     public string IconUrl { get; set; }
