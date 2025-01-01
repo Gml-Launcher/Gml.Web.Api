@@ -6,10 +6,12 @@ using Gml.Common;
 using Gml.Core;
 using Gml.Core.Launcher;
 using Gml.Core.User;
+using Gml.Models.Mods;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.Mods;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
@@ -449,6 +451,58 @@ public class ProfileHandler : IProfileHandler
         var mappedUser = mapper.Map<PlayerReadDto>(user);
 
         return Results.Ok(ResponseMessage.Create(mappedUser, "Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> GetMods(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await profile.GetModsAsync();
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetOptionalsMods(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await profile.GetOptionalsModsAsync();
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> FindMods(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string modName,
+        short offset,
+        short take)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modName, take, offset);
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods.OfType<ModrinthMod>()), "Список модов успешно получен", HttpStatusCode.OK));
     }
 
     [Authorize]

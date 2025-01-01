@@ -618,6 +618,42 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapGet("/api/v1/profiles/{profileName}/mods", ProfileHandler.GetMods)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка модов в профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка модов в профиле")
+            .WithName("Get profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/profiles/{profileName}/mods/optionals", ProfileHandler.GetOptionalsMods)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка опциональных модов в профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка опциональных модов в профиле")
+            .WithName("Get optional profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/profiles/{profileName}/mods/search", ProfileHandler.FindMods)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка доступных для загрузки модов в профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка доступных для загрузки модов в профиле")
+            .WithName("Get available profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapDelete("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.RemovePlayerFromWhiteList)
             .WithOpenApi(generatedOperation =>
             {
