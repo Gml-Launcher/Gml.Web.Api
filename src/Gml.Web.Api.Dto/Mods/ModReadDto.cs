@@ -1,8 +1,11 @@
-﻿namespace Gml.Web.Api.Dto.Mods;
+﻿using GmlCore.Interfaces.Mods;
+
+namespace Gml.Web.Api.Dto.Mods;
 
 public class ModReadDto
 {
     public string Name { get; set; }
+    public ModType Type { get; set; }
 }
 public class ExtendedModReadDto : ModReadDto
 {
