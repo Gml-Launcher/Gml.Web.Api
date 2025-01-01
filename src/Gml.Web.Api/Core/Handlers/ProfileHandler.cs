@@ -142,8 +142,6 @@ public class ProfileHandler : IProfileHandler
             var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader,
                 createDto.IconBase64, createDto.Description);
 
-            await gmlManager.Notifications.SendMessage($"""Профиль "{createDto.Name}" успешно создан""", NotificationType.Info);
-
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
                 ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
                     HttpStatusCode.Created));
