@@ -2,6 +2,7 @@
 using Gml.Models.Mods;
 using Gml.Web.Api.Dto.Mods;
 using GmlCore.Interfaces.Mods;
+using Modrinth.Api.Models.Dto.Entities;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
@@ -12,6 +13,8 @@ public class ModsMapper : Profile
         CreateMap<IMod, ModReadDto>();
         CreateMap<IMod, ExtendedModReadDto>();
         CreateMap<IExternalMod, ExtendedModInfoReadDto>();
-        CreateMap<ModrinthMod, ExtendedModReadDto>();
+        CreateMap<ModrinthModVersion, ModVersionDto>();
+        CreateMap<Dependency, ModVersionDtoDependency>();
     }
 }
+

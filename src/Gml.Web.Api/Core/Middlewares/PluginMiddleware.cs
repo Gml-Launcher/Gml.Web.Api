@@ -52,6 +52,7 @@ public class PluginMiddleware
         }
         catch (Exception exeption)
         {
+            Console.WriteLine(exeption);
             _gmlManager.BugTracker.CaptureException(exeption);
             await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Сервер обработал принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
         }

@@ -518,7 +518,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        var modInfo = await gmlManager.Mods.GetModInfo(modId);
+        var modInfo = await gmlManager.Mods.GetInfo(modId);
 
         if (modInfo is null)
         {
@@ -526,7 +526,11 @@ public class ProfileHandler : IProfileHandler
                 HttpStatusCode.NotFound));
         }
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<ExtendedModInfoReadDto>(modInfo), "Список модов успешно получен", HttpStatusCode.OK));
+        var versions = await gmlManager.Mods.GetVersions(modInfo, profile.Loader, profile.GameVersion);
+        var externalDto = mapper.Map<ExtendedModInfoReadDto>(modInfo);
+        externalDto.Versions = mapper.Map<ModVersionDto[]>(versions);
+
+        return Results.Ok(ResponseMessage.Create(externalDto, "Список модов успешно получен", HttpStatusCode.OK));
     }
 
     [Authorize]
