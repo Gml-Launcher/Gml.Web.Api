@@ -17,6 +17,7 @@ using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -503,6 +504,29 @@ public class ProfileHandler : IProfileHandler
         var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modName, take, offset);
 
         return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods.OfType<ModrinthMod>()), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetModInfo(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string modId)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var modInfo = await gmlManager.Mods.GetModInfo(modId);
+
+        if (modInfo is null)
+        {
+            return Results.NotFound(ResponseMessage.Create($"Мод с указанным идентификатором не найден",
+                HttpStatusCode.NotFound));
+        }
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<ExtendedModInfoReadDto>(modInfo), "Список модов успешно получен", HttpStatusCode.OK));
     }
 
     [Authorize]

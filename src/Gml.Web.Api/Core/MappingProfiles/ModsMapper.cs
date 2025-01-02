@@ -11,6 +11,7 @@ public class ModsMapper : Profile
     {
         CreateMap<IMod, ModReadDto>();
         CreateMap<IMod, ExtendedModReadDto>();
+        CreateMap<IExternalMod, ExtendedModInfoReadDto>();
         CreateMap<ModrinthMod, ExtendedModReadDto>();
     }
 }

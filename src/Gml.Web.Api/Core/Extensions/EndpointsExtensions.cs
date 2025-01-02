@@ -654,6 +654,18 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapGet("/api/v1/profiles/{profileName}/mods/info", ProfileHandler.GetModInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получить детальную информацию по моду";
+                return generatedOperation;
+            })
+            .WithDescription("Получить детальную информацию по моду")
+            .WithName("Get mod info")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapDelete("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.RemovePlayerFromWhiteList)
             .WithOpenApi(generatedOperation =>
             {
