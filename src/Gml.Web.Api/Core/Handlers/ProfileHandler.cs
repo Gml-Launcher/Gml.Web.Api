@@ -503,7 +503,7 @@ public class ProfileHandler : IProfileHandler
 
         var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modName, take, offset);
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods.OfType<ModrinthMod>()), "Список модов успешно получен", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetModInfo(

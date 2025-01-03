@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using FluentValidation.Results;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.EndpointSDK;
@@ -54,7 +55,10 @@ public class PluginMiddleware
         {
             Console.WriteLine(exeption);
             _gmlManager.BugTracker.CaptureException(exeption);
-            await context.Response.WriteAsJsonAsync(ResponseMessage.Create("Сервер обработал принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create([new ValidationFailure
+            {
+                ErrorMessage = exeption.Message,
+            }], "Сервер обработал принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
         }
 
         // Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
