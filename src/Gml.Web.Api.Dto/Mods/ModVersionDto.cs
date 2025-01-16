@@ -12,6 +12,7 @@ public class ModVersionDto
     public DateTimeOffset DatePublished { get; set; }
     public int Downloads { get; set; }
     public List<ModVersionDtoDependency> Dependencies { get; set; } = [];
+    public List<string> Files { get; set; } = [];
 }
 public class ModVersionDtoDependency
 {

@@ -504,6 +504,37 @@ public class ProfileHandler : IProfileHandler
     }
 
     [Authorize]
+    public static async Task<IResult> LoadByLink(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        [FromBody] string[] links,
+        IHttpClientFactory httpClientFactory,
+        bool isOptional = false)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        using (var client = httpClientFactory.CreateClient())
+        {
+            foreach (var link in links)
+            {
+                var fileName = Path.GetFileName(link);
+
+                if (isOptional)
+                    await profile.AddOptionalMod(fileName, await client.GetStreamAsync(link));
+                else
+                    await profile.AddMod(fileName, await client.GetStreamAsync(link));
+            }
+        }
+
+        return Results.Ok(ResponseMessage.Create("Моды успешно загружены", HttpStatusCode.OK));
+    }
+
+    [Authorize]
     public static async Task<IResult> RemoveMod(
         IGmlManager gmlManager,
         IMapper mapper,
