@@ -170,12 +170,12 @@ public class ProfileHandler : IProfileHandler
     {
         var updateDto = new ProfileUpdateDto
         {
-            Name = context.Request.Form["Name"],
-            Description = context.Request.Form["Description"],
-            OriginalName = context.Request.Form["OriginalName"],
-            JvmArguments = context.Request.Form["JvmArguments"],
-            GameArguments = context.Request.Form["GameArguments"],
-            IsEnabled = context.Request.Form["Enabled"] == "true"
+            Name = context.Request.Form["name"],
+            Description = context.Request.Form["description"],
+            OriginalName = context.Request.Form["originalName"],
+            JvmArguments = context.Request.Form["jvmArguments"],
+            GameArguments = context.Request.Form["gameArguments"],
+            IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
         var result = await validator.ValidateAsync(updateDto);
