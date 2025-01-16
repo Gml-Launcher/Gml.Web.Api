@@ -630,6 +630,30 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapPost("/api/v1/profiles/{profileName}/mods/load", ProfileHandler.LoadMod)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Загрузка мода в профиль";
+                return generatedOperation;
+            })
+            .WithDescription("Загрузка мода в профиль")
+            .WithName("Load profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/profiles/{profileName}/mods/remove/{fileName}", ProfileHandler.RemoveMod)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление мода из профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление мода из профиля")
+            .WithName("Remove profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapGet("/api/v1/profiles/{profileName}/mods/optionals", ProfileHandler.GetOptionalsMods)
             .WithOpenApi(generatedOperation =>
             {

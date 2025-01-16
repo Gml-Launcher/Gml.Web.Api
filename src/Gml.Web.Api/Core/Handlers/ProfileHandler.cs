@@ -471,6 +471,61 @@ public class ProfileHandler : IProfileHandler
         return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
     }
 
+    [Authorize]
+    public static async Task<IResult> LoadMod(
+        HttpContext context,
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        bool isOptional = false)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        foreach (var formFile in context.Request.Form.Files)
+        {
+            if (Path.GetExtension(formFile.FileName) != ".jar")
+            {
+                continue;
+            }
+
+            if (isOptional)
+                await profile.AddOptionalMod(formFile.FileName, formFile.OpenReadStream());
+            else
+                await profile.AddMod(formFile.FileName, formFile.OpenReadStream());
+        }
+
+        var mods = await profile.GetModsAsync();
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> RemoveMod(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string fileName)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await profile.RemoveMod(fileName);
+
+        if (mods)
+        {
+            return Results.Ok(ResponseMessage.Create("Мод был успешно удален", HttpStatusCode.OK));
+        }
+
+        return Results.BadRequest(ResponseMessage.Create("Произошла ошибка при удалении модификации", HttpStatusCode.OK));
+    }
+
     public static async Task<IResult> GetOptionalsMods(
         IGmlManager gmlManager,
         IMapper mapper,
