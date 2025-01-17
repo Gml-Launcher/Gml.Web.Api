@@ -5,6 +5,7 @@ using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Launcher;
+using Gml.Web.Api.Dto.Mods;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.Texture;
 using Gml.Web.Api.Dto.User;
@@ -39,6 +40,7 @@ public static class ValidatorsExtensions
 
             // Launcher validator
             .AddScoped<IValidator<LauncherCreateDto>, LauncherCreateDtoValidator>()
+            .AddScoped<IValidator<ModsDetailsInfoDto>, ModsUpdateInfoValidator>()
 
             // Servers validator
             .AddScoped<IValidator<CreateServerDto>, CreateServerDtoValidator>()

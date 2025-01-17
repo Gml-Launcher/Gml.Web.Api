@@ -472,6 +472,42 @@ public class ProfileHandler : IProfileHandler
     }
 
     [Authorize]
+    public static async Task<IResult> UpdateModInfo(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        ModsDetailsInfoDto detailsDto,
+        IValidator<ModsDetailsInfoDto> validator)
+    {
+
+        var result = await validator.ValidateAsync(detailsDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
+        try
+        {
+            await gmlManager.Mods.SetModDetails(detailsDto.Key, detailsDto.Title, detailsDto.Description);
+
+            return Results.Ok(ResponseMessage.Create("Значение успешно обновлено", HttpStatusCode.OK));
+        }
+        catch (Exception exception)
+        {
+            gmlManager.BugTracker.CaptureException(exception);
+            return Results.BadRequest(ResponseMessage.Create($"Произошла ошибка при попытке обновить информацию о моде",
+                HttpStatusCode.BadRequest));
+        }
+    }
+
+    [Authorize]
+    public static async Task<IResult> GetModsDetails(
+        IGmlManager gmlManager,
+        IMapper mapper)
+    {
+        return Results.Ok(ResponseMessage.Create(gmlManager.Mods.ModsDetails, "Список модов", HttpStatusCode.OK));
+    }
+
+    [Authorize]
     public static async Task<IResult> LoadMod(
         HttpContext context,
         IGmlManager gmlManager,
