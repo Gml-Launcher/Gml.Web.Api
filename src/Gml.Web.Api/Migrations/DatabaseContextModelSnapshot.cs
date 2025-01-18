@@ -37,6 +37,9 @@ namespace Gml.Web.Api.Migrations
                     b.Property<int>("StorageType")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("TextureProtocol")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.ToTable("Settings");

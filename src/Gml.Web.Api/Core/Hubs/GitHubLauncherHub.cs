@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Gml.Web.Api.Core.Hubs;
@@ -18,18 +19,21 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
 
             if (Directory.Exists(projectPath))
             {
-                SendCallerMessage("Лаунчер уже существует в папке, удалите его перед сборкой");
+                await gmlManager.Notifications
+                    .SendMessage("Лаунчер уже существует в папке, удалите его перед сборкой", NotificationType.Error);
                 return;
             }
 
             projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher");
 
             ChangeProgress(nameof(GitHubLauncherHub), 5);
-            var allowedVersions = await gitHubService.GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
+            var allowedVersions = await gitHubService
+                .GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
 
             if (allowedVersions.All(c => c != branchName))
             {
-                SendCallerMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается");
+                await gmlManager.Notifications
+                    .SendMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается", NotificationType.Error);
                 return;
             }
 
@@ -70,11 +74,15 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             {
                 var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
 
-                await gmlManager.Launcher.Build(version, osTypes);
+                var result = await gmlManager.Launcher.Build(version, osTypes);
 
                 eventObservable.Dispose();
 
-                SendCallerMessage("Лаунчер успешно скомпилирован");
+                if (result)
+                    await gmlManager.Notifications.SendMessage("Лаунчер успешно скомпилирован!", NotificationType.Info);
+                else
+                    await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!", NotificationType.Error);
+
             }
         }
         catch (Exception exception)

@@ -4,7 +4,9 @@ using FluentValidation;
 using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
+using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -36,6 +38,19 @@ public class AuthHandler : IAuthHandler
         user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
 
         return Results.Ok(ResponseMessage.Create(mapper.Map<UserAuthReadDto>(user), "Успешная регистрация",
+            HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> UserInfo(IGmlManager manager, IMapper mapper, string userName)
+    {
+        var user = await manager.Users.GetUserByName(userName);
+
+        if (user is null)
+        {
+            return Results.NotFound(ResponseMessage.Create("Пользователь не найден", HttpStatusCode.BadRequest));
+        }
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<PlayerTextureDto>(user), "Успешная авторизация",
             HttpStatusCode.OK));
     }
 

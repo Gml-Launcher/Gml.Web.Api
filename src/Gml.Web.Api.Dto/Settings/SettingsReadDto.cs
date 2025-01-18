@@ -6,4 +6,5 @@ public class SettingsReadDto
     public int StorageType { get; set; }
     public string StorageHost { get; set; }
     public string StorageLogin { get; set; }
+    public int TextureProtocol { get; set; }
 }

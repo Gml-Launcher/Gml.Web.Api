@@ -9,4 +9,17 @@
     <ProjectReference Include="..\Gml.Core\src\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Integrations\AzuriomAuthResult.cs">
+      <DependentUpon>AuthResult.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Integrations\UnicoreAuthResult.cs">
+      <DependentUpon>AuthResult.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

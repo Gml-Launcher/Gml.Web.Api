@@ -51,6 +51,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Gml.WebApi.Tests"/>
+    <InternalsVisibleTo Include="Gml.Backend.Tests"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -137,6 +138,12 @@
     </Compile>
     <Compile Update="Core\Integrations\Auth\NamelessMCAuthService.cs">
       <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\SentryHandler.cs">
+      <DependentUpon>ISentryHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\PlayersHandler.cs">
+      <DependentUpon>IPlayersHandler.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 

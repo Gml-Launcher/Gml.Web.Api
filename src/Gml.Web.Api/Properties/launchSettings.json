@@ -4,8 +4,9 @@
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
-      "applicationUrl": "http://192.168.31.201:5000",
+      "applicationUrl": "http://10.0.10.128:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
@@ -13,15 +14,15 @@
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
         "PROJECT_PATH": "",
-        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
+        "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     },
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
-      "applicationUrl": "https://192.168.31.201:5001;http://192.168.31.201:5000",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
@@ -29,7 +30,7 @@
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
         "PROJECT_PATH": "",
-        "SERVICE_TEXTURE_ENDPOINT": "http://gml-web-skins:8085"
+        "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     }
   }

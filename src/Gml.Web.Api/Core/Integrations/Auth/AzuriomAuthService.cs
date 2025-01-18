@@ -30,9 +30,32 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         var result =
             await _httpClient.PostAsync(endpoint, content);
 
+        var resultContent = await result.Content.ReadAsStringAsync();
+
+        var model = JsonConvert.DeserializeObject<AzuriomAuthResult>(resultContent);
+
+        if (!result.IsSuccessStatusCode && resultContent.Contains("invalid_credentials", StringComparison.OrdinalIgnoreCase))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = $"Неверный логин или пароль."
+            };
+        }
+
+        if (model is null || model.Banned || !result.IsSuccessStatusCode || (!result.IsSuccessStatusCode && resultContent.Contains("banned", StringComparison.OrdinalIgnoreCase)))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = $"Пользователь заблокирован."
+            };
+        }
+
         return new AuthResult
         {
-            Login = login,
+            Uuid = model.Uuid,
+            Login = model.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode
         };
     }

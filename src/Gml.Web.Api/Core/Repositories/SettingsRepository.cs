@@ -16,22 +16,22 @@ public class SettingsRepository(
     : ISettingsRepository
 {
     private readonly ServerSettings _options = options;
-    private readonly IObserver<Settings> _settingsObservable = settingsObservable;
+    public IObservable<Settings> SettingsUpdated => settingsObservable;
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
-        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType,settings.StorageHost, settings.StorageLogin, settings.StoragePassword);
+        gmlManager.LauncherInfo.UpdateSettings(settings.StorageType,settings.StorageHost, settings.StorageLogin, settings.StoragePassword, settings.TextureProtocol);
 
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();
 
-        _settingsObservable.OnNext(settings);
+        settingsObservable.OnNext(settings);
 
         return settings;
     }
 
-    public async Task<Settings?> GetSettings()
+    public Task<Settings?> GetSettings()
     {
-        return await databaseContext.Settings.OrderBy(c => c.Id).LastOrDefaultAsync();
+        return databaseContext.Settings.OrderByDescending(c => c.Id).FirstOrDefaultAsync();
     }
 }
