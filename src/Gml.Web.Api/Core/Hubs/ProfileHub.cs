@@ -41,7 +41,7 @@ public class ProfileHub : BaseHub
                 return;
             }
 
-            Log("Packaging...", profileName);
+            Log("Preparation for packaging...", profileName);
 
             var eventInfo = _gmlManager.Profiles.PackChanged.Subscribe(percentage =>
             {
@@ -112,7 +112,15 @@ public class ProfileHub : BaseHub
 
             var exception = profile.GameLoader.LoadException.Subscribe(async logs =>
             {
-                await Clients.All.SendAsync("OnException", profile.Name, logs.ToString());
+                try
+                {
+                    await Clients.All.SendAsync("OnException", profile.Name, logs.ToString());
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                    _gmlManager.BugTracker.CaptureException(exception);
+                }
             });
 
             await _gmlManager.Profiles.RestoreProfileInfo(profile.Name);
@@ -128,6 +136,7 @@ public class ProfileHub : BaseHub
         }
         catch (Exception exception)
         {
+            _gmlManager.BugTracker.CaptureException(exception);
             SendCallerMessage($"Не удалось восстановить профиль. {exception.Message}");
             Console.WriteLine(exception);
         }

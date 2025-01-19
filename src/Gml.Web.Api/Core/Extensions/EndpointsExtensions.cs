@@ -700,7 +700,7 @@ public static class EndpointsExtensions
             .WithName("Get optional profile mods")
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization(c => c.RequireRole("Admin", "Player"));
 
         app.MapGet("/api/v1/profiles/{profileName}/mods/search", ProfileHandler.FindMods)
             .WithOpenApi(generatedOperation =>
