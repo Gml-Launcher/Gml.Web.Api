@@ -154,8 +154,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Добавление ошибок Sentry")
             .WithName("Get sentry message")
-            .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin", "Player"));
+            .WithTags("Integration/Sentry");
 
         app.MapPost("/api/v1/sentry", SentryHandler.GetBugs)
             .WithOpenApi(generatedOperation =>
