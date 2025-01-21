@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net;
+using System.Web;
 using AutoMapper;
 using FluentValidation;
 using Gml.Common;
@@ -558,7 +559,7 @@ public class ProfileHandler : IProfileHandler
         {
             foreach (var link in links)
             {
-                var fileName = Path.GetFileName(link);
+                var fileName = Path.GetFileName(HttpUtility.UrlDecode(link));
 
                 if (isOptional)
                     await profile.AddOptionalMod(fileName, await client.GetStreamAsync(link));
