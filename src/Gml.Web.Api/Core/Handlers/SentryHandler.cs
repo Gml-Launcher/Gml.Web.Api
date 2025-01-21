@@ -144,7 +144,7 @@ public abstract class SentryHandler : ISentryHandler
     public static async Task<IResult> GetFilterListSentry(IGmlManager gmlManager, SentryFilterDto filter)
     {
         var minDate = filter.DateFrom ?? DateTime.MinValue;
-        var maxDate = filter.DateTo?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
+        var maxDate = filter.DateTo ?? filter.DateTo?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
 
         var bugs = await gmlManager.BugTracker.GetFilteredBugs(c => c.Date >= minDate && c.Date <= maxDate);
 
@@ -159,7 +159,7 @@ public abstract class SentryHandler : ISentryHandler
             {
                 Exception = group.Key.BugType,
                 Count = group.Count(),
-                StackTrace = BuildStackTraceString(group.SelectMany(c => c.Exceptions).ToFrozenSet()),
+                StackTrace = BuildStackTraceString(group.SelectMany(c => c.Exceptions).DistinctBy(c => c.ValueData).ToFrozenSet()),
                 CountUsers = group.Select(bug => bug.PcName).Distinct().Count(),
                 OperationSystems = group
                     .Select(x => x.OsVersion)
