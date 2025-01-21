@@ -130,11 +130,12 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                         HttpStatusCode.BadRequest));
                 }
 
-                player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
-                    .Replace("{userName}", player.Name)
-                    .Replace("{userUuid}", player.Uuid);
+                if (string.IsNullOrEmpty(player.TextureSkinUrl))
+                    player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
+                        .Replace("{userName}", player.Name)
+                        .Replace("{userUuid}", player.Uuid);
 
-                _ = gmlManager.Profiles.CreateUserSessionAsync(null, player);
+                await gmlManager.Profiles.CreateUserSessionAsync(null, player);
 
                 return Results.Ok(ResponseMessage.Create(
                     mapper.Map<PlayerReadDto>(player),
