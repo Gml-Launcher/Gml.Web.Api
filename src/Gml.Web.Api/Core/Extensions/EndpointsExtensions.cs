@@ -790,7 +790,8 @@ public static class EndpointsExtensions
             .WithName("Players list")
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPost("/api/v1/players/ban", PlayersHandler.BanPlayer)
             .WithOpenApi(generatedOperation =>
@@ -802,7 +803,8 @@ public static class EndpointsExtensions
             .WithName("Ban players")
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPost("/api/v1/players/pardon", PlayersHandler.PardonPlayer)
             .WithOpenApi(generatedOperation =>
@@ -814,7 +816,8 @@ public static class EndpointsExtensions
             .WithName("Pardon players")
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 
