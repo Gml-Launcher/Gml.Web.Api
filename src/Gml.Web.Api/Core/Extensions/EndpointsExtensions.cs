@@ -154,8 +154,7 @@ public static class EndpointsExtensions
             })
             .WithDescription("Добавление ошибок Sentry")
             .WithName("Get sentry message")
-            .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin", "Player"));
+            .WithTags("Integration/Sentry");
 
         app.MapPost("/api/v1/sentry", SentryHandler.GetBugs)
             .WithOpenApi(generatedOperation =>
@@ -618,6 +617,114 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapGet("/api/v1/profiles/{profileName}/mods", ProfileHandler.GetMods)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка модов в профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка модов в профиле")
+            .WithName("Get profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapPut("/api/v1/mods/details", ProfileHandler.UpdateModInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление информации о моде";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление информации о моде")
+            .WithName("Update mod details")
+            .WithTags("Mods")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/mods/details", ProfileHandler.GetModsDetails)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение информации о модификациях";
+                return generatedOperation;
+            })
+            .WithDescription("Получение информации о модификациях")
+            .WithName("Get mod details")
+            .WithTags("Mods")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin", "Player"));
+
+        app.MapPost("/api/v1/profiles/{profileName}/mods/load", ProfileHandler.LoadMod)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Загрузка мода в профиль";
+                return generatedOperation;
+            })
+            .WithDescription("Загрузка мода в профиль")
+            .WithName("Load profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapPost("/api/v1/profiles/{profileName}/mods/load/url", ProfileHandler.LoadByLink)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Загрузка мода в профиль по ссылке";
+                return generatedOperation;
+            })
+            .WithDescription("Загрузка мода в профиль по ссылке")
+            .WithName("Load profile mods by link")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/profiles/{profileName}/mods/remove/{fileName}", ProfileHandler.RemoveMod)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление мода из профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление мода из профиля")
+            .WithName("Remove profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/profiles/{profileName}/mods/optionals", ProfileHandler.GetOptionalsMods)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка опциональных модов в профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка опциональных модов в профиле")
+            .WithName("Get optional profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin", "Player"));
+
+        app.MapGet("/api/v1/profiles/{profileName}/mods/search", ProfileHandler.FindMods)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка доступных для загрузки модов в профиле";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка доступных для загрузки модов в профиле")
+            .WithName("Get available profile mods")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/profiles/{profileName}/mods/info", ProfileHandler.GetModInfo)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получить детальную информацию по моду";
+                return generatedOperation;
+            })
+            .WithDescription("Получить детальную информацию по моду")
+            .WithName("Get mod info")
+            .WithTags("Profiles")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapDelete("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.RemovePlayerFromWhiteList)
             .WithOpenApi(generatedOperation =>
             {
@@ -683,7 +790,8 @@ public static class EndpointsExtensions
             .WithName("Players list")
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPost("/api/v1/players/ban", PlayersHandler.BanPlayer)
             .WithOpenApi(generatedOperation =>
@@ -695,7 +803,8 @@ public static class EndpointsExtensions
             .WithName("Ban players")
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPost("/api/v1/players/pardon", PlayersHandler.PardonPlayer)
             .WithOpenApi(generatedOperation =>
@@ -707,7 +816,8 @@ public static class EndpointsExtensions
             .WithName("Pardon players")
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 

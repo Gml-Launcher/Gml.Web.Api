@@ -1,20 +1,24 @@
 using System.Diagnostics;
 using System.Net;
+using System.Web;
 using AutoMapper;
 using FluentValidation;
 using Gml.Common;
 using Gml.Core;
 using Gml.Core.Launcher;
 using Gml.Core.User;
+using Gml.Models.Mods;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.Mods;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -142,8 +146,6 @@ public class ProfileHandler : IProfileHandler
             var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader,
                 createDto.IconBase64, createDto.Description);
 
-            await gmlManager.Notifications.SendMessage($"""Профиль "{createDto.Name}" успешно создан""", NotificationType.Info);
-
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
                 ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
                     HttpStatusCode.Created));
@@ -169,12 +171,12 @@ public class ProfileHandler : IProfileHandler
     {
         var updateDto = new ProfileUpdateDto
         {
-            Name = context.Request.Form["Name"],
-            Description = context.Request.Form["Description"],
-            OriginalName = context.Request.Form["OriginalName"],
-            JvmArguments = context.Request.Form["JvmArguments"],
-            GameArguments = context.Request.Form["GameArguments"],
-            IsEnabled = context.Request.Form["Enabled"] == "true"
+            Name = context.Request.Form["name"],
+            Description = context.Request.Form["description"],
+            OriginalName = context.Request.Form["originalName"],
+            JvmArguments = context.Request.Form["jvmArguments"],
+            GameArguments = context.Request.Form["gameArguments"],
+            IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
         var result = await validator.ValidateAsync(updateDto);
@@ -451,6 +453,207 @@ public class ProfileHandler : IProfileHandler
         var mappedUser = mapper.Map<PlayerReadDto>(user);
 
         return Results.Ok(ResponseMessage.Create(mappedUser, "Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> GetMods(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await profile.GetModsAsync();
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> UpdateModInfo(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        ModsDetailsInfoDto detailsDto,
+        IValidator<ModsDetailsInfoDto> validator)
+    {
+
+        var result = await validator.ValidateAsync(detailsDto);
+
+        if (!result.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                HttpStatusCode.BadRequest));
+
+        try
+        {
+            await gmlManager.Mods.SetModDetails(detailsDto.Key, detailsDto.Title, detailsDto.Description);
+
+            return Results.Ok(ResponseMessage.Create("Значение успешно обновлено", HttpStatusCode.OK));
+        }
+        catch (Exception exception)
+        {
+            gmlManager.BugTracker.CaptureException(exception);
+            return Results.BadRequest(ResponseMessage.Create($"Произошла ошибка при попытке обновить информацию о моде",
+                HttpStatusCode.BadRequest));
+        }
+    }
+
+    [Authorize]
+    public static async Task<IResult> GetModsDetails(
+        IGmlManager gmlManager,
+        IMapper mapper)
+    {
+        return Results.Ok(ResponseMessage.Create(gmlManager.Mods.ModsDetails, "Список модов", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> LoadMod(
+        HttpContext context,
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        bool isOptional = false)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        foreach (var formFile in context.Request.Form.Files)
+        {
+            if (Path.GetExtension(formFile.FileName) != ".jar")
+            {
+                continue;
+            }
+
+            if (isOptional)
+                await profile.AddOptionalMod(formFile.FileName, formFile.OpenReadStream());
+            else
+                await profile.AddMod(formFile.FileName, formFile.OpenReadStream());
+        }
+
+        var mods = await profile.GetModsAsync();
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> LoadByLink(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        [FromBody] string[] links,
+        IHttpClientFactory httpClientFactory,
+        bool isOptional = false)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        using (var client = httpClientFactory.CreateClient())
+        {
+            foreach (var link in links)
+            {
+                var fileName = Path.GetFileName(HttpUtility.UrlDecode(link));
+
+                if (isOptional)
+                    await profile.AddOptionalMod(fileName, await client.GetStreamAsync(link));
+                else
+                    await profile.AddMod(fileName, await client.GetStreamAsync(link));
+            }
+        }
+
+        return Results.Ok(ResponseMessage.Create("Моды успешно загружены", HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> RemoveMod(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string fileName)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await profile.RemoveMod(fileName);
+
+        if (mods)
+        {
+            return Results.Ok(ResponseMessage.Create("Мод был успешно удален", HttpStatusCode.OK));
+        }
+
+        return Results.BadRequest(ResponseMessage.Create("Произошла ошибка при удалении модификации", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetOptionalsMods(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await profile.GetOptionalsModsAsync();
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> FindMods(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string modName,
+        short offset,
+        short take)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modName, take, offset);
+
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> GetModInfo(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        string profileName,
+        string modId)
+    {
+        var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+        if (profile is null)
+            return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
+                HttpStatusCode.NotFound));
+
+        var modInfo = await gmlManager.Mods.GetInfo(modId);
+
+        if (modInfo is null)
+        {
+            return Results.NotFound(ResponseMessage.Create($"Мод с указанным идентификатором не найден",
+                HttpStatusCode.NotFound));
+        }
+
+        var versions = await gmlManager.Mods.GetVersions(modInfo, profile.Loader, profile.GameVersion);
+        var externalDto = mapper.Map<ExtendedModInfoReadDto>(modInfo);
+        externalDto.Versions = mapper.Map<ModVersionDto[]>(versions);
+
+        return Results.Ok(ResponseMessage.Create(externalDto, "Список модов успешно получен", HttpStatusCode.OK));
     }
 
     [Authorize]
