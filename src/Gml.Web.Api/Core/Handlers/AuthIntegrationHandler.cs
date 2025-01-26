@@ -131,7 +131,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 }
 
                 if (string.IsNullOrEmpty(player.TextureSkinUrl))
-                    player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
+                    player.TextureSkinUrl = (await gmlManager.Integrations.GetSkinServiceAsync())
                         .Replace("{userName}", player.Name)
                         .Replace("{userUuid}", player.Uuid);
 
