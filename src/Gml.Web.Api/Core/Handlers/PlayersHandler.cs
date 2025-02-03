@@ -39,6 +39,29 @@ public class PlayersHandler : IPlayersHandler
         return Results.Ok(ResponseMessage.Create("Пользователь(и) успешно заблокированы", HttpStatusCode.OK));
     }
 
+    public static async Task<IResult> RemovePlayer(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        IList<string> playerUuids)
+    {
+        if (!playerUuids.Any())
+        {
+            return Results.BadRequest(ResponseMessage.Create("Не передан ни один пользователь для блокировки",
+                HttpStatusCode.BadRequest));
+        }
+
+        foreach (var playerUuid in playerUuids)
+        {
+            var player = await gmlManager.Users.GetUserByUuid(playerUuid);
+
+            if (player is null) continue;
+
+            await gmlManager.Users.RemoveUser(player);
+        }
+
+        return Results.Ok(ResponseMessage.Create("Пользователь(и) успешно заблокированы", HttpStatusCode.OK));
+    }
+
     public static async Task<IResult> PardonPlayer(
         IGmlManager gmlManager,
         IMapper mapper,

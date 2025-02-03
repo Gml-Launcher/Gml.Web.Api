@@ -806,6 +806,18 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapPost("/api/v1/players/remove", PlayersHandler.RemovePlayer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление пользователй из списка игроков";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление пользователй из списка игроков")
+            .WithName("Remove players")
+            .WithTags("Players")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapPost("/api/v1/players/pardon", PlayersHandler.PardonPlayer)
             .WithOpenApi(generatedOperation =>
             {
