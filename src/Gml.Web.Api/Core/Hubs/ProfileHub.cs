@@ -34,7 +34,7 @@ public class ProfileHub : BaseHub
             if (profile is null)
                 return;
 
-            if (profile.State == ProfileState.Loading)
+            if (profile.State is ProfileState.Loading or ProfileState.Packing)
             {
                 SendCallerMessage(
                     "В данный момент уже происходит загрузка выбранного профиля!");
