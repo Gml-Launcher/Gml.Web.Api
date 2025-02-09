@@ -82,7 +82,8 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower()
+                              ?? TextureProtocol.Https.GetDisplayName().ToLower();
 
         var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
@@ -109,6 +110,8 @@ public class MinecraftHandler : IMinecraftHandler
                 Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
             };
         }
+
+        Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape.Url));
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
@@ -156,7 +159,7 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName() ?? TextureProtocol.Https.GetDisplayName();
+        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower() ?? TextureProtocol.Https.GetDisplayName().ToLower();
 
         var address = $"{textureProtocol}://{context.Request.Host.Value}";
 
@@ -184,6 +187,8 @@ public class MinecraftHandler : IMinecraftHandler
                 Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
             };
         }
+
+        Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape.Url));
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
