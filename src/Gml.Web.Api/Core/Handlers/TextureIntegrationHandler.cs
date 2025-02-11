@@ -155,7 +155,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
             return Results.NotFound();
         }
 
-        return Results.Stream(await gmlManager.Users.GetSkin(user));
+        return Results.File(await gmlManager.Users.GetSkin(user));
     }
 
     public static async Task<IResult> GetUserCloak(IGmlManager gmlManager, string textureGuid)
@@ -167,7 +167,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
             return Results.NotFound();
         }
 
-        return Results.Stream(await gmlManager.Users.GetCloak(user));
+        return Results.File(await gmlManager.Users.GetCloak(user));
     }
 
     public static async Task<IResult> GetUserHead(IGmlManager gmlManager, string userUuid)
