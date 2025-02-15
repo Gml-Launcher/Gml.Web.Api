@@ -118,6 +118,7 @@ public class ProfileHandler : IProfileHandler
             var createDto = new ProfileCreateDto
             {
                 Name = context.Request.Form["Name"],
+                DisplayName = context.Request.Form["DisplayName"],
                 Description = context.Request.Form["Description"],
                 Version = context.Request.Form["Version"],
                 LoaderVersion = context.Request.Form["LoaderVersion"],
@@ -143,8 +144,14 @@ public class ProfileHandler : IProfileHandler
             if (context.Request.Form.Files.FirstOrDefault() is { } formFile)
                 createDto.IconBase64 = await systemService.GetBase64FromImageFile(formFile);
 
-            var profile = await gmlManager.Profiles.AddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader,
-                createDto.IconBase64, createDto.Description);
+            var profile = await gmlManager.Profiles.AddProfile(
+                createDto.Name,
+                createDto.DisplayName,
+                createDto.Version,
+                createDto.LoaderVersion,
+                createDto.GameLoader,
+                createDto.IconBase64,
+                createDto.Description);
 
             return Results.Created($"/api/v1/profiles/{createDto.Name}",
                 ResponseMessage.Create(mapper.Map<ProfileReadDto>(profile), "Профиль успешно создан",
@@ -172,6 +179,7 @@ public class ProfileHandler : IProfileHandler
         var updateDto = new ProfileUpdateDto
         {
             Name = context.Request.Form["name"],
+            DisplayName = context.Request.Form["displayName"],
             Description = context.Request.Form["description"],
             OriginalName = context.Request.Form["originalName"],
             JvmArguments = context.Request.Form["jvmArguments"],
@@ -210,6 +218,7 @@ public class ProfileHandler : IProfileHandler
         await gmlManager.Profiles.UpdateProfile(
             profile,
             updateDto.Name,
+            updateDto.DisplayName,
             icon,
             background,
             updateDto.Description,
