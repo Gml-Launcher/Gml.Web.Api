@@ -145,6 +145,9 @@
     <Compile Update="Core\Handlers\PlayersHandler.cs">
       <DependentUpon>IPlayersHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Handlers\NewsHandler.cs">
+      <DependentUpon>INewsHandler.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

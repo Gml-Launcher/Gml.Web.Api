@@ -1,4 +1,5 @@
 using System.Net;
+using Gml.Models.News;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Domains.LauncherDto;
@@ -517,6 +518,35 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        #endregion
+
+        #region News
+
+        app.MapPost("/api/v1/integrations/news/add", NewsHandler.AddNewsListener)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Добавление нового слушателя новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Добавление нового слушателя новостей")
+            .WithName("Adding new listener news")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/integrations/news/add", NewsHandler.GetNews)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Получение новостей")
+            .WithName("Get news")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage<News>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         #endregion
 
