@@ -10,7 +10,7 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class NewsHandler : INewsHandler
 {
-    public static async Task<IResult> AddNewsListener(IGmlManager gmlManager, IMapper mapper, NewsListenerDto newsListenerDto)
+    public static async Task<IResult> EditNewsListener(IGmlManager gmlManager, IMapper mapper, NewsListenerDto newsListenerDto)
     {
         switch (newsListenerDto.Type)
         {
@@ -28,6 +28,11 @@ public class NewsHandler : INewsHandler
         }
 
         return Results.Ok(ResponseMessage.Create("Provider был успешно добавлен", HttpStatusCode.OK));
+    }
+
+    public static Task<IResult> GetNewsListener(IGmlManager gmlManager, IMapper mapper)
+    {
+        throw new NotImplementedException();
     }
 
     public static async Task<IResult> GetNews(IGmlManager gmlManager)

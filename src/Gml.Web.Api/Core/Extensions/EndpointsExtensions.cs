@@ -7,6 +7,7 @@ using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.News;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.Servers;
@@ -523,29 +524,42 @@ public static class EndpointsExtensions
 
         #region News
 
-        app.MapPost("/api/v1/integrations/news/add", NewsHandler.AddNewsListener)
+        app.MapPut("/api/v1/integrations/news/edit", NewsHandler.EditNewsListener)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Добавление нового слушателя новостей";
+                generatedOperation.Summary = "Обновление списка слушателя новостей";
                 return generatedOperation;
             })
-            .WithDescription("Добавление нового слушателя новостей")
-            .WithName("Adding new listener news")
+            .WithDescription("Обновление списка слушателя новостей")
+            .WithName("Update the list of news listeners")
             .WithTags("Integration/News")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
-        app.MapGet("/api/v1/integrations/news/add", NewsHandler.GetNews)
+        app.MapGet("/api/v1/integrations/news/edit", NewsHandler.GetNewsListener)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Получение новостей";
+                generatedOperation.Summary = "Получение списка слушателя новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка слушателя новостей")
+            .WithName("Get list of news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/integrations/news", NewsHandler.GetNews)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка новостей";
                 return generatedOperation;
             })
             .WithDescription("Получение новостей")
-            .WithName("Get news")
+            .WithName("Get list news")
             .WithTags("Integration/News")
-            .Produces<ResponseMessage<News>>()
+            .Produces<ResponseMessage<NewsGetListenerDto[]>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         #endregion
