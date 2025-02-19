@@ -624,6 +624,7 @@ public class ProfileHandler : IProfileHandler
         IMapper mapper,
         string profileName,
         string modName,
+        ModType modType,
         short offset,
         short take)
     {
@@ -633,7 +634,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modName, take, offset);
+        var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modType, modName, take, offset);
 
         return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
     }
@@ -642,6 +643,7 @@ public class ProfileHandler : IProfileHandler
         IGmlManager gmlManager,
         IMapper mapper,
         string profileName,
+        ModType modType,
         string modId)
     {
         var profile = await gmlManager.Profiles.GetProfile(profileName);
@@ -650,7 +652,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        var modInfo = await gmlManager.Mods.GetInfo(modId);
+        var modInfo = await gmlManager.Mods.GetInfo(modId, modType);
 
         if (modInfo is null)
         {
@@ -658,7 +660,7 @@ public class ProfileHandler : IProfileHandler
                 HttpStatusCode.NotFound));
         }
 
-        var versions = await gmlManager.Mods.GetVersions(modInfo, profile.Loader, profile.GameVersion);
+        var versions = await gmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
         var externalDto = mapper.Map<ExtendedModInfoReadDto>(modInfo);
         externalDto.Versions = mapper.Map<ModVersionDto[]>(versions);
 
