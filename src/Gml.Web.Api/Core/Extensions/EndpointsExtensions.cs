@@ -537,6 +537,19 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapDelete("/api/v1/integrations/news/{type}", NewsHandler.RemoveNewsListener)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление слушателя новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление слушателя новостей")
+            .WithName("Remove news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapGet("/api/v1/integrations/news", NewsHandler.GetNewsListener)
             .WithOpenApi(generatedOperation =>
             {

@@ -23,11 +23,20 @@ public class NewsHandler : INewsHandler
             case NewsListenerType.Custom:
                 await gmlManager.Integrations.NewsProvider.AddListener(new CustomNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
                 break;
+            case NewsListenerType.Telegram:
+            case NewsListenerType.VK:
             default:
                 return Results.BadRequest(ResponseMessage.Create("Не был найден данный provider новостей", HttpStatusCode.BadRequest));
         }
 
         return Results.Ok(ResponseMessage.Create("Provider был успешно добавлен", HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> RemoveNewsListener(IGmlManager gmlManager, IMapper mapper, NewsListenerType type)
+    {
+        await gmlManager.Integrations.NewsProvider.RemoveListenerByType(type);
+
+        return Results.Ok(ResponseMessage.Create("Provider был успешно удален", HttpStatusCode.OK));
     }
 
     public static Task<IResult> GetNewsListener(IGmlManager gmlManager, IMapper mapper)
