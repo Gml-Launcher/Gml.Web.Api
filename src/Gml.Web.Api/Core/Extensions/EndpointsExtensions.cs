@@ -550,6 +550,19 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapGet("/api/v1/integrations/news/providers", NewsHandler.GetListeners)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка слушателей новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка слушателей новостей")
+            .WithName("Get news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapGet("/api/v1/integrations/news", NewsHandler.GetNewsListener)
             .WithOpenApi(generatedOperation =>
             {

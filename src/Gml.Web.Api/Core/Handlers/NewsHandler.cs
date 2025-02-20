@@ -50,4 +50,9 @@ public class NewsHandler : INewsHandler
 
         return Results.Ok(ResponseMessage.Create(news, "Актуальные новости", HttpStatusCode.OK));
     }
+
+    public static async Task<IResult> GetListeners(IGmlManager gmlManager)
+    {
+        return Results.Ok(ResponseMessage.Create(gmlManager.Integrations.NewsProvider.Providers, "Актуальные новости", HttpStatusCode.OK));
+    }
 }
