@@ -524,20 +524,20 @@ public static class EndpointsExtensions
 
         #region News
 
-        app.MapPut("/api/v1/integrations/news/edit", NewsHandler.EditNewsListener)
+        app.MapPost("/api/v1/integrations/news", NewsHandler.AddNewsListener)
             .WithOpenApi(generatedOperation =>
             {
-                generatedOperation.Summary = "Обновление списка слушателя новостей";
+                generatedOperation.Summary = "Добавление слушателя новостей";
                 return generatedOperation;
             })
-            .WithDescription("Обновление списка слушателя новостей")
-            .WithName("Update the list of news listeners")
+            .WithDescription("Добавление слушателя новостей")
+            .WithName("Add news listeners")
             .WithTags("Integration/News")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
-        app.MapGet("/api/v1/integrations/news/edit", NewsHandler.GetNewsListener)
+        app.MapGet("/api/v1/integrations/news", NewsHandler.GetNewsListener)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение списка слушателя новостей";
@@ -550,7 +550,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
-        app.MapGet("/api/v1/integrations/news", NewsHandler.GetNews)
+        app.MapGet("/api/v1/integrations/news/list", NewsHandler.GetNews)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Получение списка новостей";

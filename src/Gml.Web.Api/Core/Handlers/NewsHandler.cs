@@ -10,18 +10,18 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class NewsHandler : INewsHandler
 {
-    public static async Task<IResult> EditNewsListener(IGmlManager gmlManager, IMapper mapper, NewsListenerDto newsListenerDto)
+    public static async Task<IResult> AddNewsListener(IGmlManager gmlManager, IMapper mapper, NewsListenerDto newsListenerDto)
     {
         switch (newsListenerDto.Type)
         {
             case NewsListenerType.Azuriom:
-                await gmlManager.Integrations.NewsProvider.AddListener(new AzuriomNewsProvider(newsListenerDto.Url));
+                await gmlManager.Integrations.NewsProvider.AddListener(new AzuriomNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
                 break;
             case NewsListenerType.UnicoreCMS:
-                await gmlManager.Integrations.NewsProvider.AddListener(new UnicoreNewsProvider(newsListenerDto.Url));
+                await gmlManager.Integrations.NewsProvider.AddListener(new UnicoreNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
                 break;
             case NewsListenerType.Custom:
-                await gmlManager.Integrations.NewsProvider.AddListener(new CustomNewsProvider(newsListenerDto.Url));
+                await gmlManager.Integrations.NewsProvider.AddListener(new CustomNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
                 break;
             default:
                 return Results.BadRequest(ResponseMessage.Create("Не был найден данный provider новостей", HttpStatusCode.BadRequest));
