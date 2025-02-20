@@ -15,6 +15,7 @@ public class ModsMapper : Profile
         CreateMap<IExternalMod, ExtendedModReadDto>();
         CreateMap<IExternalMod, ExtendedModInfoReadDto>();
         CreateMap<ModrinthModVersion, ModVersionDto>();
+        CreateMap<CurseForgeModVersion, ModVersionDto>();
         CreateMap<Dependency, ModVersionDtoDependency>();
     }
 }
