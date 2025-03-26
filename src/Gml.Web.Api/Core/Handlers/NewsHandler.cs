@@ -46,11 +46,11 @@ public class NewsHandler : INewsHandler
         throw new NotImplementedException();
     }
 
-    public static async Task<IResult> GetNews(IGmlManager gmlManager)
+    public static async Task<IResult> GetNews(IGmlManager gmlManager, IMapper mapper)
     {
         var news = await gmlManager.Integrations.NewsProvider.GetNews();
 
-        return Results.Ok(ResponseMessage.Create(news, "Актуальные новости", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<NewsReadDto>>(news), "Актуальные новости", HttpStatusCode.OK));
     }
 
     public static IResult GetListeners(IGmlManager gmlManager)
