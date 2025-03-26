@@ -207,6 +207,9 @@ public class ProfileHandler : IProfileHandler
                     HttpStatusCode.NotFound));
         }
 
+        if (!profile.CanEdit)
+            return Results.NotFound(ResponseMessage.Create("В текущем состоянии профиля редактирование невозможно", HttpStatusCode.NotFound));
+
         var icon = context.Request.Form.Files["icon"] is null
             ? null
             : context.Request.Form.Files["icon"]!.OpenReadStream();
