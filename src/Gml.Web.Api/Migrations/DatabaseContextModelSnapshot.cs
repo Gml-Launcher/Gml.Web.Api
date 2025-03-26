@@ -43,6 +43,9 @@ namespace Gml.Web.Api.Migrations
                     b.Property<int>("TextureProtocol")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("VkKey")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Settings");

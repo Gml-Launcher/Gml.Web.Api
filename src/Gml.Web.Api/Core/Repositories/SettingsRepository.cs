@@ -26,7 +26,9 @@ public class SettingsRepository(
             settings.StorageLogin,
             settings.StoragePassword,
             settings.TextureProtocol,
-            settings.CurseForgeKey);
+            settings.CurseForgeKey,
+            settings.VkKey
+            );
 
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();

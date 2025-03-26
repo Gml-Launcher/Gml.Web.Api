@@ -6,6 +6,7 @@ public class SettingsReadDto
     public int StorageType { get; set; }
     public string StorageHost { get; set; }
     public string CurseForgeKey { get; set; }
+    public string VkKey { get; set; }
     public string StorageLogin { get; set; }
     public int TextureProtocol { get; set; }
 }

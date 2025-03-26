@@ -55,13 +55,14 @@ public static class DatabaseExtensions
         RestoreStorage(gmlManager, dataBaseSettings);
 
         gmlManager.LauncherInfo.UpdateSettings(
-    dataBaseSettings.StorageType,
-    dataBaseSettings.StorageHost,
-    dataBaseSettings.StorageLogin,
-    dataBaseSettings.StoragePassword,
-    dataBaseSettings.TextureProtocol,
-    dataBaseSettings.CurseForgeKey);
-
+            dataBaseSettings.StorageType,
+            dataBaseSettings.StorageHost,
+            dataBaseSettings.StorageLogin,
+            dataBaseSettings.StoragePassword,
+            dataBaseSettings.TextureProtocol,
+            dataBaseSettings.CurseForgeKey,
+            dataBaseSettings.VkKey
+        );
     }
 
     private static void RestoreStorage(IGmlManager gmlManager, Settings settings)
@@ -72,5 +73,6 @@ public static class DatabaseExtensions
         gmlManager.LauncherInfo.StorageSettings.StoragePassword = settings.StoragePassword;
         gmlManager.LauncherInfo.StorageSettings.TextureProtocol = settings.TextureProtocol;
         gmlManager.LauncherInfo.AccessTokens[AccessTokenTokens.CurseForgeKey] = settings.CurseForgeKey;
+        gmlManager.LauncherInfo.AccessTokens[AccessTokenTokens.VkKey] = settings.VkKey;
     }
 }
