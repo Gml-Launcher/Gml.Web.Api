@@ -1,4 +1,5 @@
 using System.Reactive.Subjects;
+using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Settings;
@@ -42,6 +43,7 @@ public static class DatabaseExtensions
             dataBaseSettings = context.Settings.Add(new Settings
             {
                 RegistrationIsEnabled = true,
+                CurseForgeKey = string.Empty,
                 TextureProtocol = TextureProtocol.Https
             }).Entity;
 
@@ -52,6 +54,14 @@ public static class DatabaseExtensions
 
         RestoreStorage(gmlManager, dataBaseSettings);
 
+        gmlManager.LauncherInfo.UpdateSettings(
+    dataBaseSettings.StorageType,
+    dataBaseSettings.StorageHost,
+    dataBaseSettings.StorageLogin,
+    dataBaseSettings.StoragePassword,
+    dataBaseSettings.TextureProtocol,
+    dataBaseSettings.CurseForgeKey);
+
     }
 
     private static void RestoreStorage(IGmlManager gmlManager, Settings settings)
@@ -61,5 +71,6 @@ public static class DatabaseExtensions
         gmlManager.LauncherInfo.StorageSettings.StorageLogin = settings.StorageLogin;
         gmlManager.LauncherInfo.StorageSettings.StoragePassword = settings.StoragePassword;
         gmlManager.LauncherInfo.StorageSettings.TextureProtocol = settings.TextureProtocol;
+        gmlManager.LauncherInfo.AccessTokens[AccessTokenTokens.CurseForgeKey] = settings.CurseForgeKey;
     }
 }

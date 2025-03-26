@@ -22,6 +22,9 @@ namespace Gml.Web.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CurseForgeKey")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("RegistrationIsEnabled")
                         .HasColumnType("INTEGER");
 

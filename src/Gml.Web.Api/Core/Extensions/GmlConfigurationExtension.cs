@@ -6,8 +6,12 @@ namespace Gml.Web.Api.Core.Extensions;
 
 public static class GmlConfigurationExtension
 {
-    public static IServiceCollection ConfigureGmlManager(this IServiceCollection services, string projectName,
-        string securityKey, string? projectPath, string? textureEndpoint)
+    public static IServiceCollection ConfigureGmlManager(
+        this IServiceCollection services,
+        string projectName,
+        string securityKey,
+        string? projectPath,
+        string? textureEndpoint)
     {
         services.AddSingleton<IGmlManager>(_ =>
         {
