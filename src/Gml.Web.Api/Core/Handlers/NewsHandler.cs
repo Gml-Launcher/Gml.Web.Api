@@ -23,8 +23,10 @@ public class NewsHandler : INewsHandler
             case NewsListenerType.Custom:
                 await gmlManager.Integrations.NewsProvider.AddListener(new CustomNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
                 break;
-            case NewsListenerType.Telegram:
             case NewsListenerType.VK:
+                await gmlManager.Integrations.NewsProvider.AddListener(new VkNewsProvider(newsListenerDto.Url, gmlManager));
+                break;
+            case NewsListenerType.Telegram:
             default:
                 return Results.BadRequest(ResponseMessage.Create("Не был найден данный provider новостей", HttpStatusCode.BadRequest));
         }
