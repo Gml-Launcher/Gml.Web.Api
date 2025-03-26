@@ -531,6 +531,12 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
+
         foreach (var formFile in context.Request.Form.Files)
         {
             if (Path.GetExtension(formFile.FileName) != ".jar")
@@ -563,6 +569,12 @@ public class ProfileHandler : IProfileHandler
         if (profile is null)
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
+
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
 
         using (var client = httpClientFactory.CreateClient())
         {
@@ -634,6 +646,12 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
+
         var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modType, modName, take, offset);
 
         return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
@@ -651,6 +669,12 @@ public class ProfileHandler : IProfileHandler
         if (profile is null)
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
+
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
 
         var modInfo = await gmlManager.Mods.GetInfo(modId, modType);
 
