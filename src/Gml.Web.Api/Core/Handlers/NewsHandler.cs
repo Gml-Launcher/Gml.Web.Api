@@ -15,13 +15,13 @@ public class NewsHandler : INewsHandler
         switch (newsListenerDto.Type)
         {
             case NewsListenerType.Azuriom:
-                await gmlManager.Integrations.NewsProvider.AddListener(new AzuriomNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
+                await gmlManager.Integrations.NewsProvider.AddListener(new AzuriomNewsProvider(newsListenerDto.Url));
                 break;
             case NewsListenerType.UnicoreCMS:
-                await gmlManager.Integrations.NewsProvider.AddListener(new UnicoreNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
+                await gmlManager.Integrations.NewsProvider.AddListener(new UnicoreNewsProvider(newsListenerDto.Url));
                 break;
             case NewsListenerType.Custom:
-                await gmlManager.Integrations.NewsProvider.AddListener(new CustomNewsProvider(newsListenerDto.Url, newsListenerDto.Type));
+                await gmlManager.Integrations.NewsProvider.AddListener(new CustomNewsProvider(newsListenerDto.Url));
                 break;
             case NewsListenerType.VK:
                 await gmlManager.Integrations.NewsProvider.AddListener(new VkNewsProvider(newsListenerDto.Url, gmlManager));
