@@ -50,7 +50,7 @@ public class NewsHandler : INewsHandler
     {
         var news = await gmlManager.Integrations.NewsProvider.GetNews();
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<NewsReadDto>>(news), "Актуальные новости", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<NewsReadDto>>(news.ToList()), "Актуальные новости", HttpStatusCode.OK));
     }
 
     public static IResult GetListeners(IGmlManager gmlManager)
