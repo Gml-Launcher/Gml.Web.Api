@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Frozen;
+using System.Net;
 using AutoMapper;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
@@ -50,11 +51,22 @@ public class PlayersHandler : IPlayersHandler
                 HttpStatusCode.BadRequest));
         }
 
+        var profiles = (await gmlManager.Profiles.GetProfiles()).ToFrozenSet();
+
+
+
         foreach (var playerUuid in playerUuids)
         {
+
             var player = await gmlManager.Users.GetUserByUuid(playerUuid);
 
             if (player is null) continue;
+
+            if (profiles.Any(c => c.UserWhiteListGuid.Contains(playerUuid)))
+            {
+                return Results.BadRequest(ResponseMessage.Create($"Пользователь \"{player.Name}\" находится в белом списке, удалите его из всех профилей перед удалением!",
+                    HttpStatusCode.BadRequest));
+            }
 
             await gmlManager.Users.RemoveUser(player);
         }
