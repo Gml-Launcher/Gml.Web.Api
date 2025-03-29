@@ -72,7 +72,7 @@ public class ProfileHandler : IProfileHandler
             profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
-        return Results.Ok(ResponseMessage.Create(dtoProfiles, string.Empty, HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(dtoProfiles.OrderByDescending(c => c.Priority), string.Empty, HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
@@ -184,6 +184,7 @@ public class ProfileHandler : IProfileHandler
             OriginalName = context.Request.Form["originalName"],
             JvmArguments = context.Request.Form["jvmArguments"],
             GameArguments = context.Request.Form["gameArguments"],
+            Priority = int.TryParse(context.Request.Form["priority"], out var priority) ? priority : 0,
             IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
@@ -227,7 +228,8 @@ public class ProfileHandler : IProfileHandler
             updateDto.Description,
             updateDto.IsEnabled,
             updateDto.JvmArguments,
-            updateDto.GameArguments);
+            updateDto.GameArguments,
+            updateDto.Priority);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
@@ -396,6 +398,7 @@ public class ProfileHandler : IProfileHandler
 
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
         profileDto.IsEnabled = profile.IsEnabled;
+        profileDto.Priority = profile.Priority;
         profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
