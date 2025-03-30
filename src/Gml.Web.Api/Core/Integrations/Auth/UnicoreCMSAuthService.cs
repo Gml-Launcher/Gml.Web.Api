@@ -50,7 +50,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             return new AuthResult
             {
                 IsSuccess = false,
-                Message = "Произошла ошибка при обработке данных с сервера авторизации."
+                Message = responseResult.Contains("\"statusCode\":401") ? "Неверный логин или пароль" : "Произошла ошибка при обработке данных с сервера авторизации."
             };
         }
 

@@ -72,7 +72,7 @@ public class ProfileHandler : IProfileHandler
             profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
-        return Results.Ok(ResponseMessage.Create(dtoProfiles, string.Empty, HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(dtoProfiles.OrderByDescending(c => c.Priority), string.Empty, HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
@@ -184,6 +184,7 @@ public class ProfileHandler : IProfileHandler
             OriginalName = context.Request.Form["originalName"],
             JvmArguments = context.Request.Form["jvmArguments"],
             GameArguments = context.Request.Form["gameArguments"],
+            Priority = int.TryParse(context.Request.Form["priority"], out var priority) ? priority : 0,
             IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
@@ -207,6 +208,9 @@ public class ProfileHandler : IProfileHandler
                     HttpStatusCode.NotFound));
         }
 
+        if (!profile.CanEdit)
+            return Results.NotFound(ResponseMessage.Create("В текущем состоянии профиля редактирование невозможно", HttpStatusCode.NotFound));
+
         var icon = context.Request.Form.Files["icon"] is null
             ? null
             : context.Request.Form.Files["icon"]!.OpenReadStream();
@@ -224,7 +228,8 @@ public class ProfileHandler : IProfileHandler
             updateDto.Description,
             updateDto.IsEnabled,
             updateDto.JvmArguments,
-            updateDto.GameArguments);
+            updateDto.GameArguments,
+            updateDto.Priority);
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
@@ -393,6 +398,7 @@ public class ProfileHandler : IProfileHandler
 
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
         profileDto.IsEnabled = profile.IsEnabled;
+        profileDto.Priority = profile.Priority;
         profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
@@ -531,6 +537,12 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
+
         foreach (var formFile in context.Request.Form.Files)
         {
             if (Path.GetExtension(formFile.FileName) != ".jar")
@@ -563,6 +575,12 @@ public class ProfileHandler : IProfileHandler
         if (profile is null)
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
+
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
 
         using (var client = httpClientFactory.CreateClient())
         {
@@ -634,6 +652,12 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
+
         var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modType, modName, take, offset);
 
         return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
@@ -651,6 +675,12 @@ public class ProfileHandler : IProfileHandler
         if (profile is null)
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
+
+        if (await profile.CanLoadMods() == false)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+                HttpStatusCode.NotFound));
+        }
 
         var modInfo = await gmlManager.Mods.GetInfo(modId, modType);
 

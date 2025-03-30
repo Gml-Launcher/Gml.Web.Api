@@ -1,4 +1,5 @@
 using System.Net;
+using Gml.Models.News;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Domains.LauncherDto;
@@ -6,6 +7,7 @@ using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
+using Gml.Web.Api.Dto.News;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.Profile;
 using Gml.Web.Api.Dto.Servers;
@@ -517,6 +519,74 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
             .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        #endregion
+
+        #region News
+
+        app.MapPost("/api/v1/integrations/news", NewsHandler.AddNewsListener)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Добавление слушателя новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Добавление слушателя новостей")
+            .WithName("Add news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/integrations/news/{type}", NewsHandler.RemoveNewsListener)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление слушателя новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление слушателя новостей")
+            .WithName("Remove news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/integrations/news/providers", NewsHandler.GetListeners)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка слушателей новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка слушателей новостей")
+            .WithName("Get news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/integrations/news", NewsHandler.GetNewsListener)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка слушателя новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка слушателя новостей")
+            .WithName("Get list of news listeners")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/integrations/news/list", NewsHandler.GetNews)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка новостей";
+                return generatedOperation;
+            })
+            .WithDescription("Получение новостей")
+            .WithName("Get list news")
+            .WithTags("Integration/News")
+            .Produces<ResponseMessage<NewsGetListenerDto[]>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
         #endregion
 

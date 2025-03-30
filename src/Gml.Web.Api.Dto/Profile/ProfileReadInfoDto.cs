@@ -18,6 +18,7 @@ public class ProfileReadInfoDto
     public string Description { get; set; }
     public string Arguments { get; set; }
     public bool IsEnabled { get; set; }
+    public int Priority { get; set; }
     public string JvmArguments { get; set; }
     public string GameArguments { get; set; }
     public bool HasUpdate { get; set; }

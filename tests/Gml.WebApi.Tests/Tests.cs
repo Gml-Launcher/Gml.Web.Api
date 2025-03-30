@@ -835,6 +835,7 @@ public class Tests
             RegistrationIsEnabled = true,
             StorageHost = "",
             StorageLogin = "",
+            CurseForgeKey = "",
             StoragePassword = "",
             StorageType = (int)StorageType.LocalStorage
         });

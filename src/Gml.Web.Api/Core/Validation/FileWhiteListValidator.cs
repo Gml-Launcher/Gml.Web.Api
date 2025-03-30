@@ -12,7 +12,7 @@ public class FileWhiteListValidator : AbstractValidator<List<FileWhiteListDto>>
         {
             child.RuleFor(x => x.ProfileName)
                 .NotEmpty().WithMessage("Имя профиля обязательно.")
-                .Matches("^[a-zA-Z0-9- ]*$").WithMessage("Имя профиля может содержать только английские буквы, цифры, пробелы и тире.")
+                .Matches("^[a-zA-Z0-9-]*$").WithMessage("Название профиля может содержать только английские буквы, цифры и тире.")
                 .Length(2, 100).WithMessage("Длина имени профиля должна быть от 2 до 100 символов.");
 
             child.RuleFor(x => x.Hash)
