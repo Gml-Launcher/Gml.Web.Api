@@ -22,19 +22,18 @@ namespace Gml.WebApi.Tests;
 
 public class Tests
 {
-    private readonly string _newSenryUrl = "https://gml@gmlb-test.recloud.tech/1";
+    private readonly string _newSentryUrl = "https://gml@gmlb-test.recloud.tech/1";
     private readonly string _newTextureUrl = "https://test.ru";
     private readonly string _profileName = "UnitTestProfile";
     private string? _cloakUrl;
     private HttpClient _httpClient;
-    private string? _sentryDsn;
     private readonly string _serverUuid = Guid.NewGuid().ToString();
     private string? _skinUrl;
     private WebApplicationFactory<Program> _webApplicationFactory;
     private string? _accessToken;
 
-    [SetUp]
-    public async Task Setup()
+    [OneTimeSetUp]
+    public Task Setup()
     {
         Environment.SetEnvironmentVariable("SECURITY_KEY", "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23");
         Environment.SetEnvironmentVariable("PROJECT_NAME", "GmlServer");
@@ -45,6 +44,7 @@ public class Tests
 
         _webApplicationFactory = new GmlApiApplicationFactory();
         _httpClient = _webApplicationFactory.CreateClient();
+        return Task.CompletedTask;
     }
 
     [Test]
@@ -77,6 +77,7 @@ public class Tests
     {
         var profile = new MultipartFormDataContent();
         profile.Add(new StringContent(_profileName), "Name");
+        profile.Add(new StringContent(_profileName), "DisplayName");
         profile.Add(new StringContent(Address.StreetAddress()), "Description");
         profile.Add(new StringContent("1.7.10"), "Version");
         profile.Add(new StringContent(((int)GameLoader.Forge).ToString()), "GameLoader");
@@ -96,6 +97,7 @@ public class Tests
         });
     }
 
+#if DEBUG
     [Test]
     [Order(3)]
     public async Task RestoreProfile()
@@ -104,8 +106,6 @@ public class Tests
         {
             Name = _profileName
         });
-
-        return;
 
         var response = await _httpClient.PostAsync("/api/v1/profiles/restore", restoreDto);
 
@@ -119,6 +119,7 @@ public class Tests
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         });
     }
+#endif
 
     [Test]
     [Order(4)]
@@ -170,6 +171,7 @@ public class Tests
         var profileUpdateData = new MultipartFormDataContent
         {
             { new StringContent(_profileName), "Name" },
+            { new StringContent(_profileName), "DisplayName" },
             { new StringContent(_profileName), "OriginalName" },
             { new StringContent("Avon"), "Description" },
             { new StringContent("image"), "IconBase64" }
@@ -321,7 +323,7 @@ public class Tests
     [Order(13)]
     public async Task UpdateSentryDsn()
     {
-        var httpContent = TestHelper.CreateJsonObject(new UrlServiceDto(_newSenryUrl));
+        var httpContent = TestHelper.CreateJsonObject(new UrlServiceDto(_newSentryUrl));
 
         var response = await _httpClient.PutAsync("/api/v1/integrations/sentry/dsn", httpContent);
         var content = await response.Content.ReadAsStringAsync();
@@ -348,7 +350,7 @@ public class Tests
         {
             Assert.That(model, Is.Not.Null);
             Assert.That(model?.Data, Is.Not.Null);
-            Assert.That(model?.Data?.Url, Is.EqualTo(_newSenryUrl));
+            Assert.That(model?.Data?.Url, Is.EqualTo(_newSentryUrl));
             Assert.That(response.IsSuccessStatusCode, Is.True);
         });
     }
@@ -435,8 +437,8 @@ public class Tests
     {
         var httpContent = TestHelper.CreateJsonObject(new UserAuthDto
         {
-            Login = "GamerVII",
-            Password = "MegaPassword"
+            Login = login,
+            Password = password
         });
 
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -932,7 +934,7 @@ public class Tests
         {
             Assert.That(model, Is.Not.Null);
             Assert.That(model?.Data, Is.Not.Null);
-            Assert.That(model?.Data?.Url, Is.EqualTo(_newSenryUrl));
+            Assert.That(model?.Data?.Url, Is.EqualTo(_newSentryUrl));
             Assert.That(response.IsSuccessStatusCode, Is.True);
         });
     }
