@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using GmlCore.Interfaces;
@@ -10,8 +11,8 @@ public class GitHubService : IGitHubService
 {
     private readonly IGmlManager _gmlManager;
     private readonly HttpClient _httpClient;
-    private FrozenSet<string> _versions;
-    private FrozenSet<string> _branches;
+    private ICollection<string> _versions;
+    private ICollection<string> _branches;
 
     public GitHubService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager)
     {
@@ -33,7 +34,7 @@ public class GitHubService : IGitHubService
 
             var branches = JArray.Parse(responseString);
 
-            _branches = branches.Select(jt => jt["name"].ToString()).ToFrozenSet();
+            _versions = branches.Select(c => c["name"].ToString()).ToArray();
         }
 
         return _branches;
@@ -53,7 +54,7 @@ public class GitHubService : IGitHubService
 
             var branches = JArray.Parse(responseString);
 
-            _versions = branches.Select(jt => jt["name"].ToString()).ToFrozenSet();
+            _versions = branches.Select(c => c["name"].ToString()).ToArray();
         }
 
         return _versions;

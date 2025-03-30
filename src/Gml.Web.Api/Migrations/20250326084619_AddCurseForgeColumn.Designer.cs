@@ -2,16 +2,19 @@
 using Gml.Web.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Gml.Web.Api.Migrations
+namespace Gml.Web.Api.Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250326084619_AddCurseForgeColumn")]
+    partial class AddCurseForgeColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.1");
@@ -42,9 +45,6 @@ namespace Gml.Web.Api.Migrations
 
                     b.Property<int>("TextureProtocol")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("VkKey")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

@@ -1,3 +1,4 @@
+using System.Net;
 using Gml.Web.Api.Core.Options;
 
 namespace Gml.Web.Api.Core.Extensions;
@@ -20,6 +21,18 @@ public static class HttpClientsExtensions
         });
 
         return services;
+    }
+    public static IPAddress? ParseRemoteAddress(this HttpContext context)
+    {
+        if (!context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor) ||
+            string.IsNullOrWhiteSpace(forwardedFor))
+            return context.Connection.RemoteIpAddress;
+
+        var address = forwardedFor.ToString().Split(',').FirstOrDefault() ?? string.Empty;
+
+        return IPAddress.TryParse(address, out var ipAddress)
+            ? ipAddress
+            : context.Connection.RemoteIpAddress;
     }
 
 }
