@@ -46,7 +46,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
+        fileDto = fileDto.DistinctBy(c => c.Directory).ToList();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -60,8 +60,8 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles)
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
-                    new HeaderDictionary());
+
+                var file = await profile.GetProfileFiles(fileInfo.Directory);
 
                 if (file == null)
                     return Results.NotFound(ResponseMessage.Create(
@@ -87,7 +87,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
+        fileDto = fileDto.DistinctBy(c => c.Directory).ToList();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -99,10 +99,9 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFiles.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            foreach (var fileInfo in profileFiles.DistinctBy(c => c.Hash))
+            foreach (var fileInfo in profileFiles.DistinctBy(c => c.Directory))
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
-                    new HeaderDictionary());
+                var file = await profile.GetProfileFiles(fileInfo.Directory);
 
                 if (file == null)
                     return Results.NotFound(ResponseMessage.Create(
