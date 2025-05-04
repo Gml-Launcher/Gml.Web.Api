@@ -62,9 +62,10 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
     private static IResult HandleAuthException(Exception exception, bool isHttpRequestException)
     {
         Console.WriteLine(exception);
-        string errorMessage = isHttpRequestException
-            ? "Произошла ошибка при обмене данных с сервисом авторизации."
-            : exception.Message;
+
+        var errorMessage = string.Join('.',
+            "Произошла ошибка при обмене данных с сервисом авторизации",
+            exception.Message);
 
         return Results.BadRequest(ResponseMessage.Create(
             errorMessage,
