@@ -334,7 +334,7 @@ public class ProfileHandler : IProfileHandler
             ScreenHeight = createInfoDto.WindowHeight,
             ScreenWidth = createInfoDto.WindowWidth,
             MaximumRamMb = createInfoDto.RamSize,
-            MinimumRamMb = createInfoDto.RamSize,
+            MinimumRamMb = 1024,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
         },user);
@@ -387,7 +387,7 @@ public class ProfileHandler : IProfileHandler
             ScreenHeight = createInfoDto.WindowHeight,
             ScreenWidth = createInfoDto.WindowWidth,
             MaximumRamMb = createInfoDto.RamSize,
-            MinimumRamMb = createInfoDto.RamSize,
+            MinimumRamMb = 1024,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
         }, user);
