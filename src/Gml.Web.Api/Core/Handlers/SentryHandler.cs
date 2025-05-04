@@ -96,6 +96,14 @@ public abstract class SentryHandler : ISentryHandler
         return Results.Empty;
     }
 
+    public static async Task<IResult> SolveAllBugs(IGmlManager gmlManager)
+    {
+        await gmlManager.BugTracker.SolveAllAsync();
+
+        return Results.Ok(ResponseMessage.Create("Все ошибки очищены", HttpStatusCode.OK));
+    }
+
+
     public static async Task<IResult> GetBugs(IGmlManager gmlManager, SentryFilterDto filter)
     {
         var minDate = filter.DateFrom ?? DateTime.MinValue;
