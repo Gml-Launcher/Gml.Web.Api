@@ -1,22 +1,76 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using Gml.Core.User;
 using Gml.Web.Api.Core.Extensions;
 using Gml.Web.Api.Core.Integrations.Auth;
-using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
+using GmlCore.Interfaces.User;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthIntegrationHandler : IAuthIntegrationHandler
 {
+    private static async Task<IResult?> HandleCommonAuthValidation(
+        HttpContext context,
+        IGmlManager gmlManager,
+        AuthType authType)
+    {
+        var userAgent = context.Request.Headers["User-Agent"].ToString();
+
+        if (string.IsNullOrWhiteSpace(userAgent))
+            return Results.BadRequest(ResponseMessage.Create(
+                "Не удалось определить устройство, с которого произошла авторизация",
+                HttpStatusCode.BadRequest));
+
+        return null; // Валидация прошла успешно
+    }
+
+    private static async Task<IResult> HandleAuthenticatedUser(
+        IGmlManager gmlManager,
+        IMapper mapper,
+        IUser player,
+        string userAgent)
+    {
+        if (player.IsBanned)
+        {
+            return Results.BadRequest(ResponseMessage.Create(
+                "Пользователь заблокирован!",
+                HttpStatusCode.BadRequest));
+        }
+
+        await gmlManager.Profiles.CreateUserSessionAsync(null, player);
+
+        if (string.IsNullOrEmpty(player.TextureSkinUrl))
+        {
+            player.TextureSkinUrl = (await gmlManager.Integrations.GetSkinServiceAsync())
+                .Replace("{userName}", player.Name)
+                .Replace("{userUuid}", player.Uuid);
+        }
+
+        return Results.Ok(ResponseMessage.Create(
+            mapper.Map<PlayerReadDto>(player),
+            string.Empty,
+            HttpStatusCode.OK));
+    }
+
+    private static IResult HandleAuthException(Exception exception, bool isHttpRequestException)
+    {
+        Console.WriteLine(exception);
+        string errorMessage = isHttpRequestException
+            ? "Произошла ошибка при обмене данных с сервисом авторизации."
+            : exception.Message;
+
+        return Results.BadRequest(ResponseMessage.Create(
+            errorMessage,
+            HttpStatusCode.InternalServerError));
+    }
+
     public static async Task<IResult> Auth(
         HttpContext context,
         IGmlManager gmlManager,
@@ -28,18 +82,16 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         try
         {
             var result = await validator.ValidateAsync(authDto);
-
             if (!result.IsValid)
                 return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                     HttpStatusCode.BadRequest));
 
             var authType = await gmlManager.Integrations.GetAuthType();
-            var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-            if (string.IsNullOrWhiteSpace(userAgent))
-                return Results.BadRequest(ResponseMessage.Create(
-                    "Не удалось определить устройство, с которого произошла авторизация",
-                    HttpStatusCode.BadRequest));
+            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType);
+
+            if (validationResult is not null)
+                return validationResult;
 
             if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.Password))
             {
@@ -50,51 +102,35 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
 
             var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType);
 
-            if (authResult.IsSuccess)
-            {
+            if (!authResult.IsSuccess)
+                return Results.BadRequest(ResponseMessage.Create(
+                    authResult.Message ?? "Неверный логин или пароль",
+                    HttpStatusCode.Unauthorized));
 
-                var player = await gmlManager.Users.GetAuthData(
-                    authResult.Login ?? authDto.Login,
-                    authDto.Password,
-                    userAgent,
-                    context.Request.Protocol,
-                    context.ParseRemoteAddress(),
-                    authResult.Uuid,
-                    context.Request.Headers["X-HWID"]);
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-                if (player.IsBanned)
-                {
-                    return Results.BadRequest(ResponseMessage.Create(
-                        "Пользователь заблокирован!",
-                        HttpStatusCode.BadRequest));
-                }
+            var player = await gmlManager.Users.GetAuthData(
+                authResult.Login ?? authDto.Login,
+                authDto.Password,
+                userAgent,
+                context.Request.Protocol,
+                context.ParseRemoteAddress(),
+                authResult.Uuid,
+                context.Request.Headers["X-HWID"]);
 
-                await gmlManager.Profiles.CreateUserSessionAsync(null, player);
+            return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
 
-                player.TextureSkinUrl ??= (await gmlManager.Integrations.GetSkinServiceAsync())
-                    .Replace("{userName}", player.Name)
-                    .Replace("{userUuid}", player.Uuid);
-
-                return Results.Ok(ResponseMessage.Create(
-                    mapper.Map<PlayerReadDto>(player),
-                    string.Empty,
-                    HttpStatusCode.OK));
-            }
-
-            return Results.BadRequest(ResponseMessage.Create(authResult.Message ?? "Неверный логин или пароль", HttpStatusCode.Unauthorized));
         }
         catch (HttpRequestException exception)
         {
-            Console.WriteLine(exception);
-            return Results.BadRequest(ResponseMessage.Create(
-                "Произошла ошибка при обмене данных с сервисом авторизации.", HttpStatusCode.InternalServerError));
+            return HandleAuthException(exception, true);
         }
         catch (Exception exception)
         {
-            Console.WriteLine(exception);
-            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.InternalServerError));
+            return HandleAuthException(exception, false);
         }
     }
+
     public static async Task<IResult> AuthWithToken(
         HttpContext context,
         IGmlManager gmlManager,
@@ -105,12 +141,10 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         try
         {
             var authType = await gmlManager.Integrations.GetAuthType();
-            var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-            if (string.IsNullOrWhiteSpace(userAgent))
-                return Results.BadRequest(ResponseMessage.Create(
-                    "Не удалось определить устройство, с которого произошла авторизация",
-                    HttpStatusCode.BadRequest));
+            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType);
+            if (validationResult != null)
+                return validationResult;
 
             if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.AccessToken))
             {
@@ -120,44 +154,25 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             }
 
             var user = await gmlManager.Users.GetUserByAccessToken(authDto.AccessToken);
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-            if (user is not null && user.ExpiredDate> DateTime.Now)
+            if (user is not null && user.ExpiredDate > DateTime.Now)
             {
-                var player = user;
-
-                if (player.IsBanned)
-                {
-                    return Results.BadRequest(ResponseMessage.Create(
-                        "Пользователь заблокирован!",
-                        HttpStatusCode.BadRequest));
-                }
-
-                if (string.IsNullOrEmpty(player.TextureSkinUrl))
-                    player.TextureSkinUrl = (await gmlManager.Integrations.GetSkinServiceAsync())
-                        .Replace("{userName}", player.Name)
-                        .Replace("{userUuid}", player.Uuid);
-
-                await gmlManager.Profiles.CreateUserSessionAsync(null, player);
-
-                return Results.Ok(ResponseMessage.Create(
-                    mapper.Map<PlayerReadDto>(player),
-                    string.Empty,
-                    HttpStatusCode.OK));
+                return await HandleAuthenticatedUser(gmlManager, mapper, user, userAgent);
             }
+
+            return Results.BadRequest(ResponseMessage.Create(
+                "Неверный логин или пароль",
+                HttpStatusCode.Unauthorized));
         }
         catch (HttpRequestException exception)
         {
-            Console.WriteLine(exception);
-            return Results.BadRequest(ResponseMessage.Create(
-                "Произошла ошибка при обмене данных с сервисом авторизации.", HttpStatusCode.InternalServerError));
+            return HandleAuthException(exception, true);
         }
         catch (Exception exception)
         {
-            Console.WriteLine(exception);
-            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.InternalServerError));
+            return HandleAuthException(exception, false);
         }
-
-        return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль", HttpStatusCode.Unauthorized));
     }
 
     [Authorize]
