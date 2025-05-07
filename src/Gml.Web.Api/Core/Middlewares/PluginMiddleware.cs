@@ -58,7 +58,7 @@ public class PluginMiddleware
             await context.Response.WriteAsJsonAsync(ResponseMessage.Create([new ValidationFailure
             {
                 ErrorMessage = exeption.Message,
-            }], "Сервер обработал принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
+            }], "Сервер принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
         }
 
         // Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
