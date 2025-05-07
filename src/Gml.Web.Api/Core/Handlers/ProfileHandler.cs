@@ -386,7 +386,7 @@ public class ProfileHandler : IProfileHandler
             ServerPort = createInfoDto.GamePort,
             ScreenHeight = createInfoDto.WindowHeight,
             ScreenWidth = createInfoDto.WindowWidth,
-            MaximumRamMb = createInfoDto.RamSize,
+            MaximumRamMb = createInfoDto.RamSize == 0 ? 1024 : createInfoDto.RamSize,
             MinimumRamMb = 1024,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
