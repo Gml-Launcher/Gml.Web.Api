@@ -3,10 +3,8 @@ using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 
-public class NamelessMCAuthService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager) : IPlatformAuthService
+public class NamelessMCAuthService(IHttpClientFactory httpClientFactory, IGmlManager gmlManager)
+    : CustomEndpointAuthService(httpClientFactory, gmlManager)
 {
-    public Task<AuthResult> Auth(string login, string password)
-    {
-        throw new NotImplementedException();
-    }
+
 }

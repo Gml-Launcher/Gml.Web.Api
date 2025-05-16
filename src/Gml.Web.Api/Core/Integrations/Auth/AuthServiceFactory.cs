@@ -18,7 +18,8 @@ public class AuthServiceFactory(IServiceProvider serviceProvider) : IAuthService
             AuthType.UnicoreCMS => serviceProvider.GetRequiredService<UnicoreCMSAuthService>(),
             AuthType.CustomEndpoint => serviceProvider.GetRequiredService<CustomEndpointAuthService>(),
             AuthType.NamelessMC => serviceProvider.GetRequiredService<NamelessMCAuthService>(),
-            AuthType.WebMCR => serviceProvider.GetRequiredService<WebMCRAuthService>(),
+            AuthType.WebMCRReloaded => serviceProvider.GetRequiredService<WebMCRAuthService>(),
+            AuthType.WordPress => serviceProvider.GetRequiredService<WordPressAuthService>(),
             _ => throw new ArgumentOutOfRangeException(nameof(platformKey), platformKey, null)
         };
     }
