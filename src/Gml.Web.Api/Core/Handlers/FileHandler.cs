@@ -46,7 +46,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
+        fileDto = fileDto.DistinctBy(c => c.Directory).ToList();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -60,14 +60,7 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles)
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
-                    new HeaderDictionary());
-
-                if (file == null)
-                    return Results.NotFound(ResponseMessage.Create(
-                        "Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
-
-                await manager.Profiles.AddFileToWhiteList(profile, file);
+                await manager.Profiles.AddFileToWhiteList(profile, new LocalFileInfo(fileInfo.Directory));
             }
         }
 
@@ -87,7 +80,7 @@ public class FileHandler : IFileHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        fileDto = fileDto.DistinctBy(c => c.Hash).ToList();
+        fileDto = fileDto.DistinctBy(c => c.Directory).ToList();
 
         var profileNames = fileDto.GroupBy(c => c.ProfileName);
 
@@ -99,17 +92,9 @@ public class FileHandler : IFileHandler
                 return Results.NotFound(ResponseMessage.Create($"Профиль с именем \"{profileFiles.Key}\" не найден",
                     HttpStatusCode.NotFound));
 
-            foreach (var fileInfo in profileFiles.DistinctBy(c => c.Hash))
+            foreach (var fileInfo in profileFiles.DistinctBy(c => c.Directory))
             {
-                var file = await manager.Files.DownloadFileStream(fileInfo.Hash, new MemoryStream(),
-                    new HeaderDictionary());
-
-                if (file == null)
-                    return Results.NotFound(ResponseMessage.Create(
-                        "Информация по файлу не найдена. Возможно вы не собрали профиль.",
-                        HttpStatusCode.NotFound));
-
-                await manager.Profiles.RemoveFileFromWhiteList(profile, file);
+                await manager.Profiles.RemoveFileFromWhiteList(profile, new LocalFileInfo(fileInfo.Directory));
             }
         }
 

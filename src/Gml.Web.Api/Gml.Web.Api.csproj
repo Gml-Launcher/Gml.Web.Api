@@ -148,6 +148,12 @@
     <Compile Update="Core\Handlers\NewsHandler.cs">
       <DependentUpon>INewsHandler.cs</DependentUpon>
     </Compile>
+    <Compile Update="Core\Integrations\Auth\WebMCRAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\WordPressAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

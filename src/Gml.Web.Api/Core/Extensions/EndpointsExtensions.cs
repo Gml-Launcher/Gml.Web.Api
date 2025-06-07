@@ -169,6 +169,17 @@ public static class EndpointsExtensions
             .WithTags("Integration/Sentry")
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapPost("/api/v1/sentry/clear", SentryHandler.SolveAllBugs)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Очистка всех ошибок Sentry";
+                return generatedOperation;
+            })
+            .WithDescription("Очистка всех ошибок Sentry")
+            .WithName("Clear all bugs sentry")
+            .WithTags("Integration/Sentry")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
         app.MapPost("/api/v1/sentry/filter", SentryHandler.GetFilterSentry)
             .WithOpenApi(generatedOperation =>
             {
