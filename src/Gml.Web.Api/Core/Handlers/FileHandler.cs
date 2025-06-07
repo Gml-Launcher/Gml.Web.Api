@@ -60,14 +60,7 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles)
             {
-
-                var file = await profile.GetProfileFiles(fileInfo.Directory);
-
-                if (file == null)
-                    return Results.NotFound(ResponseMessage.Create(
-                        "Информация по файлу не найдена. Возможно вы не собрали профиль.", HttpStatusCode.NotFound));
-
-                await manager.Profiles.AddFileToWhiteList(profile, file);
+                await manager.Profiles.AddFileToWhiteList(profile, new LocalFileInfo(fileInfo.Directory));
             }
         }
 
@@ -101,14 +94,7 @@ public class FileHandler : IFileHandler
 
             foreach (var fileInfo in profileFiles.DistinctBy(c => c.Directory))
             {
-                var file = await profile.GetProfileFiles(fileInfo.Directory);
-
-                if (file == null)
-                    return Results.NotFound(ResponseMessage.Create(
-                        "Информация по файлу не найдена. Возможно вы не собрали профиль.",
-                        HttpStatusCode.NotFound));
-
-                await manager.Profiles.RemoveFileFromWhiteList(profile, file);
+                await manager.Profiles.RemoveFileFromWhiteList(profile, new LocalFileInfo(fileInfo.Directory));
             }
         }
 
