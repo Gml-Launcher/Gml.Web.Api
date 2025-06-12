@@ -10,6 +10,6 @@ public class TemplateEndpoint : IPluginEndpoint
 {
     public async Task Execute(HttpContext context, IGmlManager gmlManager)
     {
-        await context.Response.WriteAsync("templaацуфацфуаte");
+        await context.Response.WriteAsync("template");
     }
 }

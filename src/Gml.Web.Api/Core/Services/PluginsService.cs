@@ -6,12 +6,14 @@ namespace Gml.Web.Api.Core.Services;
 
 public class PluginsService
 {
+    private readonly PluginAssemblyManager _pluginsManager;
     private HttpClient _httpClient;
 
     private DirectoryInfo _pluginsDirectory;
 
-    public PluginsService(IHttpClientFactory httpClientFactory)
+    public PluginsService(IHttpClientFactory httpClientFactory, PluginAssemblyManager pluginsManager)
     {
+        _pluginsManager = pluginsManager;
         _httpClient = httpClientFactory.CreateClient(HttpClientNames.MarketService);
 
         var rootDirectory = Environment.ProcessPath ?? AppDomain.CurrentDomain.BaseDirectory;
@@ -33,6 +35,17 @@ public class PluginsService
         if (!_pluginsDirectory.Exists)
             _pluginsDirectory.Create();
 
+        var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, pluginId.ToString()));
+        var assemblyDirectory = new DirectoryInfo(Path.Combine(pluginDirectory.FullName, "backend"));
 
+        if (!pluginDirectory.Exists)
+            pluginDirectory.Create();
+
+        var dlls = assemblyDirectory.GetFiles("*.dll");
+
+        foreach (var dll in dlls)
+        {
+            _pluginsManager.LoadPlugin(dll.FullName);
+        }
     }
 }

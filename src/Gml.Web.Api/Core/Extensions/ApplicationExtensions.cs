@@ -35,7 +35,7 @@ public static class ApplicationExtensions
         app.RegisterEndpoints()
             .UseCors(_policyName)
             .UseMiddleware<BadRequestExceptionMiddleware>()
-            .UseMiddleware<PluginMiddleware>()
+            .UseMiddleware<PluginRouterMiddleware>()
             .UseSwagger()
             .UseSwaggerUI();
 
@@ -129,6 +129,7 @@ public static class ApplicationExtensions
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<PluginsService>()
+            .AddSingleton<PluginAssemblyManager>()
             .AddSingleton<HubEvents>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddSingleton<PlayersController>()
