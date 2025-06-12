@@ -2,6 +2,7 @@
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Plugins.Template;
 
@@ -10,6 +11,9 @@ public class TemplateEndpoint : IPluginEndpoint
 {
     public async Task Execute(HttpContext context, IGmlManager gmlManager)
     {
-        await context.Response.WriteAsync("template");
+        var profiles = await gmlManager.Profiles.GetProfiles();
+        var endpoint = new EndpointHelper();
+
+        await endpoint.Ok(context, profiles, "Супер");
     }
 }
