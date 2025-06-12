@@ -77,6 +77,16 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
+    public async Task BadRequest(HttpContext context, object? data, string message)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+        var content = ResponseMessage.Create(data, message, HttpStatusCode.BadRequest);
+
+        await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
+    }
+
     public static async Task BadRequest(HttpContext context, string message)
     {
         context.Response.ContentType = "application/json";
