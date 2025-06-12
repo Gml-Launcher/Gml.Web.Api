@@ -41,6 +41,10 @@ public static class ApplicationExtensions
 
         app.InitializeDatabase();
 
+        using var scope = app.Services.CreateScope();
+        var services = scope.ServiceProvider.GetRequiredService<PluginsService>();
+        services.RestorePlugins();
+
         return app;
     }
 

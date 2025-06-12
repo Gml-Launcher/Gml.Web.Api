@@ -48,4 +48,21 @@ public class PluginsService
             _pluginsManager.LoadPlugin(dll.FullName);
         }
     }
+
+    public void RestorePlugins()
+    {
+        if (!_pluginsDirectory.Exists)
+            _pluginsDirectory.Create();
+
+        var dlls = _pluginsDirectory.GetFiles("*.dll", SearchOption.AllDirectories);
+
+        foreach (var dll in dlls)
+        {
+            _pluginsManager.LoadPlugin(dll.FullName);
+        }
+
+        Console.WriteLine($"{dlls.Length} plugins installed");
+    }
+
+
 }
