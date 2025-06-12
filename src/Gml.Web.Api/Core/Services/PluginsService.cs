@@ -1,6 +1,9 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Collections.Concurrent;
+using System.Net.Http.Headers;
 using Gml.Web.Api.Core.Options;
+using Gml.Web.Api.Dto.Marketplace;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Services;
 
@@ -10,6 +13,8 @@ public class PluginsService
     private HttpClient _httpClient;
 
     private DirectoryInfo _pluginsDirectory;
+    private ConcurrentDictionary<string, ProductReadDto> _products = new();
+    public IReadOnlyDictionary<string, ProductReadDto> Products => _products.AsReadOnly();
 
     public PluginsService(IHttpClientFactory httpClientFactory, PluginAssemblyManager pluginsManager)
     {
@@ -55,6 +60,15 @@ public class PluginsService
             _pluginsDirectory.Create();
 
         var dlls = _pluginsDirectory.GetFiles("*.dll", SearchOption.AllDirectories);
+        var jsonFiles = _pluginsDirectory.GetFiles("product.json", SearchOption.AllDirectories);
+
+        var pluginConfigs = jsonFiles
+            .Select(file => JsonConvert.DeserializeObject<ProductReadDto>(File.ReadAllText(file.FullName))!);
+
+        foreach (var pluginConfig in pluginConfigs)
+        {
+            _products.TryAdd(pluginConfig.Id.ToString(), pluginConfig);
+        }
 
         foreach (var dll in dlls)
         {
