@@ -16,14 +16,14 @@ namespace Gml.Web.Api.EndpointSDK;
 
 public class EndpointHelper
 {
-    protected async Task<T?> ParseDto<T>(HttpContext context)
+    public async Task<T?> ParseDto<T>(HttpContext context)
     {
         using var reader = new StreamReader(context.Request.Body);
         var body = await reader.ReadToEndAsync();
         return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(body);
     }
 
-    protected bool IsValidDto<TDto, TValidator>(TDto? dto, out ValidationResult validationResult)
+    public bool IsValidDto<TDto, TValidator>(TDto? dto, out ValidationResult validationResult)
         where TValidator : AbstractValidator<TDto>, new()
         where TDto : class
     {
@@ -42,7 +42,7 @@ public class EndpointHelper
         return validationResult.IsValid;
     }
 
-    protected async Task NotFound(HttpContext context, string message)
+    public async Task NotFound(HttpContext context, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -57,7 +57,7 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
-    protected async Task Created(HttpContext context, object? data, string message)
+    public async Task Created(HttpContext context, object? data, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.Created;
@@ -67,7 +67,7 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
-    protected async Task Ok(HttpContext context, object? data, string message)
+    public async Task Ok(HttpContext context, object? data, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -77,7 +77,7 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
-    protected static async Task BadRequest(HttpContext context, string message)
+    public static async Task BadRequest(HttpContext context, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -92,7 +92,7 @@ public class EndpointHelper
         await context.Response.WriteAsync(JsonConvert.SerializeObject(content));
     }
 
-    protected static async Task BadRequest(HttpContext context, List<ValidationFailure> resultErrors, string message)
+    public static async Task BadRequest(HttpContext context, List<ValidationFailure> resultErrors, string message)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
