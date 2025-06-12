@@ -1,6 +1,8 @@
 using System.Diagnostics.Tracing;
 using System.IO.Compression;
 using System.Net;
+using Gml.Web.Api.Core.Options;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Dto.Messages;
 using Microsoft.AspNetCore.Authorization;
@@ -49,51 +51,25 @@ public abstract class PluginHandler : IPluginHandler
 
     }
 
-    public static async Task<IResult> InstallPlugin(HttpContext context)
+    public static async Task<IResult> InstallPlugin(HttpContext context, RecloudPluginCreateDto plugin, PluginsService pluginsService)
     {
-        var pluginFormData = new
-        {
-            Url = context.Request.Form["pluginUrl"]
-        };
+        var token = context.Request.Headers["recloud_id_token"].ToString();
 
-        if (string.IsNullOrEmpty(pluginFormData.Url))
+        if (string.IsNullOrEmpty(token))
         {
-            return Results.BadRequest(ResponseMessage.Create("Не указан адрес плагина", HttpStatusCode.BadRequest));
+            return Results.BadRequest(ResponseMessage.Create("Не указан системный токен RecloudID", HttpStatusCode.BadRequest));
         }
 
-        var pluginsDirectory = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
+        var canInstall = await pluginsService.CanInstall(token, plugin.Id);
 
-        if (!pluginsDirectory.Exists)
-        {
-            pluginsDirectory.Create();
-        }
+        if (!canInstall)
+            return Results.Ok(ResponseMessage.Create("У вас недостаточно прав для установки данного расширения",
+                HttpStatusCode.OK));
 
-        using (var httpClient = new HttpClient())
-        {
-            var response = await httpClient.GetAsync(pluginFormData.Url);
-
-            var contentDisposition = response.Content.Headers.ContentDisposition;
-            string? fileName = contentDisposition?.FileName?.Trim('\"');
-
-            if (string.IsNullOrEmpty(fileName))
-            {
-                return Results.BadRequest(ResponseMessage.Create("Именование плагина имело неверный формат", HttpStatusCode.BadRequest));
-            }
-
-            var pluginPath = Path.Combine(pluginsDirectory.FullName, fileName);
-
-            using (var contentStream = await response.Content.ReadAsStreamAsync())
-            using (Stream fileStream = new FileStream(pluginPath, FileMode.Create,
-                       FileAccess.Write, FileShare.None, 8192, true))
-            {
-                await contentStream.CopyToAsync(fileStream);
-            }
-
-            ExtractPlugin(pluginsDirectory.FullName, pluginPath);
-
-        }
-
+        await pluginsService.Install(token, plugin.Id);
+        
         return Results.Ok(ResponseMessage.Create("Плагин успешно установлен", HttpStatusCode.OK));
+
     }
 
     private static void ExtractPlugin(string pluginsDirectory, string zipPath)

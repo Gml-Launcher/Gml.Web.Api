@@ -60,6 +60,7 @@ public static class ApplicationExtensions
     private static ServerSettings GetServerSettings()
     {
         var projectName = GetEnvironmentVariable("PROJECT_NAME");
+        var marketEndpoint = GetEnvironmentVariable("MARKET_ENDPOINT");
         var projectDescription = GetEnvironmentVariable("PROJECT_DESCRIPTION");
         var policyName = GetEnvironmentVariable("PROJECT_POLICYNAME");
         var projectPath = GetEnvironmentVariable("PROJECT_PATH");
@@ -72,6 +73,7 @@ public static class ApplicationExtensions
             ProjectDescription = projectDescription,
             ProjectName = projectName,
             PolicyName = policyName,
+            MarketEndpoint = marketEndpoint,
             ProjectVersion = "1.1.0",
             SecurityKey = securityKey,
             ProjectPath = projectPath,
@@ -117,7 +119,7 @@ public static class ApplicationExtensions
 
         builder.Services
             .AddHttpClient()
-            .AddNamedHttpClients()
+            .AddNamedHttpClients(settings.MarketEndpoint)
             .AddMemoryCache()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
@@ -126,6 +128,7 @@ public static class ApplicationExtensions
             .ConfigureRateLimit()
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
+            .AddSingleton<PluginsService>()
             .AddSingleton<HubEvents>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddSingleton<PlayersController>()

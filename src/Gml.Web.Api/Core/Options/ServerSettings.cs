@@ -15,4 +15,5 @@ public class ServerSettings
 
     public string? ProjectPath { get; set; }
     public string? TextureEndpoint { get; set; }
+    public string MarketEndpoint { get; set; } = "https://gml-market.recloud.tech";
 }
