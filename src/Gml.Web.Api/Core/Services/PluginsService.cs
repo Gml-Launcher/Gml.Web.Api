@@ -65,19 +65,15 @@ public class PluginsService
             await File.WriteAllTextAsync(Path.Combine(pluginDirectory.FullName, "product.json"), JsonConvert.SerializeObject(product.Data, Formatting.Indented));
         }
 
-        // Путь для сохранения архива
         var pluginZipPath = Path.Combine(pluginDirectory.FullName, "plugin.zip");
 
-        // Сохраняем архив
         await using (var fileStream = File.Create(pluginZipPath))
         {
             await pluginFile.CopyToAsync(fileStream);
         }
 
-        // Распаковываем архив
         ZipFile.ExtractToDirectory(pluginZipPath, pluginDirectory.FullName, true);
 
-        // Удаляем архив
         File.Delete(pluginZipPath);
 
         var dlls = assemblyDirectory.GetFiles("*.dll");
