@@ -71,7 +71,7 @@ public class PluginsService
         }
     }
 
-    public async Task RemovePlugin(Guid id)
+    public async Task<bool> RemovePlugin(Guid id)
     {
         _products.TryRemove(id.ToString(), out _);
         var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, id.ToString()));
@@ -135,7 +135,7 @@ public class PluginsService
                 catch (UnauthorizedAccessException)
                 {
                     // Если нет прав доступа, делаем еще одну попытку после сборки мусора
-                    await Task.Delay(1000);
+                    await Task.Delay(100);
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     GC.Collect();
@@ -162,6 +162,8 @@ public class PluginsService
         // Удаляем временную директорию
         if (backupDir.Exists)
             backupDir.Delete(true);
+
+        return !deleteFailed;
     }
 
     public void RestorePlugins()

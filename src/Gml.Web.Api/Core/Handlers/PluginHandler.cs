@@ -18,15 +18,16 @@ public abstract class PluginHandler : IPluginHandler
     {
         try
         {
-            await pluginsService.RemovePlugin(id);
+            if (await pluginsService.RemovePlugin(id))
+            {
+                return Results.Ok(ResponseMessage.Create("Плагин успешно удален", HttpStatusCode.OK));
 
-            return Results.Ok(ResponseMessage.Create("Плагин успешно удален", HttpStatusCode.OK));
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            var message = "Не удалось удалить библиотеку, необходимо выполнить принудительный перезапуск Gml.";
+            }
+
+            var message = "Не удалось удалить расширение, необходимо выполнить принудительный перезапуск Gml.";
             await manager.Notifications.SendMessage(message, NotificationType.Fatal);
             return Results.BadRequest(ResponseMessage.Create(message, HttpStatusCode.OK));
+
         }
         catch (Exception exception)
         {
