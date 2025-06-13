@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.IO.Compression;
 using System.Net.Http.Headers;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Dto.Marketplace;
@@ -53,6 +54,7 @@ public class PluginsService
             assemblyDirectory.Create();
 
         var pluginInfo = await _httpClient.GetAsync($"/api/v1/marketplace/products/{pluginId}");
+        var pluginFile = await _httpClient.GetStreamAsync($"/api/v1/marketplace/products/{pluginId}/download");
 
         var content = await pluginInfo.Content.ReadAsStringAsync();
         var product = JsonConvert.DeserializeObject<ResponseMessage<ProductReadDto>>(content);
@@ -62,6 +64,21 @@ public class PluginsService
             _products.TryAdd(product.Data.Id.ToString(), product.Data);
             await File.WriteAllTextAsync(Path.Combine(pluginDirectory.FullName, "product.json"), JsonConvert.SerializeObject(product.Data, Formatting.Indented));
         }
+
+        // Путь для сохранения архива
+        var pluginZipPath = Path.Combine(pluginDirectory.FullName, "plugin.zip");
+
+        // Сохраняем архив
+        await using (var fileStream = File.Create(pluginZipPath))
+        {
+            await pluginFile.CopyToAsync(fileStream);
+        }
+
+        // Распаковываем архив
+        ZipFile.ExtractToDirectory(pluginZipPath, pluginDirectory.FullName, true);
+
+        // Удаляем архив
+        File.Delete(pluginZipPath);
 
         var dlls = assemblyDirectory.GetFiles("*.dll");
 
