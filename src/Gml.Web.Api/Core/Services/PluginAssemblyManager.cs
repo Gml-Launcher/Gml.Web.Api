@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
+using System.Diagnostics;
 
 namespace Gml.Web.Api.Core.Services;
 
@@ -35,13 +36,44 @@ public class PluginAssemblyManager
     {
         if (_plugins.TryGetValue(pathToDll, out var handle))
         {
-            PluginRouter.UnregisterEndpointsFromAssembly(handle.Assembly);
-            handle.Context.Unload();
+            // Сначала отключаем все эндпоинты из этой сборки
+            if (handle.AssemblyReference.TryGetTarget(out var assembly))
+            {
+                PluginRouter.UnregisterEndpointsFromAssembly(assembly);
+            }
+
+            // Удаляем плагин из словаря перед выгрузкой, чтобы убрать ссылку
             _plugins.Remove(pathToDll);
+
+            // Принудительно вызываем сборку мусора перед выгрузкой
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            // Вызываем Unload один раз - многократные вызовы не помогают
+            handle.Context.Unload();
+
+            // Еще раз запускаем сборку мусора после выгрузки
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 
-    private record PluginHandle(PluginLoadContext Context, Assembly Assembly);
+    private class PluginHandle
+    {
+        public PluginLoadContext Context { get; }
+        public WeakReference<Assembly> AssemblyReference { get; }
+
+        public PluginHandle(PluginLoadContext context, Assembly assembly)
+        {
+            Context = context;
+            AssemblyReference = new WeakReference<Assembly>(assembly);
+        }
+
+        public bool TryGetAssembly(out Assembly? assembly)
+        {
+            return AssemblyReference.TryGetTarget(out assembly);
+        }
+    }
 }
 
 public class PluginLoadContext : AssemblyLoadContext
@@ -79,14 +111,53 @@ public static class PluginRouter
         list.Add(key);
     }
 
+    // public static void UnregisterEndpointsFromAssembly(Assembly assembly)
+    // {
+    //     if (_assemblyRoutes.TryGetValue(assembly, out var list))
+    //     {
+    //         foreach (var key in list)
+    //             _routes.TryRemove(key, out _);
+    //
+    //         _assemblyRoutes.TryRemove(assembly, out _);
+    //     }
+    // }
+
     public static void UnregisterEndpointsFromAssembly(Assembly assembly)
     {
         if (_assemblyRoutes.TryGetValue(assembly, out var list))
         {
-            foreach (var key in list)
-                _routes.TryRemove(key, out _);
+            // Создаем копию списка для итерации, чтобы избежать проблем с коллекцией
+            var routesToRemove = list.ToList();
 
+            // Удаляем все маршруты
+            foreach (var key in routesToRemove)
+            {
+                if (_routes.TryRemove(key, out var routeData))
+                {
+                    // Обнуляем ссылки на endpoint для помощи сборщику мусора
+                    // Это критически важно для освобождения ссылок на сборку
+                    var fieldInfo = routeData.endpoint.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    foreach (var field in fieldInfo)
+                    {
+                        try
+                        {
+                            if (!field.IsInitOnly)
+                                field.SetValue(routeData.endpoint, null);
+                        }
+                        catch
+                        {
+                            // Игнорируем ошибки при попытке очистки полей
+                        }
+                    }
+                }
+            }
+
+            // Удаляем ассоциацию сборки с маршрутами
             _assemblyRoutes.TryRemove(assembly, out _);
+
+            // Принудительно запускаем сборку мусора
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 

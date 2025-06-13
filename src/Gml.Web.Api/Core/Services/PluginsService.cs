@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Dto.Marketplace;
+using Gml.Web.Api.Dto.Messages;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 
@@ -32,11 +33,13 @@ public class PluginsService
 
         var data = await _httpClient.GetAsync($"/api/v1/marketplace/products/{pluginId}/check");
 
-        return data.IsSuccessStatusCode;
+        return data.IsSuccessStatusCode && !_products.ContainsKey(pluginId.ToString());
     }
 
     public async Task Install(string recloudToken, Guid pluginId)
     {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", recloudToken);
+
         if (!_pluginsDirectory.Exists)
             _pluginsDirectory.Create();
 
@@ -46,12 +49,119 @@ public class PluginsService
         if (!pluginDirectory.Exists)
             pluginDirectory.Create();
 
+        if (!assemblyDirectory.Exists)
+            assemblyDirectory.Create();
+
+        var pluginInfo = await _httpClient.GetAsync($"/api/v1/marketplace/products/{pluginId}");
+
+        var content = await pluginInfo.Content.ReadAsStringAsync();
+        var product = JsonConvert.DeserializeObject<ResponseMessage<ProductReadDto>>(content);
+
+        if (product?.Data != null)
+        {
+            _products.TryAdd(product.Data.Id.ToString(), product.Data);
+            await File.WriteAllTextAsync(Path.Combine(pluginDirectory.FullName, "product.json"), JsonConvert.SerializeObject(product.Data, Formatting.Indented));
+        }
+
         var dlls = assemblyDirectory.GetFiles("*.dll");
 
         foreach (var dll in dlls)
         {
             _pluginsManager.LoadPlugin(dll.FullName);
         }
+    }
+
+    public async Task RemovePlugin(Guid id)
+    {
+        _products.TryRemove(id.ToString(), out _);
+        var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, id.ToString()));
+
+        // Создаем временную директорию для бэкапа
+        var backupDir = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, $"{id}_backup"));
+        var jsonFiles = pluginDirectory.Exists
+            ? pluginDirectory.GetFiles("product.json", SearchOption.AllDirectories)
+            : [];
+
+        // Копируем product.json файлы во временную директорию
+        if (jsonFiles.Length > 0 && !backupDir.Exists)
+        {
+            backupDir.Create();
+            foreach(var file in jsonFiles)
+            {
+                file.CopyTo(Path.Combine(backupDir.FullName, file.Name));
+            }
+        }
+
+        // Находим файлы только в директории плагина, а не во всех плагинах
+        var dlls = pluginDirectory.Exists
+            ? pluginDirectory.GetFiles("*.dll", SearchOption.AllDirectories)
+            : [];
+
+        // Выгружаем каждую сборку плагина
+        foreach (var dll in dlls)
+        {
+            _pluginsManager.UnloadPlugin(dll.FullName);
+        }
+
+        // Даем немного времени на выгрузку сборок
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        bool deleteFailed = false;
+        // Удаляем директорию плагина только после выгрузки сборок
+        if (pluginDirectory.Exists)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    pluginDirectory.Delete(true);
+                    deleteFailed = false;
+                    break;
+                }
+                catch (IOException ex) when (ex.Message.Contains("используется") || ex.Message.Contains("being used"))
+                {
+                    // Если файлы все еще заблокированы, ждем немного и пробуем снова
+                    await Task.Delay(500);
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    if (i == 9)
+                    {
+                        deleteFailed = true;
+                        throw;
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Если нет прав доступа, делаем еще одну попытку после сборки мусора
+                    await Task.Delay(1000);
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    if (i == 9)
+                    {
+                        deleteFailed = true;
+                    }
+                }
+            }
+        }
+
+        // Восстанавливаем из бэкапа если удаление не удалось
+        if (deleteFailed && backupDir.Exists)
+        {
+            if (!pluginDirectory.Exists)
+                pluginDirectory.Create();
+
+            foreach(var file in backupDir.GetFiles())
+            {
+                file.CopyTo(Path.Combine(pluginDirectory.FullName, file.Name), true);
+            }
+        }
+
+        // Удаляем временную директорию
+        if (backupDir.Exists)
+            backupDir.Delete(true);
     }
 
     public void RestorePlugins()
@@ -77,6 +187,5 @@ public class PluginsService
 
         Console.WriteLine($"{dlls.Length} plugins installed");
     }
-
 
 }

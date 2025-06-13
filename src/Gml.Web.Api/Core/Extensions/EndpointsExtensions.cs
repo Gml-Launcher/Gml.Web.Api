@@ -1035,7 +1035,7 @@ public static class EndpointsExtensions
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
 
-        app.MapDelete("/api/v1/plugins/{name}/{version}", PluginHandler.RemovePlugin)
+        app.MapDelete("/api/v1/plugins/{id}", PluginHandler.RemovePlugin)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление плагина из системы";

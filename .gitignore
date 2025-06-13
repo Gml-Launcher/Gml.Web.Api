@@ -461,3 +461,4 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 
+src/Gml.Web.Api/src/plugins/commercial/**
