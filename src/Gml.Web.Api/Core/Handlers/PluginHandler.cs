@@ -42,6 +42,27 @@ public abstract class PluginHandler : IPluginHandler
         return Task.FromResult(Results.Ok(ResponseMessage.Create(plugins.Values, string.Empty, HttpStatusCode.OK)));
     }
 
+    public static Task<IResult> GetPluginScript(PluginsService pluginsService, Guid id)
+    {
+        var plugin = pluginsService.Products.Values.FirstOrDefault(c => c.Id == id);
+
+        if (plugin == null)
+        {
+            return Task.FromResult(Results.NotFound());
+        }
+
+        var stream = pluginsService.GetFrontendPluginContent(plugin);
+
+        if (stream is null)
+        {
+            return Task.FromResult(Results.NotFound());
+        }
+
+        var result = Results.File(stream, "text/javascript", "main.js");
+
+        return Task.FromResult(result);
+    }
+
     public static async Task<IResult> InstallPlugin(HttpContext context, RecloudPluginCreateDto plugin,
         PluginsService pluginsService)
     {

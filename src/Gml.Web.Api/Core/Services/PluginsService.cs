@@ -203,4 +203,14 @@ public class PluginsService
         Console.WriteLine($"{dlls.Length} plugins installed");
     }
 
+    public Stream? GetFrontendPluginContent(ProductReadDto plugin)
+    {
+
+        var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, plugin.Id.ToString()));
+        var frontendFile = new FileInfo(Path.Combine(pluginDirectory.FullName, "frontend", "main.js"));
+
+        return frontendFile.Exists
+            ? File.OpenRead(Path.Combine(pluginDirectory.FullName, "frontend", "main.js"))
+            : null;
+    }
 }
