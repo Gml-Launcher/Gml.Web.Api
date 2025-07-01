@@ -58,9 +58,6 @@
     <Compile Update="Core\Handlers\AuthHandler.cs">
       <DependentUpon>IAuthHandler.cs</DependentUpon>
     </Compile>
-    <Compile Update="Core\Repositories\UserRepository.cs">
-      <DependentUpon>IUserRepository.cs</DependentUpon>
-    </Compile>
     <Compile Update="Core\Handlers\ProfileHandler.cs">
       <DependentUpon>IProfileHandler.cs</DependentUpon>
     </Compile>

@@ -1,6 +1,8 @@
+using System.Collections.Frozen;
 using System.Diagnostics.Tracing;
 using System.IO.Compression;
 using System.Net;
+using System.Text;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Plugins;
@@ -42,25 +44,57 @@ public abstract class PluginHandler : IPluginHandler
         return Task.FromResult(Results.Ok(ResponseMessage.Create(plugins.Values, string.Empty, HttpStatusCode.OK)));
     }
 
-    public static Task<IResult> GetPluginScript(PluginsService pluginsService, Guid id)
+    public static Task<IResult> GetPluginScript(PluginsService pluginsService, IGmlManager manager, Guid id)
     {
-        var plugin = pluginsService.Products.Values.FirstOrDefault(c => c.Id == id);
-
-        if (plugin == null)
+        try
         {
-            return Task.FromResult(Results.NotFound());
+            var plugin = pluginsService.Products.Values.FirstOrDefault(c => c.Id == id);
+
+            if (plugin == null)
+            {
+                return Task.FromResult(Results.NotFound());
+            }
+
+            var stream = pluginsService.GetFrontendPluginContent(plugin);
+
+            if (stream is null)
+            {
+                return Task.FromResult(Results.NotFound());
+            }
+
+            var result = Results.File(stream, "text/javascript", "main.js");
+
+            return Task.FromResult(result);
         }
-
-        var stream = pluginsService.GetFrontendPluginContent(plugin);
-
-        if (stream is null)
+        catch (Exception exception)
         {
-            return Task.FromResult(Results.NotFound());
+            manager.BugTracker.CaptureException(exception );
+            return Task.FromResult(Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.OK)));
         }
+    }
+    public static async Task<IResult> GetPluginByPlaceScript(PluginsService pluginsService, IGmlManager manager, PluginsService.PluginPlace place)
+    {
+        try
+        {
+            var plugins = (await pluginsService.GetPlugins(place)).ToFrozenSet();
 
-        var result = Results.File(stream, "text/javascript", "main.js");
+            if (plugins.Count == 0)
+            {
+                return Results.NotFound();
+            }
 
-        return Task.FromResult(result);
+            var content = string.Join("\n", plugins);
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            var result = Results.File(stream, "text/javascript", "main.js");
+
+            return result;
+        }
+        catch (Exception exception)
+        {
+            manager.BugTracker.CaptureException(exception );
+            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.OK));
+        }
     }
 
     public static async Task<IResult> InstallPlugin(HttpContext context, RecloudPluginCreateDto plugin,

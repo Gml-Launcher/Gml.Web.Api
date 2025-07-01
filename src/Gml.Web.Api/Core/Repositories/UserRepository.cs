@@ -5,6 +5,7 @@ using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Exceptions;
+using Gml.Web.Api.Domains.Repositories;
 using Gml.Web.Api.Domains.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -36,6 +37,24 @@ public class UserRepository : IUserRepository
 
         if (user == null || !PasswordHasher.Verify(user.Password, password))
             return null;
+
+        user.AccessToken = GetAccessToken(user.Id.ToString());
+
+        await _databaseContext.SaveChangesAsync();
+
+        return user;
+    }
+
+    public async Task<User?> GetUser(string loginOrEmail)
+    {
+        var user = await _databaseContext.Users.FirstOrDefaultAsync(c =>
+            c.Login == loginOrEmail || c.Email == loginOrEmail);
+
+        if (user == null)
+        {
+            if (user == null)
+                return null;
+        }
 
         user.AccessToken = GetAccessToken(user.Id.ToString());
 

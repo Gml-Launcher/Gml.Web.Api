@@ -10,7 +10,7 @@ public class PluginRouterMiddleware(RequestDelegate next)
         if (PluginRouter.TryGetEndpoint(context.Request.Method, context.Request.Path, out var endpoint))
         {
             var gmlManager = context.RequestServices.GetRequiredService<IGmlManager>();
-            await endpoint.Execute(context, gmlManager);
+            await endpoint.Execute(context, gmlManager, context.RequestServices);
             return;
         }
 

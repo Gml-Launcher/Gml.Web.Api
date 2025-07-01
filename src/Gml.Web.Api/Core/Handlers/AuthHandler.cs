@@ -3,6 +3,7 @@ using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Data;
+using Gml.Web.Api.Domains.Repositories;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
