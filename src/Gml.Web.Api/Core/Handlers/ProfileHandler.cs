@@ -184,6 +184,7 @@ public class ProfileHandler : IProfileHandler
             OriginalName = context.Request.Form["originalName"],
             JvmArguments = context.Request.Form["jvmArguments"],
             GameArguments = context.Request.Form["gameArguments"],
+            RecommendedRam = int.TryParse(context.Request.Form["recommendedRam"], out var recommendedRam) ? recommendedRam : 1024,
             Priority = int.TryParse(context.Request.Form["priority"], out var priority) ? priority : 0,
             IsEnabled = context.Request.Form["enabled"] == "true"
         };
@@ -229,7 +230,9 @@ public class ProfileHandler : IProfileHandler
             updateDto.IsEnabled,
             updateDto.JvmArguments,
             updateDto.GameArguments,
-            updateDto.Priority);
+            updateDto.Priority,
+            updateDto.RecommendedRam
+            );
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
@@ -399,6 +402,7 @@ public class ProfileHandler : IProfileHandler
         profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
         profileDto.IsEnabled = profile.IsEnabled;
         profileDto.Priority = profile.Priority;
+        profileDto.RecommendedRam = profile.RecommendedRam;
         profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
