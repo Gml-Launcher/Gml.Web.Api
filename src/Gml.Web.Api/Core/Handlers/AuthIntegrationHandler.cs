@@ -101,7 +101,14 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType);
+            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, authDto.TwoFactorCode);
+
+            if (authResult.TwoFactorEnabled && string.IsNullOrEmpty(authDto.TwoFactorCode))
+            {
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Введите код из приложения 2FA",
+                    HttpStatusCode.Unauthorized));
+            }
 
             if (!authResult.IsSuccess)
                 return Results.BadRequest(ResponseMessage.Create(

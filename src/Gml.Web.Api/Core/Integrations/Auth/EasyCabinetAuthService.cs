@@ -10,7 +10,7 @@ public class EasyCabinetAuthService(IHttpClientFactory httpClientFactory, IGmlMa
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 

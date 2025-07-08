@@ -10,7 +10,7 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 
@@ -22,7 +22,7 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         {
             email = login,
             password,
-            code = string.Empty
+            code = totp ?? string.Empty
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
@@ -31,6 +31,16 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
             await _httpClient.PostAsync(endpoint, content);
 
         var resultContent = await result.Content.ReadAsStringAsync();
+
+        if (resultContent.Contains("\"status\":\"pending\"") && resultContent.Contains("\"reason\":\"2fa\""))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Введите код из приложения 2FA",
+                TwoFactorEnabled = true
+            };
+        }
 
         var model = JsonConvert.DeserializeObject<AzuriomAuthResult>(resultContent);
 

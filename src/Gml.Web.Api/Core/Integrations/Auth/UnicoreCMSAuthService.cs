@@ -11,7 +11,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 
@@ -23,7 +23,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             username_or_email = login,
             password,
-            totp = string.Empty,
+            totp = totp ?? string.Empty,
             save_me = string.Empty
         });
 
@@ -33,6 +33,16 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             await _httpClient.PostAsync(endpoint, content);
 
         var responseResult = await result.Content.ReadAsStringAsync();
+
+        if (responseResult.Contains("require2fa"))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Введите код из приложения 2FA",
+                TwoFactorEnabled = true
+            };
+        }
 
         var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
 
@@ -61,7 +71,10 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
             Uuid = data.User.Uuid,
-            IsSlim = data.User.Skin?.Slim ?? false
+            IsSlim = data.User.Skin?.Slim ?? false,
+            TwoFactorEnabled = data.User.TwoFactorEnabled is true,
+            TwoFactorSecret = data.User.TwoFactorSecret?.ToString(),
+            TwoFactorSecretTemp = data.User.TwoFactorSecretTemp
         };
     }
 }

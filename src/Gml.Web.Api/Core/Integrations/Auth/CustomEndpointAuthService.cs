@@ -10,12 +10,13 @@ public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGm
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public virtual async Task<AuthResult> Auth(string login, string password)
+    public virtual async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var dto = JsonConvert.SerializeObject(new
         {
             Login = login,
-            Password = password
+            Password = password,
+            Totp = totp
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
