@@ -56,6 +56,7 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         {
             Uuid = model.Uuid,
             Login = model.Username ?? login,
+            IsSlim = model?.Skin?.Slim ?? false,
             IsSuccess = result.IsSuccessStatusCode
         };
     }

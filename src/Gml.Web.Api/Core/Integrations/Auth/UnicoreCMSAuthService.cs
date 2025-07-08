@@ -11,7 +11,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, bool isSlim = false)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 
@@ -24,7 +24,8 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             username_or_email = login,
             password,
             totp = string.Empty,
-            save_me = string.Empty
+            save_me = string.Empty,
+            skin = new { slim = isSlim }
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
@@ -58,7 +59,8 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
-            Uuid = data.User.Uuid
+            Uuid = data.User.Uuid,
+            IsSlim = data.User.Skin?.Slim ?? isSlim
         };
     }
 }

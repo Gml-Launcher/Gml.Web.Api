@@ -117,7 +117,8 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 context.Request.Protocol,
                 context.ParseRemoteAddress(),
                 authResult.Uuid,
-                context.Request.Headers["X-HWID"]);
+                context.Request.Headers["X-HWID"],
+				authResult.IsSlim);
 
             return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
 

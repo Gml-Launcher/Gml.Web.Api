@@ -9,7 +9,8 @@ public class AnyAuthService : IPlatformAuthService
         return Task.FromResult(new AuthResult
         {
             Login = login,
-            IsSuccess = true
+            IsSuccess = true,
+            IsSlim = false
         });
     }
 }

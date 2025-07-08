@@ -33,5 +33,6 @@ public class EasyCabinetAuthService(IHttpClientFactory httpClientFactory, IGmlMa
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+        };
+    }
 }
