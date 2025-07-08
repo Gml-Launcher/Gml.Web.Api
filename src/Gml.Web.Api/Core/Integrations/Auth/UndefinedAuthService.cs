@@ -10,7 +10,7 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
     private readonly IGmlManager _gmlManager = gmlManager;
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password, bool isSlim = false)
+    public async Task<AuthResult> Auth(string login, string password)
     {
         var activeAuthService = await _gmlManager.Integrations.GetActiveAuthService();
 
@@ -20,7 +20,6 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
         {
             Login = login,
             Password = password,
-            Skin = new { Slim = isSlim }
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
@@ -31,5 +30,6 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+        };
+    }
 }

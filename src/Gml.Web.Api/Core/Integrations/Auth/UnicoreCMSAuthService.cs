@@ -11,7 +11,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password, bool isSlim = false)
+    public async Task<AuthResult> Auth(string login, string password)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 
@@ -24,8 +24,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             username_or_email = login,
             password,
             totp = string.Empty,
-            save_me = string.Empty,
-            skin = new { slim = isSlim }
+            save_me = string.Empty
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
@@ -37,9 +36,9 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 
         var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
 
-        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null )
+        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null)
         {
-            if (data?.User?.Ban is {} ban)
+            if (data?.User?.Ban is { } ban)
             {
                 return new AuthResult
                 {
@@ -51,7 +50,9 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             return new AuthResult
             {
                 IsSuccess = false,
-                Message = responseResult.Contains("\"statusCode\":401") ? "Неверный логин или пароль" : "Произошла ошибка при обработке данных с сервера авторизации."
+                Message = responseResult.Contains("\"statusCode\":401")
+                    ? "Неверный логин или пароль"
+                    : "Произошла ошибка при обработке данных с сервера авторизации."
             };
         }
 
@@ -60,7 +61,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
             Uuid = data.User.Uuid,
-            IsSlim = data.User.Skin?.Slim ?? isSlim
+            IsSlim = data.User.Skin?.Slim ?? false
         };
     }
 }
