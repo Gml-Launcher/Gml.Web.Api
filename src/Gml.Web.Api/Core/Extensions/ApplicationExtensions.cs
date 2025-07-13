@@ -28,6 +28,8 @@ public static class ApplicationExtensions
 
     public static WebApplication RegisterServices(this WebApplication app)
     {
+        var swaggerEnabled = bool.TryParse(GetEnvironmentVariable("SWAGGER_ENABLED"), out var isEnabled) && isEnabled;
+
         app.UseAuthentication();
         app.UseAuthorization();
         // app.UseRateLimiter();
@@ -35,9 +37,12 @@ public static class ApplicationExtensions
         app.RegisterEndpoints()
             .UseCors(_policyName)
             .UseMiddleware<BadRequestExceptionMiddleware>()
-            .UseMiddleware<PluginRouterMiddleware>()
-            .UseSwagger()
-            .UseSwaggerUI();
+            .UseMiddleware<PluginRouterMiddleware>();
+
+        if (swaggerEnabled)
+        {
+            app.UseSwagger().UseSwaggerUI();
+        }
 
         app.InitializeDatabase();
 
@@ -69,6 +74,7 @@ public static class ApplicationExtensions
         var policyName = GetEnvironmentVariable("PROJECT_POLICYNAME");
         var projectPath = GetEnvironmentVariable("PROJECT_PATH");
         var securityKey = GetEnvironmentVariable("SECURITY_KEY");
+        var swaggerEnabled = bool.TryParse(GetEnvironmentVariable("SWAGGER_ENABLED"), out var isEnabled) && isEnabled;
 
         var textureEndpoint = GetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT");
 
@@ -78,6 +84,7 @@ public static class ApplicationExtensions
             ProjectName = projectName,
             PolicyName = policyName,
             MarketEndpoint = marketEndpoint,
+            IsEnabledApiDocs = swaggerEnabled,
             ProjectVersion = "1.1.0",
             SecurityKey = securityKey,
             ProjectPath = projectPath,
@@ -128,7 +135,8 @@ public static class ApplicationExtensions
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath, settings.TextureEndpoint)
+            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath,
+                settings.TextureEndpoint)
             .ConfigureRateLimit()
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
