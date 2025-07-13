@@ -396,7 +396,9 @@ public class ProfileHandler : IProfileHandler
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
-        profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        profileDto.Background = profile.BackgroundImageKey is not null
+            ? $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}"
+            : profile.BackgroundImageKey;
         profileDto.IsEnabled = profile.IsEnabled;
         profileDto.Priority = profile.Priority;
         profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
