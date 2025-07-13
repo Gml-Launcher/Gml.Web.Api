@@ -21,8 +21,9 @@ public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGm
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
 
-        var result =
-            await _httpClient.PostAsync((await gmlManager.Integrations.GetActiveAuthService())!.Endpoint, content);
+        var authService = await gmlManager.Integrations.GetActiveAuthService();
+
+        var result =await _httpClient.PostAsync(authService!.Endpoint, content);
 
         var resultContent = await result.Content.ReadAsStringAsync();
 
@@ -34,6 +35,16 @@ public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGm
 
         if (string.IsNullOrEmpty(resultContent))
             return authResult;
+
+        if (!result.IsSuccessStatusCode && resultContent.Contains("2fa", StringComparison.CurrentCultureIgnoreCase))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Введите код из приложения 2FA",
+                TwoFactorEnabled = true
+            };
+        }
 
         var model = JsonConvert.DeserializeObject<AuthCustomResponse>(resultContent);
 
