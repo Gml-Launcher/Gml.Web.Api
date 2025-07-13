@@ -13,23 +13,30 @@ public class PluginAssemblyManager
 
     public void LoadPlugin(string pathToDll)
     {
-        var context = new PluginLoadContext(pathToDll);
-        var assembly = context.LoadFromAssemblyName(AssemblyName.GetAssemblyName(pathToDll));
-
-        foreach (var type in assembly.GetTypes())
+        try
         {
-            if (typeof(IPluginEndpoint).IsAssignableFrom(type) && !type.IsAbstract)
+            var context = new PluginLoadContext(pathToDll);
+            var assembly = context.LoadFromAssemblyName(AssemblyName.GetAssemblyName(pathToDll));
+
+            foreach (var type in assembly.GetTypes())
             {
-                var attr = type.GetCustomAttribute<PathAttribute>();
-                if (attr != null)
+                if (typeof(IPluginEndpoint).IsAssignableFrom(type) && !type.IsAbstract)
                 {
-                    var endpoint = (IPluginEndpoint)Activator.CreateInstance(type)!;
-                    PluginRouter.RegisterEndpoint(attr.Method!, attr.Path!, attr.NeedAuth, endpoint);
+                    var attr = type.GetCustomAttribute<PathAttribute>();
+                    if (attr != null)
+                    {
+                        var endpoint = (IPluginEndpoint)Activator.CreateInstance(type)!;
+                        PluginRouter.RegisterEndpoint(attr.Method!, attr.Path!, attr.NeedAuth, endpoint);
+                    }
                 }
             }
-        }
 
-        _plugins[pathToDll] = new PluginHandle(context, assembly);
+            _plugins[pathToDll] = new PluginHandle(context, assembly);
+        }
+        catch (Exception exception)
+        {
+            SentrySdk.CaptureException(exception);
+        }
     }
 
     public void UnloadPlugin(string pathToDll)
