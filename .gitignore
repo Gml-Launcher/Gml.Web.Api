@@ -462,3 +462,6 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 
 src/Gml.Web.Api/src/plugins/commercial/**
+private.key
+public.key
+BugStorage.json
