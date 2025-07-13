@@ -31,4 +31,6 @@ public class AzuriomAuthResult
 
     [JsonProperty("created_at")]
     public DateTime CreatedAt { get; set; }
+    [JsonProperty("skin")]
+    public SkinInfo Skin { get; set; }
 }

@@ -19,7 +19,7 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
         var dto = JsonConvert.SerializeObject(new
         {
             Login = login,
-            Password = password
+            Password = password,
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
@@ -30,5 +30,6 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
         {
             Login = login,
             IsSuccess = result.IsSuccessStatusCode
-        };    }
+        };
+    }
 }

@@ -7,4 +7,5 @@ public class AuthResult
     public string? Login { get; set; }
     public string? Uuid { get; set; }
     public string? Message { get; set; }
+    public bool IsSlim { get; set; }
 }

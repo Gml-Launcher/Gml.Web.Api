@@ -36,9 +36,9 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 
         var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
 
-        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null )
+        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null)
         {
-            if (data?.User?.Ban is {} ban)
+            if (data?.User?.Ban is { } ban)
             {
                 return new AuthResult
                 {
@@ -50,7 +50,9 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             return new AuthResult
             {
                 IsSuccess = false,
-                Message = responseResult.Contains("\"statusCode\":401") ? "Неверный логин или пароль" : "Произошла ошибка при обработке данных с сервера авторизации."
+                Message = responseResult.Contains("\"statusCode\":401")
+                    ? "Неверный логин или пароль"
+                    : "Произошла ошибка при обработке данных с сервера авторизации."
             };
         }
 
@@ -58,7 +60,8 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
-            Uuid = data.User.Uuid
+            Uuid = data.User.Uuid,
+            IsSlim = data.User.Skin?.Slim ?? false
         };
     }
 }

@@ -79,4 +79,6 @@ public class User
 
     [JsonProperty("ban")]
     public Ban Ban { get; set; }
+    [JsonProperty("skin")]
+    public SkinInfo Skin { get; set; }
 }
