@@ -152,6 +152,7 @@ public static class ApplicationExtensions
             .AddTransient<NamelessMCAuthService>()
             .AddTransient<WebMCRAuthService>()
             .AddTransient<AzuriomAuthService>()
+            .AddTransient<WordPressAuthService>()
             .AddTransient<AnyAuthService>()
             .RegisterRepositories()
             .RegisterValidators()
