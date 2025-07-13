@@ -27,8 +27,7 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
 
-        var result =
-            await _httpClient.PostAsync(endpoint, content);
+        var result = await _httpClient.PostAsync(endpoint, content);
 
         var resultContent = await result.Content.ReadAsStringAsync();
 
@@ -50,6 +49,15 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
             {
                 IsSuccess = false,
                 Message = $"Неверный логин или пароль."
+            };
+        }
+
+        if (!result.IsSuccessStatusCode && resultContent.Contains("invalid_2fa"))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = $"Неверный проверочный код."
             };
         }
 
