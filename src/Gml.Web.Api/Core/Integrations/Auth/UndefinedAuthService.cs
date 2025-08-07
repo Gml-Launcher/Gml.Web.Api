@@ -10,7 +10,7 @@ public class UndefinedAuthService(IHttpClientFactory httpClientFactory, IGmlMana
     private readonly IGmlManager _gmlManager = gmlManager;
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var activeAuthService = await _gmlManager.Integrations.GetActiveAuthService();
 

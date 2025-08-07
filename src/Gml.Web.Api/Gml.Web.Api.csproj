@@ -30,6 +30,7 @@
     <PackageReference Include="Sentry" Version="4.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     <PackageReference Include="System.Reactive" Version="6.0.0"/>
+	<PackageReference Include="Otp.NET" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>
