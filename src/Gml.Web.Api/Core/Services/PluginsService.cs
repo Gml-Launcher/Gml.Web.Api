@@ -203,4 +203,36 @@ public class PluginsService
         Console.WriteLine($"{dlls.Length} plugins installed");
     }
 
+    public Stream? GetFrontendPluginContent(ProductReadDto plugin)
+    {
+
+        var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, plugin.Id.ToString()));
+        var frontendFile = new FileInfo(Path.Combine(pluginDirectory.FullName, "frontend", "main.js"));
+
+        return frontendFile.Exists
+            ? File.OpenRead(Path.Combine(pluginDirectory.FullName, "frontend", "main.js"))
+            : null;
+    }
+
+    public enum PluginPlace
+    {
+        AfterLoginForm = 0
+    }
+
+    public async Task<IEnumerable<string>> GetPlugins(PluginPlace place)
+    {
+        var fileName = place + ".js";
+
+        return _products.Values.Where(plugin =>
+        {
+            var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, plugin.Id.ToString()));
+            var frontendFile = new FileInfo(Path.Combine(pluginDirectory.FullName, "frontend", fileName));
+            return frontendFile.Exists;
+        }).Select(plugin =>
+        {
+            var pluginDirectory = new DirectoryInfo(Path.Combine(_pluginsDirectory.FullName, plugin.Id.ToString()));
+            var frontendFile = new FileInfo(Path.Combine(pluginDirectory.FullName, "frontend", fileName));
+            return File.ReadAllText(frontendFile.FullName);
+        });
+    }
 }

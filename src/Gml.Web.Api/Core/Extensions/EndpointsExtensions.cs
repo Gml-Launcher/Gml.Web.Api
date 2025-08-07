@@ -1034,6 +1034,27 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<PluginVersionReadDto[]>>()
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
+        app.MapGet("/api/v1/plugins/{id}/script", PluginHandler.GetPluginScript)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение JS-сегмента плагина";
+                return generatedOperation;
+            })
+            .WithDescription("Получение JS-сегмента плагина")
+            .WithName("Get plugin script")
+            .WithTags("Plugins")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/plugins/script/{place}", PluginHandler.GetPluginByPlaceScript)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение JS-сегмента плагинов снизу, после авторизации";
+                return generatedOperation;
+            })
+            .WithDescription("Получение JS-сегмента плагинов снизу, после авторизации")
+            .WithName("Get plugin scripts after auth form")
+            .WithTags("Plugins");
+
 
         app.MapDelete("/api/v1/plugins/{id}", PluginHandler.RemovePlugin)
             .WithOpenApi(generatedOperation =>

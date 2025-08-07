@@ -202,7 +202,7 @@ public class MinecraftHandler : IMinecraftHandler
             }
         };
 
-        Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape.Url));
+        //Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape?.Url));
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
