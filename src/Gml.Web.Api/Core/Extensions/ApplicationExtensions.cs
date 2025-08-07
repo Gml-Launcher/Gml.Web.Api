@@ -44,6 +44,8 @@ public static class ApplicationExtensions
             app.UseSwagger().UseSwaggerUI();
         }
 
+        app.MapHealthChecks("/health");
+
         app.InitializeDatabase();
 
         using var scope = app.Services.CreateScope();
@@ -135,9 +137,14 @@ public static class ApplicationExtensions
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath,
-                settings.TextureEndpoint)
+            .ConfigureGmlManager(
+                settings.ProjectName,
+                settings.SecurityKey,
+                settings.ProjectPath,
+                settings.TextureEndpoint
+            )
             .ConfigureRateLimit()
+            .AddHealthChecks().Services
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
             .AddSingleton<PluginsService>()
