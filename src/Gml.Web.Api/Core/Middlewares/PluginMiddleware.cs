@@ -114,7 +114,7 @@ public class PluginMiddleware
                     }
 
                     var endpoint = Activator.CreateInstance(type) as IPluginEndpoint;
-                    await endpoint?.Execute(context, _gmlManager)!;
+                    await endpoint?.Execute(context, _gmlManager, context.RequestServices)!;
                 }
             }
         }

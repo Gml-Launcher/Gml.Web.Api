@@ -10,7 +10,7 @@ public class DataLifeEngineAuthService(IHttpClientFactory httpClientFactory, IGm
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var dto = JsonConvert.SerializeObject(new
         {
@@ -26,6 +26,8 @@ public class DataLifeEngineAuthService(IHttpClientFactory httpClientFactory, IGm
         return new AuthResult
         {
             Login = login,
-            IsSuccess = result.IsSuccessStatusCode
-        };    }
+            IsSuccess = result.IsSuccessStatusCode,
+            IsSlim = false
+        };
+    }
 }

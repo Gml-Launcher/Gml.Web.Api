@@ -12,4 +12,5 @@ public class ProfileUpdateDto
     public string BackgroundImageKey { get; set; }
     public string JvmArguments { get; set; }
     public string GameArguments { get; set; }
+    public int RecommendedRam { get; set; }
 }

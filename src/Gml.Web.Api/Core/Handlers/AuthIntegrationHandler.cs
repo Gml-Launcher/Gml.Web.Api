@@ -11,6 +11,7 @@ using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.User;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -101,7 +102,14 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType);
+            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, authDto.TwoFactorCode);
+
+            if (authResult.TwoFactorEnabled && string.IsNullOrEmpty(authDto.TwoFactorCode))
+            {
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Введите код из приложения 2FA",
+                    HttpStatusCode.Unauthorized));
+            }
 
             if (!authResult.IsSuccess)
                 return Results.BadRequest(ResponseMessage.Create(
@@ -117,17 +125,27 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 context.Request.Protocol,
                 context.ParseRemoteAddress(),
                 authResult.Uuid,
-                context.Request.Headers["X-HWID"]);
+                context.Request.Headers["X-HWID"],
+				authResult.IsSlim);
 
             return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
 
         }
         catch (HttpRequestException exception)
         {
+            gmlManager.BugTracker.CaptureException(exception);
             return HandleAuthException(exception, true);
+        }
+        catch (JsonReaderException exception)
+        {
+            gmlManager.BugTracker.CaptureException(exception);
+            var humanException =
+                new Exception("Не удалось прочитать ответ сервера, возможно сайт вернул html, вместо json, или неверно настроен сервер авторизации.");
+            return HandleAuthException(humanException, true);
         }
         catch (Exception exception)
         {
+            gmlManager.BugTracker.CaptureException(exception);
             return HandleAuthException(exception, false);
         }
     }

@@ -34,6 +34,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+[Cc]ommercial/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -460,3 +461,7 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 
+src/Gml.Web.Api/src/plugins/commercial/**
+private.key
+public.key
+BugStorage.json

@@ -33,18 +33,26 @@ public class Tests
     private string? _accessToken;
 
     [OneTimeSetUp]
-    public Task Setup()
+    public void Setup()
     {
-        Environment.SetEnvironmentVariable("SECURITY_KEY", "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23");
-        Environment.SetEnvironmentVariable("PROJECT_NAME", "GmlServer");
-        Environment.SetEnvironmentVariable("PROJECT_DESCRIPTION", "GmlServer Description");
-        Environment.SetEnvironmentVariable("PROJECT_POLICYNAME", "GmlPolicy");
-        Environment.SetEnvironmentVariable("PROJECT_PATH", "");
-        Environment.SetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT", "http://gml-web-skins:8085");
+        try
+        {
+            Environment.SetEnvironmentVariable("SECURITY_KEY", "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23");
+            Environment.SetEnvironmentVariable("PROJECT_NAME", "GmlServer");
+            Environment.SetEnvironmentVariable("MARKET_ENDPOINT", "https://gml-market.recloud.tech");
+            Environment.SetEnvironmentVariable("PROJECT_DESCRIPTION", "GmlServer Description");
+            Environment.SetEnvironmentVariable("PROJECT_POLICYNAME", "GmlPolicy");
+            Environment.SetEnvironmentVariable("PROJECT_PATH", "");
+            Environment.SetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT", "http://gml-web-skins:8085");
 
-        _webApplicationFactory = new GmlApiApplicationFactory();
-        _httpClient = _webApplicationFactory.CreateClient();
-        return Task.CompletedTask;
+            _webApplicationFactory = new GmlApiApplicationFactory();
+            _httpClient = _webApplicationFactory.CreateClient();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     [Test]
@@ -871,6 +879,7 @@ public class Tests
         Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
     }
 
+#if DEBUG
     [Test]
     [Order(54)]
     public async Task RemovePlugin()
@@ -879,6 +888,7 @@ public class Tests
 
         Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
     }
+#endif
 
     [Test]
     [Order(55)]

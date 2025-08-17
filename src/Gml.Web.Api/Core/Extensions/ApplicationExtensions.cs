@@ -28,6 +28,8 @@ public static class ApplicationExtensions
 
     public static WebApplication RegisterServices(this WebApplication app)
     {
+        var swaggerEnabled = bool.TryParse(GetEnvironmentVariable("SWAGGER_ENABLED"), out var isEnabled) && isEnabled;
+
         app.UseAuthentication();
         app.UseAuthorization();
         // app.UseRateLimiter();
@@ -35,11 +37,20 @@ public static class ApplicationExtensions
         app.RegisterEndpoints()
             .UseCors(_policyName)
             .UseMiddleware<BadRequestExceptionMiddleware>()
-            .UseMiddleware<PluginMiddleware>()
-            .UseSwagger()
-            .UseSwaggerUI();
+            .UseMiddleware<PluginRouterMiddleware>();
+
+        if (swaggerEnabled)
+        {
+            app.UseSwagger().UseSwaggerUI();
+        }
+
+        app.MapHealthChecks("/health");
 
         app.InitializeDatabase();
+
+        using var scope = app.Services.CreateScope();
+        var services = scope.ServiceProvider.GetRequiredService<PluginsService>();
+        services.RestorePlugins();
 
         return app;
     }
@@ -60,10 +71,12 @@ public static class ApplicationExtensions
     private static ServerSettings GetServerSettings()
     {
         var projectName = GetEnvironmentVariable("PROJECT_NAME");
+        var marketEndpoint = GetEnvironmentVariable("MARKET_ENDPOINT");
         var projectDescription = GetEnvironmentVariable("PROJECT_DESCRIPTION");
         var policyName = GetEnvironmentVariable("PROJECT_POLICYNAME");
         var projectPath = GetEnvironmentVariable("PROJECT_PATH");
         var securityKey = GetEnvironmentVariable("SECURITY_KEY");
+        var swaggerEnabled = bool.TryParse(GetEnvironmentVariable("SWAGGER_ENABLED"), out var isEnabled) && isEnabled;
 
         var textureEndpoint = GetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT");
 
@@ -72,6 +85,8 @@ public static class ApplicationExtensions
             ProjectDescription = projectDescription,
             ProjectName = projectName,
             PolicyName = policyName,
+            MarketEndpoint = marketEndpoint,
+            IsEnabledApiDocs = swaggerEnabled,
             ProjectVersion = "1.1.0",
             SecurityKey = securityKey,
             ProjectPath = projectPath,
@@ -117,15 +132,23 @@ public static class ApplicationExtensions
 
         builder.Services
             .AddHttpClient()
-            .AddNamedHttpClients()
+            .AddNamedHttpClients(settings.MarketEndpoint)
             .AddMemoryCache()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
             .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
-            .ConfigureGmlManager(settings.ProjectName, settings.SecurityKey, settings.ProjectPath, settings.TextureEndpoint)
+            .ConfigureGmlManager(
+                settings.ProjectName,
+                settings.SecurityKey,
+                settings.ProjectPath,
+                settings.TextureEndpoint
+            )
             .ConfigureRateLimit()
+            .AddHealthChecks().Services
             .AddSingleton(settings)
             .AddSingleton<IAuthServiceFactory, AuthServiceFactory>()
+            .AddSingleton<PluginsService>()
+            .AddSingleton<PluginAssemblyManager>()
             .AddSingleton<HubEvents>()
             .AddSingleton<ISubject<Settings>, Subject<Settings>>()
             .AddSingleton<PlayersController>()
@@ -144,6 +167,7 @@ public static class ApplicationExtensions
             .AddTransient<NamelessMCAuthService>()
             .AddTransient<WebMCRAuthService>()
             .AddTransient<AzuriomAuthService>()
+            .AddTransient<WordPressAuthService>()
             .AddTransient<AnyAuthService>()
             .RegisterRepositories()
             .RegisterValidators()

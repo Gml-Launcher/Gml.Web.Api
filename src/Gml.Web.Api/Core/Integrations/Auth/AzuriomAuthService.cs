@@ -10,7 +10,7 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 
@@ -22,15 +22,24 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         {
             email = login,
             password,
-            code = string.Empty
+            code = totp ?? string.Empty
         });
 
         var content = new StringContent(dto, Encoding.UTF8, "application/json");
 
-        var result =
-            await _httpClient.PostAsync(endpoint, content);
+        var result = await _httpClient.PostAsync(endpoint, content);
 
         var resultContent = await result.Content.ReadAsStringAsync();
+
+        if (resultContent.Contains("\"status\":\"pending\"") && resultContent.Contains("\"reason\":\"2fa\""))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Введите код из приложения 2FA",
+                TwoFactorEnabled = true
+            };
+        }
 
         var model = JsonConvert.DeserializeObject<AzuriomAuthResult>(resultContent);
 
@@ -40,6 +49,15 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
             {
                 IsSuccess = false,
                 Message = $"Неверный логин или пароль."
+            };
+        }
+
+        if (!result.IsSuccessStatusCode && resultContent.Contains("invalid_2fa"))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = $"Неверный проверочный код."
             };
         }
 
@@ -56,6 +74,7 @@ public class AzuriomAuthService(IHttpClientFactory httpClientFactory, IGmlManage
         {
             Uuid = model.Uuid,
             Login = model.Username ?? login,
+            IsSlim = model?.Skin?.Slim ?? false,
             IsSuccess = result.IsSuccessStatusCode
         };
     }

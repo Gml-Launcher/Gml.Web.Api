@@ -92,7 +92,22 @@ public class MinecraftHandler : IMinecraftHandler
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
             ProfileId = user.Uuid,
-            Textures = new Textures()
+            Textures = new Textures
+            {
+                Skin = !string.IsNullOrEmpty(user.TextureSkinGuid)
+                    ? new SkinCape
+                    {
+                        Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}"),
+                        Metadata = user.IsSlim ? new SkinMetadata { Model = "slim" } : null
+                    }
+                    : null,
+                Cape = !string.IsNullOrEmpty(user.TextureCloakGuid)
+                    ? new SkinCape
+                    {
+                        Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
+                    }
+                    : null
+            }
         };
 
         if (!string.IsNullOrEmpty(user.TextureSkinGuid))
@@ -169,26 +184,25 @@ public class MinecraftHandler : IMinecraftHandler
             ProfileName = user.Name,
             ProfileId = uuid,
             SignatureRequired = unsigned == false,
-            Textures = new Textures()
+            Textures = new Textures
+            {
+                Skin = !string.IsNullOrEmpty(user.TextureSkinGuid)
+                    ? new SkinCape
+                    {
+                        Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}"),
+                        Metadata = user.IsSlim ? new SkinMetadata { Model = "slim" } : null
+                    }
+                    : null,
+                Cape = !string.IsNullOrEmpty(user.TextureCloakGuid)
+                    ? new SkinCape
+                    {
+                        Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
+                    }
+                    : null
+            }
         };
 
-        if (!string.IsNullOrEmpty(user.TextureSkinGuid))
-        {
-            texture.Textures.Skin = new SkinCape
-            {
-                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
-            };
-        }
-
-        if (!string.IsNullOrEmpty(user.TextureCloakGuid))
-        {
-            texture.Textures.Cape = new SkinCape
-            {
-                Url = string.Concat(address, $"/api/v1/integrations/texture/capes/{user.TextureCloakGuid}")
-            };
-        }
-
-        Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape.Url));
+        //Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape?.Url));
 
         var jsonData = JsonConvert.SerializeObject(texture);
 

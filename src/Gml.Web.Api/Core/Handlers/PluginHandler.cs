@@ -1,8 +1,14 @@
+using System.Collections.Frozen;
 using System.Diagnostics.Tracing;
 using System.IO.Compression;
 using System.Net;
+using System.Text;
+using Gml.Web.Api.Core.Options;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.Plugins;
 using Gml.Web.Api.Dto.Messages;
+using GmlCore.Interfaces;
+using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -10,88 +16,106 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public abstract class PluginHandler : IPluginHandler
 {
-    public static Task<IResult> RemovePlugin(string name, string version)
+    public static async Task<IResult> RemovePlugin(Guid id, PluginsService pluginsService, IGmlManager manager)
     {
-        var pluginPath = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
-
-        var file = pluginPath.GetFiles($"{name}.dll", SearchOption.AllDirectories)
-            .FirstOrDefault(c => c.Directory!.Name == version);
-
-        if (file?.Exists == true)
+        try
         {
-            try
+            if (await pluginsService.RemovePlugin(id))
             {
-                file.Delete();
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-                return Task.FromResult(Results.BadRequest(ResponseMessage.Create($"Произошла ошибка при удалении. Плагин не был удален.", HttpStatusCode.BadRequest)));
-            }
-        }
+                return Results.Ok(ResponseMessage.Create("Плагин успешно удален", HttpStatusCode.OK));
 
-        return Task.FromResult(Results.Ok(ResponseMessage.Create("Плагин успешно удален", HttpStatusCode.OK)));
+            }
+
+            var message = "Не удалось удалить расширение, необходимо выполнить принудительный перезапуск Gml.";
+            await manager.Notifications.SendMessage(message, NotificationType.Fatal);
+            return Results.BadRequest(ResponseMessage.Create(message, HttpStatusCode.OK));
+
+        }
+        catch (Exception exception)
+        {
+            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.OK));
+        }
     }
 
-    public static Task<IResult> GetInstalledPlugins()
+    public static Task<IResult> GetInstalledPlugins(PluginsService pluginsService)
     {
-        var pluginsDirectory = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
+        var plugins = pluginsService.Products;
 
-        var plugins = pluginsDirectory.GetFiles("*.dll", SearchOption.AllDirectories);
-
-        var pluginsDto = plugins.Select(c => new PluginVersionReadDto
-        {
-            Name = c.Name.Replace(Path.GetExtension(c.Name), string.Empty),
-            Version = c.Directory!.Name
-        });
-
-        return Task.FromResult(Results.Ok(ResponseMessage.Create(pluginsDto, string.Empty, HttpStatusCode.OK)));
-
+        return Task.FromResult(Results.Ok(ResponseMessage.Create(plugins.Values, string.Empty, HttpStatusCode.OK)));
     }
 
-    public static async Task<IResult> InstallPlugin(HttpContext context)
+    public static Task<IResult> GetPluginScript(PluginsService pluginsService, IGmlManager manager, Guid id)
     {
-        var pluginFormData = new
+        try
         {
-            Url = context.Request.Form["pluginUrl"]
-        };
+            var plugin = pluginsService.Products.Values.FirstOrDefault(c => c.Id == id);
 
-        if (string.IsNullOrEmpty(pluginFormData.Url))
-        {
-            return Results.BadRequest(ResponseMessage.Create("Не указан адрес плагина", HttpStatusCode.BadRequest));
-        }
-
-        var pluginsDirectory = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
-
-        if (!pluginsDirectory.Exists)
-        {
-            pluginsDirectory.Create();
-        }
-
-        using (var httpClient = new HttpClient())
-        {
-            var response = await httpClient.GetAsync(pluginFormData.Url);
-
-            var contentDisposition = response.Content.Headers.ContentDisposition;
-            string? fileName = contentDisposition?.FileName?.Trim('\"');
-
-            if (string.IsNullOrEmpty(fileName))
+            if (plugin == null)
             {
-                return Results.BadRequest(ResponseMessage.Create("Именование плагина имело неверный формат", HttpStatusCode.BadRequest));
+                return Task.FromResult(Results.NotFound());
             }
 
-            var pluginPath = Path.Combine(pluginsDirectory.FullName, fileName);
+            var stream = pluginsService.GetFrontendPluginContent(plugin);
 
-            using (var contentStream = await response.Content.ReadAsStreamAsync())
-            using (Stream fileStream = new FileStream(pluginPath, FileMode.Create,
-                       FileAccess.Write, FileShare.None, 8192, true))
+            if (stream is null)
             {
-                await contentStream.CopyToAsync(fileStream);
+                return Task.FromResult(Results.NotFound());
             }
 
-            ExtractPlugin(pluginsDirectory.FullName, pluginPath);
+            var result = Results.File(stream, "text/javascript", "main.js");
 
+            return Task.FromResult(result);
         }
+        catch (Exception exception)
+        {
+            manager.BugTracker.CaptureException(exception );
+            return Task.FromResult(Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.OK)));
+        }
+    }
+    public static async Task<IResult> GetPluginByPlaceScript(PluginsService pluginsService, IGmlManager manager, PluginsService.PluginPlace place)
+    {
+        try
+        {
+            var plugins = (await pluginsService.GetPlugins(place)).ToFrozenSet();
+
+            if (plugins.Count == 0)
+            {
+                return Results.NotFound();
+            }
+
+            var content = string.Join("\n", plugins);
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            var result = Results.File(stream, "text/javascript", "main.js");
+
+            return result;
+        }
+        catch (Exception exception)
+        {
+            manager.BugTracker.CaptureException(exception );
+            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.OK));
+        }
+    }
+
+    public static async Task<IResult> InstallPlugin(HttpContext context, RecloudPluginCreateDto plugin,
+        PluginsService pluginsService)
+    {
+        var token = context.Request.Headers["recloud-id-token"].ToString();
+
+        if (string.IsNullOrEmpty(token))
+        {
+            return Results.BadRequest(ResponseMessage.Create("Не указан системный токен RecloudID",
+                HttpStatusCode.BadRequest));
+        }
+
+        var canInstall = await pluginsService.CanInstall(token, plugin.Id);
+
+        if (!canInstall)
+            return Results.BadRequest(ResponseMessage.Create(
+                "У вас недостаточно прав для установки данного расширения или плагин уже установлен",
+                HttpStatusCode.OK));
+
+        await pluginsService.Install(token, plugin.Id);
 
         return Results.Ok(ResponseMessage.Create("Плагин успешно установлен", HttpStatusCode.OK));
     }

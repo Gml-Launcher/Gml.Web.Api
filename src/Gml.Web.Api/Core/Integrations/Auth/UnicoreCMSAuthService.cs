@@ -11,7 +11,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-    public async Task<AuthResult> Auth(string login, string password)
+    public async Task<AuthResult> Auth(string login, string password, string? totp = null)
     {
         var authService = (await gmlManager.Integrations.GetActiveAuthService())!.Endpoint;
 
@@ -23,7 +23,7 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             username_or_email = login,
             password,
-            totp = string.Empty,
+            totp = totp ?? string.Empty,
             save_me = string.Empty
         });
 
@@ -34,11 +34,21 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
 
         var responseResult = await result.Content.ReadAsStringAsync();
 
+        if (responseResult.Contains("require2fa"))
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Введите код из приложения 2FA",
+                TwoFactorEnabled = true
+            };
+        }
+
         var data = JsonConvert.DeserializeObject<UnicoreAuthResult>(responseResult);
 
-        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null )
+        if (data is null || !result.IsSuccessStatusCode || data.User is null || data?.User?.Ban is not null)
         {
-            if (data?.User?.Ban is {} ban)
+            if (data?.User?.Ban is { } ban)
             {
                 return new AuthResult
                 {
@@ -50,7 +60,9 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
             return new AuthResult
             {
                 IsSuccess = false,
-                Message = responseResult.Contains("\"statusCode\":401") ? "Неверный логин или пароль" : "Произошла ошибка при обработке данных с сервера авторизации."
+                Message = responseResult.Contains("\"statusCode\":401")
+                    ? "Неверный логин или пароль"
+                    : "Произошла ошибка при обработке данных с сервера авторизации."
             };
         }
 
@@ -58,7 +70,11 @@ public class UnicoreCMSAuthService(IHttpClientFactory httpClientFactory, IGmlMan
         {
             Login = data.User.Username ?? login,
             IsSuccess = result.IsSuccessStatusCode,
-            Uuid = data.User.Uuid
+            Uuid = data.User.Uuid,
+            IsSlim = data.User.Skin?.Slim ?? false,
+            TwoFactorEnabled = data.User.TwoFactorEnabled is true,
+            TwoFactorSecret = data.User.TwoFactorSecret?.ToString(),
+            TwoFactorSecretTemp = data.User.TwoFactorSecretTemp
         };
     }
 }

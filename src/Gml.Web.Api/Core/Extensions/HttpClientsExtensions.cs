@@ -5,7 +5,9 @@ namespace Gml.Web.Api.Core.Extensions;
 
 public static class HttpClientsExtensions
 {
-    public static IServiceCollection AddNamedHttpClients(this IServiceCollection services)
+    public static IServiceCollection AddNamedHttpClients(
+        this IServiceCollection services,
+        string marketEndpoint)
     {
         string? skinsServiceUrl = Environment.GetEnvironmentVariable("SkinServiceUrl");
 
@@ -18,6 +20,11 @@ public static class HttpClientsExtensions
             client.BaseAddress = isRunningInDocker
                 ? new Uri("http://gml-web-skins:8085/")
                 : string.IsNullOrEmpty(skinsServiceUrl) ? null : new Uri(skinsServiceUrl);
+        });
+
+        services.AddHttpClient(HttpClientNames.MarketService, client =>
+        {
+            client.BaseAddress = new Uri(marketEndpoint);
         });
 
         return services;
