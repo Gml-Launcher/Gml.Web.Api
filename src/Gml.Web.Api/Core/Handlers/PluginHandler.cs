@@ -100,7 +100,7 @@ public abstract class PluginHandler : IPluginHandler
     public static async Task<IResult> InstallPlugin(HttpContext context, RecloudPluginCreateDto plugin,
         PluginsService pluginsService)
     {
-        var token = context.Request.Headers["recloud_id_token"].ToString();
+        var token = context.Request.Headers["recloud-id-token"].ToString();
 
         if (string.IsNullOrEmpty(token))
         {
