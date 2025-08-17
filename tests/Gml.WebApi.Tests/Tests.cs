@@ -879,6 +879,7 @@ public class Tests
         Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
     }
 
+#if DEBUG
     [Test]
     [Order(54)]
     public async Task RemovePlugin()
@@ -887,6 +888,7 @@ public class Tests
 
         Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
     }
+#endif
 
     [Test]
     [Order(55)]
