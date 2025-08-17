@@ -181,26 +181,34 @@ public class PluginsService
 
     public void RestorePlugins()
     {
-        if (!_pluginsDirectory.Exists)
-            _pluginsDirectory.Create();
-
-        var dlls = _pluginsDirectory.GetFiles("*.dll", SearchOption.AllDirectories);
-        var jsonFiles = _pluginsDirectory.GetFiles("product.json", SearchOption.AllDirectories);
-
-        var pluginConfigs = jsonFiles
-            .Select(file => JsonConvert.DeserializeObject<ProductReadDto>(File.ReadAllText(file.FullName))!);
-
-        foreach (var pluginConfig in pluginConfigs)
+        try
         {
-            _products.TryAdd(pluginConfig.Id.ToString(), pluginConfig);
-        }
 
-        foreach (var dll in dlls)
+            if (!_pluginsDirectory.Exists)
+                _pluginsDirectory.Create();
+
+            var dlls = _pluginsDirectory.GetFiles("*.dll", SearchOption.AllDirectories);
+            var jsonFiles = _pluginsDirectory.GetFiles("product.json", SearchOption.AllDirectories);
+
+            var pluginConfigs = jsonFiles
+                .Select(file => JsonConvert.DeserializeObject<ProductReadDto>(File.ReadAllText(file.FullName))!);
+
+            foreach (var pluginConfig in pluginConfigs)
+            {
+                _products.TryAdd(pluginConfig.Id.ToString(), pluginConfig);
+            }
+
+            foreach (var dll in dlls)
+            {
+                _pluginsManager.LoadPlugin(dll.FullName);
+            }
+
+            Console.WriteLine($"{dlls.Length} plugins installed");
+        }
+        catch (UnauthorizedAccessException exception)
         {
-            _pluginsManager.LoadPlugin(dll.FullName);
+            Console.WriteLine(exception);
         }
-
-        Console.WriteLine($"{dlls.Length} plugins installed");
     }
 
     public Stream? GetFrontendPluginContent(ProductReadDto plugin)
