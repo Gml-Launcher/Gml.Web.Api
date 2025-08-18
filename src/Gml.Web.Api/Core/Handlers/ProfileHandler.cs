@@ -186,6 +186,7 @@ public class ProfileHandler : IProfileHandler
             GameArguments = context.Request.Form["gameArguments"],
             RecommendedRam = int.TryParse(context.Request.Form["recommendedRam"], out var recommendedRam) ? recommendedRam : 1024,
             Priority = int.TryParse(context.Request.Form["priority"], out var priority) ? priority : 0,
+            NeedUpdateImages = !bool.TryParse(context.Request.Form["needUpdateImages"], out var needUpdateImages) || needUpdateImages,
             IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
@@ -231,7 +232,8 @@ public class ProfileHandler : IProfileHandler
             updateDto.JvmArguments,
             updateDto.GameArguments,
             updateDto.Priority,
-            updateDto.RecommendedRam
+            updateDto.RecommendedRam,
+            updateDto.NeedUpdateImages
             );
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
