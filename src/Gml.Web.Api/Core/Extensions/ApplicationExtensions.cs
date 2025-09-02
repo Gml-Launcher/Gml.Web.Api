@@ -5,6 +5,7 @@ using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using Gml.Web.Api.Core.Integrations.Auth;
+using Gml.Web.Api.Core.MappingProfiles;
 using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
@@ -136,7 +137,20 @@ public static class ApplicationExtensions
             .AddMemoryCache()
             .AddDbContext<DatabaseContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")))
-            .AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies().AsEnumerable())
+            .AddAutoMapper(map =>
+            {
+                map.AddProfile<AuthServerMapper>();
+                map.AddProfile<DiscordRpcMapper>();
+                map.AddProfile<LauncherMapper>();
+                map.AddProfile<ModsMapper>();
+                map.AddProfile<NewsMapper>();
+                map.AddProfile<PlayerMapper>();
+                map.AddProfile<ProfileMapper>();
+                map.AddProfile<ServerMapper>();
+                map.AddProfile<SettingsMapper>();
+                map.AddProfile<SystemIOMapper>();
+                map.AddProfile<UserMapper>();
+            })
             .ConfigureGmlManager(
                 settings.ProjectName,
                 settings.SecurityKey,
