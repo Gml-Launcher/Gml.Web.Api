@@ -12,8 +12,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
-    <PackageReference Include="FluentValidation" Version="11.9.0"/>
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.0"/>
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="Gml.Core.Interfaces" Version="2025.1.2" />
     <PackageReference Include="Gml.Web.Api.EndpointSDK" Version="2025.1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>

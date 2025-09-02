@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Dto.Marketplace;
 using Gml.Web.Api.Dto.Messages;
-using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Services;
