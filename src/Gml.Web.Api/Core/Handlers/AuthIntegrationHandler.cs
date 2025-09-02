@@ -175,7 +175,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             var user = await gmlManager.Users.GetUserByAccessToken(authDto.AccessToken);
             var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-            if (user is not null && user.ExpiredDate > DateTime.Now)
+            if (user is not null && gmlManager.Users.ValidateAccessToken(user.AccessToken))
             {
                 return await HandleAuthenticatedUser(gmlManager, mapper, user, userAgent);
             }
