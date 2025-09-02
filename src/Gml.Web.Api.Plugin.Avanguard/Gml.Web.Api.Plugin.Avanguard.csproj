@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
+      <ProjectReference Include="..\plugins\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj" />
     </ItemGroup>
 
 </Project>
