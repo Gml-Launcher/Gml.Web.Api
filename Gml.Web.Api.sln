@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GmlCore.Tests", "src\Gml.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmlLib.Core.Installer.NeoForge", "src\Gml.Core\src\CmlLib.Core.Installer.NeoForge\CmlLib.Core.Installer.NeoForge\CmlLib.Core.Installer.NeoForge.csproj", "{C003DD75-83EC-4D76-A1A7-904A5067FBC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modrinth.Api", "src\Gml.Core\src\Modrinth.Api\src\Modrinth.Api\Modrinth.Api.csproj", "{08239055-6F75-47D3-8B86-3C15E7934323}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,10 @@ Global
 		{C003DD75-83EC-4D76-A1A7-904A5067FBC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C003DD75-83EC-4D76-A1A7-904A5067FBC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C003DD75-83EC-4D76-A1A7-904A5067FBC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08239055-6F75-47D3-8B86-3C15E7934323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08239055-6F75-47D3-8B86-3C15E7934323}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08239055-6F75-47D3-8B86-3C15E7934323}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08239055-6F75-47D3-8B86-3C15E7934323}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D6759F0B-6F0A-42A9-9116-13A795AD0D9A} = {BCA2A85C-3E30-46C0-8860-3B693CD3F9AB}
@@ -131,5 +137,6 @@ Global
 		{472B48FE-E10F-4924-BB8B-8B8B182F67F1} = {7EAB5BCD-700A-4B81-8562-C59DA7C63A85}
 		{62D14084-A345-4F9B-ABD6-FEA3B3B07F70} = {7EAB5BCD-700A-4B81-8562-C59DA7C63A85}
 		{C003DD75-83EC-4D76-A1A7-904A5067FBC4} = {A1BA7FE1-1089-4BC9-A5CB-C6F5BF9F93E9}
+		{08239055-6F75-47D3-8B86-3C15E7934323} = {A1BA7FE1-1089-4BC9-A5CB-C6F5BF9F93E9}
 	EndGlobalSection
 EndGlobal
