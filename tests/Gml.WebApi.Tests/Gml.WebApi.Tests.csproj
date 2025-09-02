@@ -20,7 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Sentry" Version="4.9.0" />
+    <PackageReference Include="Sentry" Version="5.14.1" />
   </ItemGroup>
 
   <ItemGroup>
