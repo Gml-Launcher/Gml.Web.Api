@@ -5,8 +5,6 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Texture;
 using GmlCore.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Primitives;
 
 namespace Gml.Web.Api.Core.Handlers;
 

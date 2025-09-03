@@ -13,4 +13,5 @@ public class ProfileUpdateDto
     public string JvmArguments { get; set; }
     public string GameArguments { get; set; }
     public int RecommendedRam { get; set; }
+    public bool NeedUpdateImages { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Gml.Web.Api.EndpointSDK;
 using Gml.Web.Api.Plugin.Avanguard.Core;
 using GmlCore.Interfaces;
@@ -9,10 +10,8 @@ namespace Gml.Web.Api.Plugin.Avanguard;
 [Path("post", "/api/v1/plugins/avanguard/compile", true)]
 public class GravitGuardEndpoint : IPluginEndpoint
 {
-    public async Task Execute(HttpContext context, IGmlManager gmlManager)
+    public Task Execute(HttpContext context, IGmlManager gmlManager, IServiceProvider serviceProvider)
     {
-        
-        
-        await context.Response.WriteAsync("templaацуфацфуаte");
+        throw new NotImplementedException();
     }
 }
