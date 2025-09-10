@@ -406,6 +406,7 @@ public class ProfileHandler : IProfileHandler
             : profile.BackgroundImageKey;
         profileDto.IsEnabled = profile.IsEnabled;
         profileDto.Priority = profile.Priority;
+        profileDto.Loader = profile.Loader;
         profileDto.RecommendedRam = profile.RecommendedRam;
         profileDto.UsersWhiteList = mapper.Map<List<PlayerReadDto>>(whiteListPlayers);
 
