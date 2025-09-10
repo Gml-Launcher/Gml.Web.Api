@@ -32,9 +32,10 @@ public class PlayersHandler : IPlayersHandler
         {
             var player = await gmlManager.Users.GetUserByUuid(playerUuid);
 
-            if (player is null) continue;
-            player.IsBanned = true;
-            await gmlManager.Users.UpdateUser(player);
+            if (player is null)
+                continue;
+
+            await player.Block(deviceBlock);
         }
 
         return Results.Ok(ResponseMessage.Create("Пользователь(и) успешно заблокированы", HttpStatusCode.OK));
