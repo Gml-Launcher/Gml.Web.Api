@@ -1,6 +1,7 @@
 ﻿using System.Collections.Frozen;
 using System.Net;
 using AutoMapper;
+using Gml.Core.User;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using GmlCore.Interfaces;
@@ -78,7 +79,8 @@ public class PlayersHandler : IPlayersHandler
     public static async Task<IResult> PardonPlayer(
         IGmlManager gmlManager,
         IMapper mapper,
-        IList<string> playerUuids)
+        IList<string> playerUuids,
+        bool deviceUnblock = false)
     {
         if (!playerUuids.Any())
         {
@@ -91,8 +93,8 @@ public class PlayersHandler : IPlayersHandler
             var player = await gmlManager.Users.GetUserByUuid(playerUuid);
 
             if (player is null) continue;
-            player.IsBanned = false;
-            await gmlManager.Users.UpdateUser(player);
+
+            await player.Unblock(deviceUnblock);
         }
 
         return Results.Ok(ResponseMessage.Create("Пользователь(и) успешно разблокированы", HttpStatusCode.OK));
