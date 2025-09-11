@@ -17,14 +17,14 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthIntegrationHandler : IAuthIntegrationHandler
 {
-    private static async Task<IResult?> HandleCommonAuthValidation(
-        HttpContext context,
+    private static async Task<IResult?> HandleCommonAuthValidation(HttpContext context,
         IGmlManager gmlManager,
-        AuthType authType)
+        AuthType authType,
+        string hwid)
     {
         var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-        if (string.IsNullOrWhiteSpace(userAgent))
+        if (string.IsNullOrWhiteSpace(userAgent) || string.IsNullOrWhiteSpace(hwid))
             return Results.BadRequest(ResponseMessage.Create(
                 "Не удалось определить устройство, с которого произошла авторизация",
                 HttpStatusCode.BadRequest));
@@ -88,9 +88,11 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                     HttpStatusCode.BadRequest));
 
+            var hwid = context.Request.Headers["X-HWID"].ToString();
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
             var authType = await gmlManager.Integrations.GetAuthType();
 
-            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType);
+            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType, hwid);
 
             if (validationResult is not null)
                 return validationResult;
@@ -102,7 +104,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, authDto.TwoFactorCode);
+            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, hwid, authDto.TwoFactorCode);
 
             if (authResult.TwoFactorEnabled && string.IsNullOrEmpty(authDto.TwoFactorCode))
             {
@@ -116,8 +118,6 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Message ?? "Неверный логин или пароль",
                     HttpStatusCode.Unauthorized));
 
-            var userAgent = context.Request.Headers["User-Agent"].ToString();
-
             var player = await gmlManager.Users.GetAuthData(
                 authResult.Login ?? authDto.Login,
                 authDto.Password,
@@ -125,7 +125,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 context.Request.Protocol,
                 context.ParseRemoteAddress(),
                 authResult.Uuid,
-                context.Request.Headers["X-HWID"],
+                hwid,
 				authResult.IsSlim);
 
             return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
@@ -159,9 +159,11 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
     {
         try
         {
-            var authType = await gmlManager.Integrations.GetAuthType();
 
-            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType);
+            var authType = await gmlManager.Integrations.GetAuthType();
+            var hwid = context.Request.Headers["X-HWID"].ToString();
+
+            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType, hwid);
             if (validationResult != null)
                 return validationResult;
 

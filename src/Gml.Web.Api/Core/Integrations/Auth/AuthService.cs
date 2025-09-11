@@ -1,15 +1,28 @@
+using Gml.Core.Launcher;
 using Gml.Web.Api.Core.Extensions;
 using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using OtpNet;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 
-public class AuthService(IAuthServiceFactory authServiceFactory) : IAuthService
+public class AuthService(IGmlManager manager, IAuthServiceFactory authServiceFactory) : IAuthService
 {
-    public async Task<AuthResult> CheckAuth(string login, string password, AuthType authType, string? totp = null)
+    public async Task<AuthResult> CheckAuth(string login, string password, AuthType authType, string hwid, string? totp = null)
     {
+        var hardware = new Hardware(hwid);
+
+        if (await manager.Users.CheckContainsHardware(hardware) == true)
+        {
+            return new AuthResult
+            {
+                IsSuccess = false,
+                Message = "Пользователь заблокирован."
+            };
+        }
+
         var service = authServiceFactory.CreateAuthService(authType);
         return await service.Auth(login, password, totp);
     }
