@@ -6,6 +6,7 @@ using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.User;
+using Gml.Web.Api.Core.Hubs.Controllers;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -14,6 +15,7 @@ public class PlayersHandler : IPlayersHandler
     public static async Task<IResult> GetPlayers(
         IGmlManager gmlManager,
         IMapper mapper,
+        PlayersController playersController,
         int? take,
         int? offset,
         string? findName,
@@ -106,7 +108,13 @@ public class PlayersHandler : IPlayersHandler
             players = await gmlManager.Users.GetUsers(take ?? 20, offset ?? 0, findName ?? string.Empty);
         }
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedPlayerReadDto>>(players), "Список пользователей успешно получен", HttpStatusCode.OK));
+        var result = mapper.Map<List<ExtendedPlayerReadDto>>(players);
+        foreach (var dto in result)
+        {
+            dto.IsLauncherStarted = playersController.GetLauncherConnection(dto.Name, out _);
+        }
+
+        return Results.Ok(ResponseMessage.Create(result, "Список пользователей успешно получен", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> BanPlayer(
