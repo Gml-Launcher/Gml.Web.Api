@@ -29,7 +29,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 "Не удалось определить устройство, с которого произошла авторизация",
                 HttpStatusCode.BadRequest));
 
-        return null; // Валидация прошла успешно
+        return null;
     }
 
     private static async Task<IResult> HandleAuthenticatedUser(
