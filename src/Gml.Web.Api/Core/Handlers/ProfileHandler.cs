@@ -358,6 +358,8 @@ public class ProfileHandler : IProfileHandler
         IValidator<ProfileCreateInfoDto> validator,
         ProfileCreateInfoDto createInfoDto)
     {
+        createInfoDto.UserName = "GmlAdmin";
+
         var result = await validator.ValidateAsync(createInfoDto);
 
         if (!result.IsValid)
