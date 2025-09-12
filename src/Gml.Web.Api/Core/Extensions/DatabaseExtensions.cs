@@ -80,7 +80,7 @@ public static class DatabaseExtensions
             }
 
             // Ensure permissions exist
-            var basePerms = new[] { "profiles.view", "profiles.update", "profiles.delete" };
+            var basePerms = new[] { "profiles.view", "profiles.update", "profiles.delete", "profiles.create" };
             var existingPerms = context.Permissions.Where(p => basePerms.Contains(p.Name)).ToList();
             var existingNames = existingPerms.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var permName in basePerms)
