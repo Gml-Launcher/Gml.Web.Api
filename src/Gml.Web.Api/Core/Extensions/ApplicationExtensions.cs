@@ -81,6 +81,13 @@ public static class ApplicationExtensions
 
         var textureEndpoint = GetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT");
 
+        var jwtIssuer = GetEnvironmentVariable("JWT_ISSUER");
+        var jwtAudience = GetEnvironmentVariable("JWT_AUDIENCE");
+        var accessMinutesStr = GetEnvironmentVariable("JWT_ACCESS_MINUTES");
+        var refreshDaysStr = GetEnvironmentVariable("JWT_REFRESH_DAYS");
+        int.TryParse(accessMinutesStr, out var accessMinutes);
+        int.TryParse(refreshDaysStr, out var refreshDays);
+
         return new ServerSettings
         {
             ProjectDescription = projectDescription,
@@ -91,7 +98,11 @@ public static class ApplicationExtensions
             ProjectVersion = "1.1.0",
             SecurityKey = securityKey,
             ProjectPath = projectPath,
-            TextureEndpoint = textureEndpoint
+            TextureEndpoint = textureEndpoint,
+            JwtIssuer = string.IsNullOrWhiteSpace(jwtIssuer) ? "gml-api" : jwtIssuer,
+            JwtAudience = string.IsNullOrWhiteSpace(jwtAudience) ? "gml-clients" : jwtAudience,
+            AccessTokenMinutes = accessMinutes > 0 ? accessMinutes : 15,
+            RefreshTokenDays = refreshDays > 0 ? refreshDays : 30
         };
     }
 
@@ -114,9 +125,12 @@ public static class ApplicationExtensions
 
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = settings.JwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = settings.JwtAudience,
             ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = key
         };

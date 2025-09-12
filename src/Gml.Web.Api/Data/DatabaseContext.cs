@@ -1,4 +1,5 @@
 using Gml.Web.Api.Domains.Settings;
+using Gml.Web.Api.Domains.Auth;
 using Gml.Web.Api.Domains.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,4 +9,5 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Settings> Settings { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 }

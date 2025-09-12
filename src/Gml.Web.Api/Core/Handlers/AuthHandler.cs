@@ -1,9 +1,10 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Core.Repositories;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using Gml.Web.Api.Domains.Repositories;
+using Gml.Web.Api.Dto.Auth;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
@@ -18,7 +19,10 @@ public class AuthHandler : IAuthHandler
         IValidator<UserCreateDto> validator,
         IMapper mapper,
         UserCreateDto createDto,
-        ApplicationContext appContext)
+        ApplicationContext appContext,
+        AccessTokenService tokenService,
+        IRefreshTokenRepository refreshRepo,
+        Gml.Web.Api.Core.Options.ServerSettings settings)
     {
         if (appContext.Settings.RegistrationIsEnabled == false)
             return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
@@ -30,15 +34,29 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        var user = await userRepository.CheckExistUser(createDto.Login, createDto.Email);
+        var existing = await userRepository.CheckExistUser(createDto.Login, createDto.Email);
 
-        if (user is not null)
+        if (existing is not null)
             return Results.BadRequest(ResponseMessage.Create("Пользователь с указанными данными уже существует",
                 HttpStatusCode.BadRequest));
 
-        user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
+        var user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<UserAuthReadDto>(user), "Успешная регистрация",
+        // Generate JWT pair
+        var accessToken = tokenService.GenerateAccessToken(user.Id);
+        var refreshToken = tokenService.GenerateRefreshToken();
+        var refreshHash = tokenService.HashRefreshToken(refreshToken);
+        var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
+        await refreshRepo.CreateAsync(user.Id, refreshHash, expiresAt);
+
+        var tokens = new AuthTokensDto
+        {
+            AccessToken = accessToken,
+            ExpiresIn = settings.AccessTokenMinutes * 60,
+            RefreshToken = refreshToken
+        };
+
+        return Results.Ok(ResponseMessage.Create(tokens, "Успешная регистрация",
             HttpStatusCode.OK));
     }
 
@@ -59,7 +77,10 @@ public class AuthHandler : IAuthHandler
         IUserRepository userRepository,
         IValidator<UserAuthDto> validator,
         IMapper mapper,
-        UserAuthDto authDto)
+        UserAuthDto authDto,
+        AccessTokenService tokenService,
+        IRefreshTokenRepository refreshRepo,
+        Gml.Web.Api.Core.Options.ServerSettings settings)
     {
         var result = await validator.ValidateAsync(authDto);
 
@@ -73,7 +94,21 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль",
                 HttpStatusCode.BadRequest));
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<UserAuthReadDto>(user), "Успешная авторизация",
+        // Generate JWT pair
+        var accessToken = tokenService.GenerateAccessToken(user.Id);
+        var refreshToken = tokenService.GenerateRefreshToken();
+        var refreshHash = tokenService.HashRefreshToken(refreshToken);
+        var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
+        await refreshRepo.CreateAsync(user.Id, refreshHash, expiresAt);
+
+        var tokens = new AuthTokensDto
+        {
+            AccessToken = accessToken,
+            ExpiresIn = settings.AccessTokenMinutes * 60,
+            RefreshToken = refreshToken
+        };
+
+        return Results.Ok(ResponseMessage.Create(tokens, "Успешная авторизация",
             HttpStatusCode.OK));
     }
 
