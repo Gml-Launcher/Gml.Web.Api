@@ -165,6 +165,7 @@ public static class ApplicationExtensions
                 map.AddProfile<SettingsMapper>();
                 map.AddProfile<SystemIOMapper>();
                 map.AddProfile<UserMapper>();
+                map.AddProfile<RbacMapper>();
             })
             .ConfigureGmlManager(
                 settings.ProjectName,
