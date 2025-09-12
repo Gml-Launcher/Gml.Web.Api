@@ -43,7 +43,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage<IEnumerable<LauncherVersionReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:launcher.manage");
 
         app.MapPost("/api/v1/integrations/github/launcher/download", GitHubIntegrationHandler.DownloadLauncher)
             .WithOpenApi(generatedOperation =>
@@ -55,7 +55,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage<string>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:launcher.manage");
 
         app.MapGet("/api/v1/integrations/github/launcher/download/{version}",
                 GitHubIntegrationHandler.ReturnLauncherSolution)
@@ -67,21 +67,21 @@ public static class EndpointsExtensions
             .WithName("Download launcher solution")
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:launcher.manage");
 
         #endregion
 
         #region SignalR Hubs
 
         app.MapHub<ProfileHub>("/ws/profiles/restore")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.update");
         app.MapHub<GitHubLauncherHub>("/ws/launcher/build")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:launcher.manage");
         app.MapHub<GameServerHub>("/ws/gameServer")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:servers.manage");
         app.MapHub<LauncherHub>("/ws/launcher").RequireAuthorization();
         app.MapHub<NotificationHub>("/ws/notifications")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:notifications.manage");
 
         #endregion
 
@@ -161,7 +161,7 @@ public static class EndpointsExtensions
             .WithName("Update dsn sentry service url")
             .WithTags("Integration/Sentry")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapPost("/api/{projectId}/envelope", SentryHandler.CreateBugInfo)
             .WithOpenApi(generatedOperation =>
@@ -182,7 +182,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение всех ошибок Sentry")
             .WithName("Get all bugs sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapPost("/api/v1/sentry/clear", SentryHandler.SolveAllBugs)
             .WithOpenApi(generatedOperation =>
@@ -193,7 +193,7 @@ public static class EndpointsExtensions
             .WithDescription("Очистка всех ошибок Sentry")
             .WithName("Clear all bugs sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapPost("/api/v1/sentry/filter", SentryHandler.GetFilterSentry)
             .WithOpenApi(generatedOperation =>
@@ -204,7 +204,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение отфильтрованного списка ошибок")
             .WithName("Get filtered bugs sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapPost("/api/v1/sentry/filter/list", SentryHandler.GetFilterListSentry)
             .WithOpenApi(generatedOperation =>
@@ -215,7 +215,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение отфильтрованного списка по ошибок")
             .WithName("Get filtered on bugs sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapGet("/api/v1/sentry/stats/last", SentryHandler.GetLastSentryErrors)
             .WithOpenApi(generatedOperation =>
@@ -226,7 +226,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение списка ошибок за последние 3 месяца")
             .WithName("Get last bugs sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapGet("/api/v1/sentry/stats/summary", SentryHandler.GetSummarySentryErrors)
             .WithOpenApi(generatedOperation =>
@@ -237,7 +237,7 @@ public static class EndpointsExtensions
             .WithDescription("Получить сводку ошибок")
             .WithName("Get summary bugs sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapGet("/api/v1/sentry/{exception}", SentryHandler.GetByException)
             .WithOpenApi(generatedOperation =>
@@ -248,7 +248,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение exception в Sentry")
             .WithName("Get exception on sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         app.MapGet("/api/v1/sentry/bug/{id}", SentryHandler.GetBugId)
             .WithOpenApi(generatedOperation =>
@@ -259,7 +259,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение бага по Guid Sentry")
             .WithName("Get bug or id sentry")
             .WithTags("Integration/Sentry")
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.sentry.manage");
 
         #endregion
 
@@ -286,7 +286,7 @@ public static class EndpointsExtensions
             .WithName("Update discord RPC data")
             .WithTags("Integration/Discord")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.discord.update");
 
         #endregion
 
@@ -313,7 +313,7 @@ public static class EndpointsExtensions
             .WithName("Update skin texture url")
             .WithTags("Integration/Textures")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.textures.update");
 
         app.MapGet("/api/v1/integrations/texture/skins/{textureGuid}", TextureIntegrationHandler.GetUserSkin)
             .WithOpenApi(generatedOperation =>
@@ -369,7 +369,7 @@ public static class EndpointsExtensions
             .WithName("Update cloak texture url")
             .WithTags("Integration/Textures")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.textures.update");
 
         app.MapPost("/api/v1/integrations/texture/skins/load", TextureIntegrationHandler.UpdateUserSkin)
             .WithOpenApi(generatedOperation =>
@@ -506,7 +506,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.auth.manage");
 
         app.MapGet("/api/v1/integrations/auth", AuthIntegrationHandler.GetIntegrationServices)
             .WithOpenApi(generatedOperation =>
@@ -519,7 +519,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.auth.manage");
 
         app.MapGet("/api/v1/integrations/auth/active", AuthIntegrationHandler.GetAuthService)
             .WithOpenApi(generatedOperation =>
@@ -531,7 +531,7 @@ public static class EndpointsExtensions
             .WithName("Get active auth service")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.auth.manage");
 
         app.MapDelete("/api/v1/integrations/auth/active", AuthIntegrationHandler.RemoveAuthService)
             .WithOpenApi(generatedOperation =>
@@ -544,7 +544,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.auth.manage");
 
         #endregion
 
@@ -561,7 +561,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/News")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.news.manage");
 
         app.MapDelete("/api/v1/integrations/news/{type}", NewsHandler.RemoveNewsListener)
             .WithOpenApi(generatedOperation =>
@@ -574,7 +574,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/News")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.news.manage");
 
         app.MapGet("/api/v1/integrations/news/providers", NewsHandler.GetListeners)
             .WithOpenApi(generatedOperation =>
@@ -587,7 +587,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/News")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:integrations.news.manage");
 
         app.MapGet("/api/v1/integrations/news", NewsHandler.GetNewsListener)
             .WithOpenApi(generatedOperation =>
@@ -711,7 +711,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.update");
 
         app.MapGet("/api/v1/profiles/{profileName}/mods", ProfileHandler.GetMods)
             .WithOpenApi(generatedOperation =>
@@ -832,7 +832,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.update");
 
         app.MapPost("/api/v1/profiles/info", ProfileHandler.GetProfileInfo)
             .WithOpenApi(generatedOperation =>
@@ -857,7 +857,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.view");
 
         app.MapPost("/api/v1/profiles/compile", ProfileHandler.CompileProfile)
             .WithOpenApi(generatedOperation =>
@@ -870,7 +870,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<ProfileReadInfoDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.update");
 
         #endregion
 
@@ -887,7 +887,7 @@ public static class EndpointsExtensions
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:players.manage");
 
         app.MapPost("/api/v1/players/remove", PlayersHandler.RemovePlayer)
             .WithOpenApi(generatedOperation =>
@@ -899,7 +899,7 @@ public static class EndpointsExtensions
             .WithName("Remove players")
             .WithTags("Players")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:players.manage");
 
         app.MapPost("/api/v1/players/ban", PlayersHandler.BanPlayer)
             .WithOpenApi(generatedOperation =>
@@ -912,7 +912,7 @@ public static class EndpointsExtensions
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:players.manage");
 
         app.MapPost("/api/v1/players/pardon", PlayersHandler.PardonPlayer)
             .WithOpenApi(generatedOperation =>
@@ -925,7 +925,7 @@ public static class EndpointsExtensions
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:players.manage");
 
         #endregion
 

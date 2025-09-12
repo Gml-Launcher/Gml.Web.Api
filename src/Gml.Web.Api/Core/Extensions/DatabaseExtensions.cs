@@ -64,7 +64,7 @@ public static class DatabaseExtensions
             dataBaseSettings.VkKey
         );
 
-        // Seed base RBAC: Admin role with essential profile permissions
+        // Seed base RBAC: Admin role and base permissions with descriptions
         try
         {
             // Ensure Admin role exists
@@ -79,26 +79,54 @@ public static class DatabaseExtensions
                 context.SaveChanges();
             }
 
-            // Ensure permissions exist
-            var basePerms = new[] { "profiles.view", "profiles.update", "profiles.delete", "profiles.create" };
-            var existingPerms = context.Permissions.Where(p => basePerms.Contains(p.Name)).ToList();
-            var existingNames = existingPerms.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var permName in basePerms)
+            // Define all base permissions with descriptions
+            var basePerms = new (string Name, string Description)[]
             {
-                if (!existingNames.Contains(permName))
+                ("launcher.manage", "Управление лаунчером, включая получение версий, скачивание и управление сборками"),
+                ("integrations.sentry.manage", "Управление интеграцией с Sentry, включая обновление DSN, получение ошибок, фильтрацию и очистку"),
+                ("integrations.discord.update", "Обновление данных интеграции с DiscordRPC"),
+                ("integrations.textures.update", "Обновление ссылок на сервисы текстур (скины и плащи)"),
+                ("integrations.auth.manage", "Управление сервисами авторизации, включая установку, удаление и просмотр активных сервисов"),
+                ("integrations.news.manage", "Управление слушателями новостей, включая добавление, удаление и получение списка слушателей"),
+                ("profiles.view", "Просмотр списка профилей и версий Minecraft"),
+                ("profiles.create", "Создание игровых профилей"),
+                ("profiles.update", "Обновление игровых профилей, включая восстановление, компиляцию и управление whitelist"),
+                ("profiles.delete", "Удаление игровых профилей"),
+                ("players.manage", "Управление списком игроков, включая просмотр, удаление, блокировку и разблокировку"),
+                ("servers.manage", "Управление игровыми серверами через SignalR хаб"),
+                ("notifications.manage", "Управление уведомлениями через SignalR хаб")
+            };
+
+            var basePermNames = basePerms.Select(p => p.Name).ToArray();
+            var existingPerms = context.Permissions.Where(p => basePermNames.Contains(p.Name)).ToList();
+            var existingNames = existingPerms.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var (name, description) in basePerms)
+            {
+                if (!existingNames.Contains(name))
                 {
                     context.Permissions.Add(new Gml.Web.Api.Domains.Auth.Permission
                     {
-                        Name = permName,
-                        Description = ""
+                        Name = name,
+                        Description = description
                     });
                 }
+                else
+                {
+                    // Ensure description is up-to-date
+                    var perm = existingPerms.First(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+                    if (string.IsNullOrWhiteSpace(perm.Description))
+                    {
+                        perm.Description = description;
+                    }
+                }
             }
+
             if (context.ChangeTracker.HasChanges())
                 context.SaveChanges();
 
-            // Ensure Admin has these permissions
-            var permsForLink = context.Permissions.Where(p => basePerms.Contains(p.Name)).Select(p => p.Id).ToList();
+            // Ensure Admin has all these permissions
+            var permsForLink = context.Permissions.Where(p => basePermNames.Contains(p.Name)).Select(p => p.Id).ToList();
             foreach (var permId in permsForLink)
             {
                 var linkExists = context.RolePermissions.Any(rp => rp.RoleId == adminRole.Id && rp.PermissionId == permId);
@@ -111,6 +139,7 @@ public static class DatabaseExtensions
                     });
                 }
             }
+
             if (context.ChangeTracker.HasChanges())
                 context.SaveChanges();
         }
