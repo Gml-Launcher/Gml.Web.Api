@@ -103,6 +103,13 @@ public static class RolesHandler
 
     public static async Task<IResult> DeleteRole(Gml.Web.Api.Domains.Repositories.IRbacRepository repo, int id)
     {
+        // Prevent deleting Admin role
+        var role = await repo.GetRoleByIdAsync(id);
+        if (role == null)
+            return Results.NotFound(ResponseMessage.Create("Роль не найдена", HttpStatusCode.NotFound));
+        if (string.Equals(role.Name, "Admin", StringComparison.OrdinalIgnoreCase))
+            return Results.BadRequest(ResponseMessage.Create("Нельзя удалять роль Администратора", HttpStatusCode.BadRequest));
+
         var ok = await repo.DeleteRoleAsync(id);
         if (!ok)
             return Results.NotFound(ResponseMessage.Create("Роль не найдена", HttpStatusCode.NotFound));
@@ -139,6 +146,16 @@ public static class RolesHandler
 
     public static async Task<IResult> DeletePermission(Gml.Web.Api.Domains.Repositories.IRbacRepository repo, int id)
     {
+        var perm = await repo.GetPermissionByIdAsync(id);
+        if (perm == null)
+            return Results.NotFound(ResponseMessage.Create("Право не найдено", HttpStatusCode.NotFound));
+
+        // Check system flag via repository implementation (shadow property)
+        bool isSystem = await repo.IsSystemPermissionAsync(id);
+
+        if (isSystem)
+            return Results.BadRequest(ResponseMessage.Create("Нельзя удалять системные права", HttpStatusCode.BadRequest));
+
         var ok = await repo.DeletePermissionAsync(id);
         if (!ok)
             return Results.NotFound(ResponseMessage.Create("Право не найдено", HttpStatusCode.NotFound));
@@ -147,6 +164,11 @@ public static class RolesHandler
 
     public static async Task<IResult> AssignPermissionToRole(Gml.Web.Api.Domains.Repositories.IRbacRepository repo, int roleId, int permId)
     {
+        // Prevent modifying permissions of Admin role
+        var role = await repo.GetRoleByIdAsync(roleId);
+        if (role != null && string.Equals(role.Name, "Admin", StringComparison.OrdinalIgnoreCase))
+            return Results.BadRequest(ResponseMessage.Create("Нельзя менять права роли Администратора", HttpStatusCode.BadRequest));
+
         var exists = await repo.RoleHasPermissionAsync(roleId, permId);
         if (exists)
             return Results.Ok(ResponseMessage.Create("Право уже назначено на роль", HttpStatusCode.OK));
@@ -156,6 +178,11 @@ public static class RolesHandler
 
     public static async Task<IResult> UnassignPermissionFromRole(Gml.Web.Api.Domains.Repositories.IRbacRepository repo, int roleId, int permId)
     {
+        // Prevent modifying permissions of Admin role
+        var role = await repo.GetRoleByIdAsync(roleId);
+        if (role != null && string.Equals(role.Name, "Admin", StringComparison.OrdinalIgnoreCase))
+            return Results.BadRequest(ResponseMessage.Create("Нельзя менять права роли Администратора", HttpStatusCode.BadRequest));
+
         var ok = await repo.RemovePermissionFromRoleAsync(roleId, permId);
         if (!ok)
             return Results.NotFound(ResponseMessage.Create("Связка роль-право не найдена", HttpStatusCode.NotFound));

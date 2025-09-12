@@ -140,6 +140,14 @@ public class RbacRepository : IRbacRepository
         return true;
     }
 
+    public Task<bool> IsSystemPermissionAsync(int id)
+    {
+        return _db.Permissions
+            .Where(p => p.Id == id)
+            .Select(p => p.IsSystem)
+            .FirstOrDefaultAsync();
+    }
+
     // Assignments
     public Task<bool> RoleHasPermissionAsync(int roleId, int permId)
     {

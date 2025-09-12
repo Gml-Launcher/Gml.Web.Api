@@ -105,11 +105,12 @@ public static class DatabaseExtensions
             {
                 if (!existingNames.Contains(name))
                 {
-                    context.Permissions.Add(new Gml.Web.Api.Domains.Auth.Permission
+                    var newPerm = context.Permissions.Add(new Gml.Web.Api.Domains.Auth.Permission
                     {
                         Name = name,
-                        Description = description
-                    });
+                        Description = description,
+                        IsSystem = true
+                    }).Entity;
                 }
                 else
                 {
@@ -118,6 +119,12 @@ public static class DatabaseExtensions
                     if (string.IsNullOrWhiteSpace(perm.Description))
                     {
                         perm.Description = description;
+                    }
+                    // Mark as system permission (shadow property)
+                    var entry = context.Entry(perm);
+                    if (!Equals(entry.Property("IsSystem").CurrentValue, true))
+                    {
+                        entry.Property("IsSystem").CurrentValue = true;
                     }
                 }
             }

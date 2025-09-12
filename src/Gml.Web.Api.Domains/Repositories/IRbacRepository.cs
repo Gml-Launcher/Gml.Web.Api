@@ -29,6 +29,7 @@ public interface IRbacRepository
     Task<Permission> CreatePermissionAsync(string name, string? description);
     Task<Permission?> UpdatePermissionAsync(int id, string name, string? description);
     Task<bool> DeletePermissionAsync(int id);
+    Task<bool> IsSystemPermissionAsync(int id);
 
     // Assignments
     Task<bool> RoleHasPermissionAsync(int roleId, int permId);
