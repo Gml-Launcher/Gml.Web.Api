@@ -1,4 +1,5 @@
 using System.Net;
+using Gml.Web.Api.Dto.Auth;
 using Gml.Models.News;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
@@ -106,6 +107,18 @@ public static class EndpointsExtensions
             .WithTags("Users")
             .Produces<ResponseMessage<UserAuthReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("/api/v1/users/refresh", AuthHandler.RefreshTokens)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Перевыпуск пары токенов по refresh";
+                return generatedOperation;
+            })
+            .WithDescription("Перевыпуск access токена и rotation refresh токена")
+            .WithName("Refresh tokens")
+            .WithTags("Users")
+            .Produces<ResponseMessage<AuthTokensDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.Unauthorized);
 
         app.MapGet("/api/v1/users/info/{userName}", AuthHandler.UserInfo)
             .WithOpenApi(generatedOperation =>

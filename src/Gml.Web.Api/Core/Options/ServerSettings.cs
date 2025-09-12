@@ -9,7 +9,7 @@ public class ServerSettings
     [JsonProperty(nameof(SecurityKey))] public string SecurityKey { get; set; } = "SecretGmlKey";
     public string JwtIssuer { get; set; } = "gml-api";
     public string JwtAudience { get; set; } = "gml-clients";
-    public int AccessTokenMinutes { get; set; } = 1;
+    public int AccessTokenMinutes { get; set; } = 15;
     public int RefreshTokenDays { get; set; } = 30;
     public string ProjectVersion { get; set; } = null!;
     public string[] SkinDomains { get; set; } = [];

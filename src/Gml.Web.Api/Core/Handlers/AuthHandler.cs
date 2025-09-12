@@ -9,12 +9,14 @@ using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthHandler : IAuthHandler
 {
     public static async Task<IResult> CreateUser(
+        HttpContext httpContext,
         IUserRepository userRepository,
         IValidator<UserCreateDto> validator,
         IMapper mapper,
@@ -49,11 +51,19 @@ public class AuthHandler : IAuthHandler
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
         await refreshRepo.CreateAsync(user.Id, refreshHash, expiresAt);
 
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = expiresAt
+        };
+        httpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
         var tokens = new AuthTokensDto
         {
             AccessToken = accessToken,
             ExpiresIn = settings.AccessTokenMinutes * 60,
-            RefreshToken = refreshToken
         };
 
         return Results.Ok(ResponseMessage.Create(tokens, "Успешная регистрация",
@@ -74,6 +84,7 @@ public class AuthHandler : IAuthHandler
     }
 
     public static async Task<IResult> AuthUser(
+        HttpContext httpContext,
         IUserRepository userRepository,
         IValidator<UserAuthDto> validator,
         IMapper mapper,
@@ -94,22 +105,72 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль",
                 HttpStatusCode.BadRequest));
 
-        // Generate JWT pair
         var accessToken = tokenService.GenerateAccessToken(user.Id, "Admin");
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
         await refreshRepo.CreateAsync(user.Id, refreshHash, expiresAt);
 
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = expiresAt
+        };
+        httpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
         var tokens = new AuthTokensDto
         {
             AccessToken = accessToken,
             ExpiresIn = settings.AccessTokenMinutes * 60,
-            RefreshToken = refreshToken
         };
 
         return Results.Ok(ResponseMessage.Create(tokens, "Успешная авторизация",
             HttpStatusCode.OK));
+    }
+
+    public static async Task<IResult> RefreshTokens(
+        HttpContext httpContext,
+        AccessTokenService tokenService,
+        IRefreshTokenRepository refreshRepo,
+        Gml.Web.Api.Core.Options.ServerSettings settings)
+    {
+        var refreshToken = httpContext.Request.Cookies["refreshToken"];
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            return Results.Unauthorized();
+
+        var hash = tokenService.HashRefreshToken(refreshToken);
+        var stored = await refreshRepo.FindActiveByHashAsync(hash);
+        if (stored is null)
+            return Results.Unauthorized();
+
+        // Revoke old token (rotation)
+        await refreshRepo.RevokeAsync(stored.UserId, stored.TokenHash);
+
+        // Issue new pair
+        var newAccess = tokenService.GenerateAccessToken(stored.UserId, "Admin");
+        var newRefresh = tokenService.GenerateRefreshToken();
+        var newHash = tokenService.HashRefreshToken(newRefresh);
+        var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
+        await refreshRepo.CreateAsync(stored.UserId, newHash, expiresAt);
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = expiresAt
+        };
+        httpContext.Response.Cookies.Append("refreshToken", newRefresh, cookieOptions);
+
+        var tokens = new AuthTokensDto
+        {
+            AccessToken = newAccess,
+            ExpiresIn = settings.AccessTokenMinutes * 60
+        };
+
+        return Results.Ok(ResponseMessage.Create(tokens, "Токены обновлены", HttpStatusCode.OK));
     }
 
     public static Task<IResult> UpdateUser(IUserRepository userRepository, UserUpdateDto userUpdateDto)

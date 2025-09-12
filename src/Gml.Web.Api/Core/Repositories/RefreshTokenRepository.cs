@@ -38,6 +38,13 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             .FirstOrDefaultAsync();
     }
 
+    public Task<RefreshToken?> FindActiveByHashAsync(string tokenHash)
+    {
+        return _db.RefreshTokens
+            .Where(x => x.TokenHash == tokenHash && x.RevokedAtUtc == null && x.ExpiresAtUtc > DateTime.UtcNow)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task RevokeAsync(int userId, string tokenHash)
     {
         var token = await _db.RefreshTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.TokenHash == tokenHash);
