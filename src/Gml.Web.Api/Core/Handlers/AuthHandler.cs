@@ -43,7 +43,7 @@ public class AuthHandler : IAuthHandler
         var user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
 
         // Generate JWT pair
-        var accessToken = tokenService.GenerateAccessToken(user.Id);
+        var accessToken = tokenService.GenerateAccessToken(user.Id, "Admin");
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
@@ -95,7 +95,7 @@ public class AuthHandler : IAuthHandler
                 HttpStatusCode.BadRequest));
 
         // Generate JWT pair
-        var accessToken = tokenService.GenerateAccessToken(user.Id);
+        var accessToken = tokenService.GenerateAccessToken(user.Id, "Admin");
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
