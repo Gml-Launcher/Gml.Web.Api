@@ -16,6 +16,8 @@ using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces.Notifications;
 using GmlCore.Interfaces.User;
+using Gml.Web.Api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -629,7 +631,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<List<ProfileReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Player", "Admin"));
+            .RequireAuthorization("perm:profiles.view");
 
         app.MapGet("/api/v1/profiles/versions/{gameLoader}/{minecraftVersion}", ProfileHandler.GetMinecraftVersions)
             .WithOpenApi(generatedOperation =>
@@ -642,7 +644,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage<List<string>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.view");
 
         app.MapPost("/api/v1/profiles", ProfileHandler.CreateProfile)
             .WithOpenApi(generatedOperation =>
@@ -656,7 +658,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<ProfileReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.create");
 
         app.MapPut("/api/v1/profiles", ProfileHandler.UpdateProfile)
             .WithOpenApi(generatedOperation =>
@@ -670,7 +672,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<ProfileReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.update");
 
         app.MapPost("/api/v1/profiles/restore", ProfileHandler.RestoreProfile)
             .WithOpenApi(generatedOperation =>
@@ -683,7 +685,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.update");
 
         app.MapDelete("/api/v1/profiles/{profileNames}", ProfileHandler.RemoveProfile)
             .WithOpenApi(generatedOperation =>
@@ -696,7 +698,7 @@ public static class EndpointsExtensions
             .WithTags("Profiles")
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization(c => c.RequireRole("Admin"));
+            .RequireAuthorization("perm:profiles.delete");
 
         app.MapPost("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.AddPlayerToWhiteList)
             .WithOpenApi(generatedOperation =>
@@ -1192,6 +1194,178 @@ public static class EndpointsExtensions
             .WithTags("Notifications")
             .Produces<ResponseMessage>()
             .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        #endregion
+
+        #region RBAC
+
+        // Roles CRUD
+        app.MapGet("/api/v1/roles", async (DatabaseContext db) =>
+            Results.Ok(ResponseMessage.Create(await db.Roles.AsNoTracking().Select(r => new RoleDto
+            {
+                Id = r.Id,
+                Name = r.Name,
+                Description = r.Description
+            }).ToListAsync(), "Список ролей", HttpStatusCode.OK)))
+            .WithOpenApi(o => { o.Summary = "Список ролей"; return o; })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapPost("/api/v1/roles", async (DatabaseContext db, RoleDto dto) =>
+        {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                return Results.BadRequest(ResponseMessage.Create("Название роли обязательно", HttpStatusCode.BadRequest));
+            var exists = await db.Roles.AnyAsync(r => r.Name == dto.Name);
+            if (exists)
+                return Results.BadRequest(ResponseMessage.Create("Роль уже существует", HttpStatusCode.BadRequest));
+            var role = new Gml.Web.Api.Domains.Auth.Role { Name = dto.Name, Description = dto.Description };
+            db.Roles.Add(role);
+            await db.SaveChangesAsync();
+            dto.Id = role.Id;
+            return Results.Ok(ResponseMessage.Create(dto, "Роль создана", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Создать роль"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapPut("/api/v1/roles/{id:int}", async (DatabaseContext db, int id, RoleDto dto) =>
+        {
+            var role = await db.Roles.FirstOrDefaultAsync(r => r.Id == id);
+            if (role == null)
+                return Results.NotFound(ResponseMessage.Create("Роль не найдена", HttpStatusCode.NotFound));
+            role.Name = dto.Name;
+            role.Description = dto.Description;
+            await db.SaveChangesAsync();
+            dto.Id = id;
+            return Results.Ok(ResponseMessage.Create(dto, "Роль обновлена", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Обновить роль"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/roles/{id:int}", async (DatabaseContext db, int id) =>
+        {
+            var role = await db.Roles.FirstOrDefaultAsync(r => r.Id == id);
+            if (role == null)
+                return Results.NotFound(ResponseMessage.Create("Роль не найдена", HttpStatusCode.NotFound));
+            db.Roles.Remove(role);
+            await db.SaveChangesAsync();
+            return Results.Ok(ResponseMessage.Create("Роль удалена", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Удалить роль"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        // Permissions CRUD
+        app.MapGet("/api/v1/permissions", async (DatabaseContext db) =>
+            Results.Ok(ResponseMessage.Create(await db.Permissions.AsNoTracking().Select(p => new PermissionDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description
+            }).ToListAsync(), "Список прав", HttpStatusCode.OK)))
+            .WithOpenApi(o => { o.Summary = "Список прав"; return o; })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapPost("/api/v1/permissions", async (DatabaseContext db, PermissionDto dto) =>
+        {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                return Results.BadRequest(ResponseMessage.Create("Название права обязательно", HttpStatusCode.BadRequest));
+            var exists = await db.Permissions.AnyAsync(p => p.Name == dto.Name);
+            if (exists)
+                return Results.BadRequest(ResponseMessage.Create("Право уже существует", HttpStatusCode.BadRequest));
+            var perm = new Gml.Web.Api.Domains.Auth.Permission { Name = dto.Name, Description = dto.Description };
+            db.Permissions.Add(perm);
+            await db.SaveChangesAsync();
+            dto.Id = perm.Id;
+            return Results.Ok(ResponseMessage.Create(dto, "Право создано", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Создать право"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapPut("/api/v1/permissions/{id:int}", async (DatabaseContext db, int id, PermissionDto dto) =>
+        {
+            var perm = await db.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+            if (perm == null)
+                return Results.NotFound(ResponseMessage.Create("Право не найдено", HttpStatusCode.NotFound));
+            perm.Name = dto.Name;
+            perm.Description = dto.Description;
+            await db.SaveChangesAsync();
+            dto.Id = id;
+            return Results.Ok(ResponseMessage.Create(dto, "Право обновлено", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Обновить право"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/permissions/{id:int}", async (DatabaseContext db, int id) =>
+        {
+            var perm = await db.Permissions.FirstOrDefaultAsync(p => p.Id == id);
+            if (perm == null)
+                return Results.NotFound(ResponseMessage.Create("Право не найдено", HttpStatusCode.NotFound));
+            db.Permissions.Remove(perm);
+            await db.SaveChangesAsync();
+            return Results.Ok(ResponseMessage.Create("Право удалено", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Удалить право"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        // Assign/Unassign permissions to role
+        app.MapPost("/api/v1/roles/{roleId:int}/permissions/{permId:int}", async (DatabaseContext db, int roleId, int permId) =>
+        {
+            var exists = await db.RolePermissions.AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permId);
+            if (exists)
+                return Results.Ok(ResponseMessage.Create("Право уже назначено на роль", HttpStatusCode.OK));
+            db.RolePermissions.Add(new Gml.Web.Api.Domains.Auth.RolePermission { RoleId = roleId, PermissionId = permId });
+            await db.SaveChangesAsync();
+            return Results.Ok(ResponseMessage.Create("Право назначено на роль", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Назначить право роли"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/roles/{roleId:int}/permissions/{permId:int}", async (DatabaseContext db, int roleId, int permId) =>
+        {
+            var link = await db.RolePermissions.FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.PermissionId == permId);
+            if (link == null)
+                return Results.NotFound(ResponseMessage.Create("Связка роль-право не найдена", HttpStatusCode.NotFound));
+            db.RolePermissions.Remove(link);
+            await db.SaveChangesAsync();
+            return Results.Ok(ResponseMessage.Create("Право снято с роли", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Снять право с роли"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        // Assign/Unassign role to user
+        app.MapPost("/api/v1/users/{userId:int}/roles/{roleId:int}", async (DatabaseContext db, int userId, int roleId) =>
+        {
+            var exists = await db.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
+            if (exists)
+                return Results.Ok(ResponseMessage.Create("Роль уже назначена пользователю", HttpStatusCode.OK));
+            db.UserRoles.Add(new Gml.Web.Api.Domains.Auth.UserRole { UserId = userId, RoleId = roleId });
+            await db.SaveChangesAsync();
+            return Results.Ok(ResponseMessage.Create("Роль назначена пользователю", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Назначить роль пользователю"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/users/{userId:int}/roles/{roleId:int}", async (DatabaseContext db, int userId, int roleId) =>
+        {
+            var link = await db.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
+            if (link == null)
+                return Results.NotFound(ResponseMessage.Create("Связка пользователь-роль не найдена", HttpStatusCode.NotFound));
+            db.UserRoles.Remove(link);
+            await db.SaveChangesAsync();
+            return Results.Ok(ResponseMessage.Create("Роль снята с пользователя", HttpStatusCode.OK));
+        })
+        .WithOpenApi(o => { o.Summary = "Снять роль с пользователя"; return o; })
+        .WithTags("RBAC")
+        .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 

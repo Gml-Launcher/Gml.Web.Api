@@ -17,6 +17,7 @@ using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Minio;
@@ -202,6 +203,8 @@ public static class ApplicationExtensions
             .RegisterCors(settings.PolicyName)
             .AddSignalR();
 
+        builder.Services.AddAuthorization();
+
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -225,6 +228,10 @@ public static class ApplicationExtensions
                 }
             };
         });
+
+        // RBAC dynamic permission policies and handler
+        builder.Services.AddSingleton<IAuthorizationPolicyProvider, Gml.Web.Api.Core.Authorization.DynamicPermissionPolicyProvider>();
+        builder.Services.AddSingleton<IAuthorizationHandler, Gml.Web.Api.Core.Authorization.PermissionAuthorizationHandler>();
 
         return builder;
     }

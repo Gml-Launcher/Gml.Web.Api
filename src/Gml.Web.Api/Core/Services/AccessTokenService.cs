@@ -23,6 +23,12 @@ public class AccessTokenService
         => GenerateAccessToken(userId.ToString(), role);
 
     public string GenerateAccessToken(string subject, string? role = null)
+        => GenerateAccessToken(subject, role is null ? Array.Empty<string>() : new[] { role }, Array.Empty<string>());
+
+    public string GenerateAccessToken(int userId, IEnumerable<string> roles, IEnumerable<string> permissions)
+        => GenerateAccessToken(userId.ToString(), roles, permissions);
+
+    public string GenerateAccessToken(string subject, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
         var now = DateTime.UtcNow;
         var claims = new List<Claim>
@@ -30,9 +36,23 @@ public class AccessTokenService
             new("sub", subject),
             new(ClaimTypes.NameIdentifier, subject)
         };
-        if (!string.IsNullOrWhiteSpace(role))
+
+        if (roles != null)
         {
-            claims.Add(new Claim(ClaimTypes.Role, role));
+            foreach (var r in roles)
+            {
+                if (!string.IsNullOrWhiteSpace(r))
+                    claims.Add(new Claim(ClaimTypes.Role, r));
+            }
+        }
+
+        if (permissions != null)
+        {
+            foreach (var p in permissions)
+            {
+                if (!string.IsNullOrWhiteSpace(p))
+                    claims.Add(new Claim("perm", p));
+            }
         }
 
         var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);

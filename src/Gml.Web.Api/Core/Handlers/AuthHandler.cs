@@ -10,6 +10,7 @@ using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -24,7 +25,8 @@ public class AuthHandler : IAuthHandler
         ApplicationContext appContext,
         AccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
-        Gml.Web.Api.Core.Options.ServerSettings settings)
+        Gml.Web.Api.Core.Options.ServerSettings settings,
+        DatabaseContext db)
     {
         if (appContext.Settings.RegistrationIsEnabled == false)
             return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
@@ -44,8 +46,32 @@ public class AuthHandler : IAuthHandler
 
         var user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
 
+        // Ensure Admin role exists and assign to new user
+        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        if (adminRole == null)
+        {
+            adminRole = new Gml.Web.Api.Domains.Auth.Role { Name = "Admin", Description = "System administrator" };
+            db.Roles.Add(adminRole);
+            await db.SaveChangesAsync();
+        }
+        // Link user to Admin if not already
+        var hasLink = await db.UserRoles.AnyAsync(x => x.UserId == user.Id && x.RoleId == adminRole.Id);
+        if (!hasLink)
+        {
+            db.UserRoles.Add(new Gml.Web.Api.Domains.Auth.UserRole { UserId = user.Id, RoleId = adminRole.Id });
+            await db.SaveChangesAsync();
+        }
+
+        // Load roles and permissions
+        var roles = await db.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToListAsync();
+        var permissions = await db.RolePermissions
+            .Where(rp => db.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).Contains(rp.RoleId))
+            .Select(rp => rp.Permission.Name)
+            .Distinct()
+            .ToListAsync();
+
         // Generate JWT pair
-        var accessToken = tokenService.GenerateAccessToken(user.Id, "Admin");
+        var accessToken = tokenService.GenerateAccessToken(user.Id, roles, permissions);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
@@ -91,7 +117,8 @@ public class AuthHandler : IAuthHandler
         UserAuthDto authDto,
         AccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
-        Gml.Web.Api.Core.Options.ServerSettings settings)
+        Gml.Web.Api.Core.Options.ServerSettings settings,
+        DatabaseContext db)
     {
         var result = await validator.ValidateAsync(authDto);
 
@@ -105,7 +132,14 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create("Неверный логин или пароль",
                 HttpStatusCode.BadRequest));
 
-        var accessToken = tokenService.GenerateAccessToken(user.Id, "Admin");
+        // Compute roles/perms for JWT
+        var rolesSignin = await db.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToListAsync();
+        var permsSignin = await db.RolePermissions
+            .Where(rp => db.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).Contains(rp.RoleId))
+            .Select(rp => rp.Permission.Name)
+            .Distinct()
+            .ToListAsync();
+        var accessToken = tokenService.GenerateAccessToken(user.Id, rolesSignin, permsSignin);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
@@ -134,7 +168,8 @@ public class AuthHandler : IAuthHandler
         HttpContext httpContext,
         AccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
-        Gml.Web.Api.Core.Options.ServerSettings settings)
+        Gml.Web.Api.Core.Options.ServerSettings settings,
+        DatabaseContext db)
     {
         var refreshToken = httpContext.Request.Cookies["refreshToken"];
         if (string.IsNullOrWhiteSpace(refreshToken))
@@ -149,7 +184,13 @@ public class AuthHandler : IAuthHandler
         await refreshRepo.RevokeAsync(stored.UserId, stored.TokenHash);
 
         // Issue new pair
-        var newAccess = tokenService.GenerateAccessToken(stored.UserId, "Admin");
+        var rolesRefresh = await db.UserRoles.Where(ur => ur.UserId == stored.UserId).Select(ur => ur.Role.Name).ToListAsync();
+        var permsRefresh = await db.RolePermissions
+            .Where(rp => db.UserRoles.Where(ur => ur.UserId == stored.UserId).Select(ur => ur.RoleId).Contains(rp.RoleId))
+            .Select(rp => rp.Permission.Name)
+            .Distinct()
+            .ToListAsync();
+        var newAccess = tokenService.GenerateAccessToken(stored.UserId, rolesRefresh, permsRefresh);
         var newRefresh = tokenService.GenerateRefreshToken();
         var newHash = tokenService.HashRefreshToken(newRefresh);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);

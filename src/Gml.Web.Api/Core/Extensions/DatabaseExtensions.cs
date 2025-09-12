@@ -63,6 +63,61 @@ public static class DatabaseExtensions
             dataBaseSettings.CurseForgeKey,
             dataBaseSettings.VkKey
         );
+
+        // Seed base RBAC: Admin role with essential profile permissions
+        try
+        {
+            // Ensure Admin role exists
+            var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
+            if (adminRole == null)
+            {
+                adminRole = context.Roles.Add(new Gml.Web.Api.Domains.Auth.Role
+                {
+                    Name = "Admin",
+                    Description = "System administrator"
+                }).Entity;
+                context.SaveChanges();
+            }
+
+            // Ensure permissions exist
+            var basePerms = new[] { "profiles.view", "profiles.update", "profiles.delete" };
+            var existingPerms = context.Permissions.Where(p => basePerms.Contains(p.Name)).ToList();
+            var existingNames = existingPerms.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var permName in basePerms)
+            {
+                if (!existingNames.Contains(permName))
+                {
+                    context.Permissions.Add(new Gml.Web.Api.Domains.Auth.Permission
+                    {
+                        Name = permName,
+                        Description = ""
+                    });
+                }
+            }
+            if (context.ChangeTracker.HasChanges())
+                context.SaveChanges();
+
+            // Ensure Admin has these permissions
+            var permsForLink = context.Permissions.Where(p => basePerms.Contains(p.Name)).Select(p => p.Id).ToList();
+            foreach (var permId in permsForLink)
+            {
+                var linkExists = context.RolePermissions.Any(rp => rp.RoleId == adminRole.Id && rp.PermissionId == permId);
+                if (!linkExists)
+                {
+                    context.RolePermissions.Add(new Gml.Web.Api.Domains.Auth.RolePermission
+                    {
+                        RoleId = adminRole.Id,
+                        PermissionId = permId
+                    });
+                }
+            }
+            if (context.ChangeTracker.HasChanges())
+                context.SaveChanges();
+        }
+        catch
+        {
+            // ignore seeding errors to not block application startup
+        }
     }
 
     private static void RestoreStorage(IGmlManager gmlManager, Settings settings)
