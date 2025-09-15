@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Services;
@@ -28,7 +29,7 @@ public class AuthHandler : IAuthHandler
         Gml.Web.Api.Core.Options.ServerSettings settings,
         DatabaseContext db)
     {
-        if (appContext.Settings.RegistrationIsEnabled == false)
+        if (appContext.Settings.RegistrationIsEnabled == false && !httpContext.User.IsInRole("Admin"))
             return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
                 HttpStatusCode.BadRequest));
 
@@ -250,5 +251,37 @@ public class AuthHandler : IAuthHandler
     public static Task<IResult> UpdateUser(IUserRepository userRepository, UserUpdateDto userUpdateDto)
     {
         throw new NotImplementedException();
+    }
+
+    public static async Task<IResult> DeleteUser(HttpContext httpContext, DatabaseContext db, IRefreshTokenRepository refreshRepo, int userId)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+            return Results.NotFound(ResponseMessage.Create("Пользователь не найден", HttpStatusCode.NotFound));
+
+        // Check if user has Admin role
+        var hasAdminRole = await db.UserRoles
+            .Include(ur => ur.Role)
+            .AnyAsync(ur => ur.UserId == userId && ur.Role.Name == "Admin");
+
+        var currentUserId = int.Parse(httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        if (currentUserId == userId)
+            return Results.BadRequest(ResponseMessage.Create("Вы не можете удалить свою учетную запись", HttpStatusCode.BadRequest));
+
+        if (hasAdminRole)
+            return Results.BadRequest(ResponseMessage.Create("Нельзя удалять пользователя с ролью Admin", HttpStatusCode.BadRequest));
+
+        // Revoke all refresh tokens
+        await refreshRepo.RevokeAllAsync(user.Id);
+
+        // Remove role links
+        var links = db.UserRoles.Where(ur => ur.UserId == user.Id);
+        db.UserRoles.RemoveRange(links);
+
+        // Finally remove user
+        db.Users.Remove(user);
+        await db.SaveChangesAsync();
+
+        return Results.Ok(ResponseMessage.Create("Пользователь удален", HttpStatusCode.OK));
     }
 }

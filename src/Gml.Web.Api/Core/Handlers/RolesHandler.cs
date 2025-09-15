@@ -208,10 +208,10 @@ public static class RolesHandler
 
     public static async Task<IResult> UnassignRoleFromUser(Gml.Web.Api.Domains.Repositories.IRbacRepository repo, int userId, int roleId)
     {
-        // Prevent removing Admin role from any user
-        var role = await repo.GetRoleByIdAsync(roleId);
-        if (role != null && string.Equals(role.Name, "Admin", StringComparison.OrdinalIgnoreCase))
-            return Results.BadRequest(ResponseMessage.Create("Нельзя снять роль Администратора", HttpStatusCode.BadRequest));
+        // // Prevent removing Admin role from any user
+        // var role = await repo.GetRoleByIdAsync(roleId);
+        // if (role != null && string.Equals(role.Name, "Admin", StringComparison.OrdinalIgnoreCase))
+        //     return Results.BadRequest(ResponseMessage.Create("Нельзя снять роль Администратора", HttpStatusCode.BadRequest));
 
         var ok = await repo.RemoveRoleFromUserAsync(userId, roleId);
         if (!ok)

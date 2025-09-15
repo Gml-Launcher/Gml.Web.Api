@@ -43,7 +43,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage<IEnumerable<LauncherVersionReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:launcher.manage");
+            .RequireAuthorization("perm:launcher.view");
 
         app.MapPost("/api/v1/integrations/github/launcher/download", GitHubIntegrationHandler.DownloadLauncher)
             .WithOpenApi(generatedOperation =>
@@ -55,7 +55,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage<string>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:launcher.manage");
+            .RequireAuthorization("perm:launcher.create");
 
         app.MapGet("/api/v1/integrations/github/launcher/download/{version}",
                 GitHubIntegrationHandler.ReturnLauncherSolution)
@@ -67,7 +67,7 @@ public static class EndpointsExtensions
             .WithName("Download launcher solution")
             .WithTags("Integration/GitHub/Launcher")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:launcher.manage");
+            .RequireAuthorization("perm:launcher.view");
 
         #endregion
 
@@ -76,7 +76,7 @@ public static class EndpointsExtensions
         app.MapHub<ProfileHub>("/ws/profiles/restore")
             .RequireAuthorization("perm:profiles.update");
         app.MapHub<GitHubLauncherHub>("/ws/launcher/build")
-            .RequireAuthorization("perm:launcher.manage");
+            .RequireAuthorization("perm:launcher.update");
         app.MapHub<GameServerHub>("/ws/gameServer")
             .RequireAuthorization("perm:servers.manage");
         app.MapHub<LauncherHub>("/ws/launcher").RequireAuthorization();
@@ -133,6 +133,19 @@ public static class EndpointsExtensions
             .WithTags("Users")
             .Produces<ResponseMessage<UserAuthReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapDelete("/api/v1/users/{userId:int}", AuthHandler.DeleteUser)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Удаление пользователя";
+                return generatedOperation;
+            })
+            .WithDescription("Удаление пользователя (нельзя удалять пользователей с ролью Admin)")
+            .WithName("Delete user")
+            .WithTags("Users")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 
@@ -301,7 +314,8 @@ public static class EndpointsExtensions
             .WithDescription("Получение ссылки на сервис со скинами")
             .WithName("Get skin texture url")
             .WithTags("Integration/Textures")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization("perm:integrations.textures.view");
 
         app.MapPut("/api/v1/integrations/texture/skins", TextureIntegrationHandler.SetSkinUrl)
             .WithOpenApi(generatedOperation =>
@@ -357,7 +371,8 @@ public static class EndpointsExtensions
             .WithDescription("Получение ссылки на сервис с плащами")
             .WithName("Get cloak texture url")
             .WithTags("Integration/Textures")
-            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization("perm:integrations.textures.view");
 
         app.MapPut("/api/v1/integrations/texture/cloaks", TextureIntegrationHandler.SetCloakUrl)
             .WithOpenApi(generatedOperation =>
@@ -506,7 +521,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:integrations.auth.manage");
+            .RequireAuthorization("perm:integrations.auth.update");
 
         app.MapGet("/api/v1/integrations/auth", AuthIntegrationHandler.GetIntegrationServices)
             .WithOpenApi(generatedOperation =>
@@ -519,7 +534,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<List<AuthServiceReadDto>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:integrations.auth.manage");
+            .RequireAuthorization("perm:integrations.auth.view");
 
         app.MapGet("/api/v1/integrations/auth/active", AuthIntegrationHandler.GetAuthService)
             .WithOpenApi(generatedOperation =>
@@ -531,7 +546,7 @@ public static class EndpointsExtensions
             .WithName("Get active auth service")
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
-            .RequireAuthorization("perm:integrations.auth.manage");
+            .RequireAuthorization("perm:integrations.auth.view");
 
         app.MapDelete("/api/v1/integrations/auth/active", AuthIntegrationHandler.RemoveAuthService)
             .WithOpenApi(generatedOperation =>
@@ -544,7 +559,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/Auth")
             .Produces<ResponseMessage<AuthServiceReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:integrations.auth.manage");
+            .RequireAuthorization("perm:integrations.auth.delete");
 
         #endregion
 
@@ -887,7 +902,7 @@ public static class EndpointsExtensions
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:players.manage");
+            .RequireAuthorization("perm:players.view");
 
         app.MapPost("/api/v1/players/remove", PlayersHandler.RemovePlayer)
             .WithOpenApi(generatedOperation =>
@@ -899,7 +914,7 @@ public static class EndpointsExtensions
             .WithName("Remove players")
             .WithTags("Players")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:players.manage");
+            .RequireAuthorization("perm:players.delete");
 
         app.MapPost("/api/v1/players/ban", PlayersHandler.BanPlayer)
             .WithOpenApi(generatedOperation =>
@@ -912,7 +927,7 @@ public static class EndpointsExtensions
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:players.manage");
+            .RequireAuthorization("perm:players.ban");
 
         app.MapPost("/api/v1/players/pardon", PlayersHandler.PardonPlayer)
             .WithOpenApi(generatedOperation =>
@@ -925,7 +940,7 @@ public static class EndpointsExtensions
             .WithTags("Players")
             .Produces<ResponseMessage<List<IUser>>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:players.manage");
+            .RequireAuthorization("perm:players.pardon");
 
         #endregion
 
