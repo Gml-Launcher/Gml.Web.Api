@@ -32,6 +32,20 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
                 HttpStatusCode.BadRequest));
 
+        var adminRoleEntity = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        var hasAdmins = adminRoleEntity != null && await db.UserRoles.AnyAsync(ur => ur.RoleId == adminRoleEntity.Id);
+
+        if (hasAdmins)
+        {
+            var userPrincipal = httpContext.User;
+            var isAuthenticated = userPrincipal?.Identity?.IsAuthenticated == true;
+            var isAdmin = userPrincipal?.IsInRole("Admin") == true;
+            if (!isAuthenticated || !isAdmin)
+            {
+                return Results.Forbid();
+            }
+        }
+
         var result = await validator.ValidateAsync(createDto);
 
         if (!result.IsValid)
@@ -44,21 +58,40 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create("Пользователь с указанными данными уже существует",
                 HttpStatusCode.BadRequest));
 
+        // Decide the role to assign
+        string targetRoleName;
+        if (!hasAdmins)
+        {
+            // Bootstrap: ensure Admin role exists and use it regardless of the requested role
+            if (adminRoleEntity == null)
+            {
+                adminRoleEntity = new Gml.Web.Api.Domains.Auth.Role { Name = "Admin", Description = "System administrator" };
+                db.Roles.Add(adminRoleEntity);
+                await db.SaveChangesAsync();
+            }
+            targetRoleName = "Admin";
+        }
+        else
+        {
+            var requestedRole = httpContext.Request.Query.TryGetValue("role", out var roleVals) ? roleVals.ToString() : null;
+            targetRoleName = string.IsNullOrWhiteSpace(requestedRole) ? "Admin" : requestedRole.Trim();
+        }
+
+        // Fetch target role (only create Admin implicitly during bootstrap)
+        var targetRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == targetRoleName);
+        if (targetRole == null)
+        {
+            return Results.BadRequest(ResponseMessage.Create($"Роль '{targetRoleName}' не найдена", HttpStatusCode.BadRequest));
+        }
+
+        // Create user
         var user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
 
-        // Ensure Admin role exists and assign to new user
-        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
-        if (adminRole == null)
-        {
-            adminRole = new Gml.Web.Api.Domains.Auth.Role { Name = "Admin", Description = "System administrator" };
-            db.Roles.Add(adminRole);
-            await db.SaveChangesAsync();
-        }
-        // Link user to Admin if not already
-        var hasLink = await db.UserRoles.AnyAsync(x => x.UserId == user.Id && x.RoleId == adminRole.Id);
+        // Link user to target role
+        var hasLink = await db.UserRoles.AnyAsync(x => x.UserId == user.Id && x.RoleId == targetRole.Id);
         if (!hasLink)
         {
-            db.UserRoles.Add(new Gml.Web.Api.Domains.Auth.UserRole { UserId = user.Id, RoleId = adminRole.Id });
+            db.UserRoles.Add(new Gml.Web.Api.Domains.Auth.UserRole { UserId = user.Id, RoleId = targetRole.Id });
             await db.SaveChangesAsync();
         }
 
@@ -70,7 +103,7 @@ public class AuthHandler : IAuthHandler
             .Distinct()
             .ToListAsync();
 
-        // Generate JWT pair
+        // Generate JWT pair for the newly created user
         var accessToken = tokenService.GenerateAccessToken(user.Id, roles, permissions);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);

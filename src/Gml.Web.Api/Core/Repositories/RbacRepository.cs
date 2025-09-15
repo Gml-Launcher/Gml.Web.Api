@@ -125,6 +125,10 @@ public class RbacRepository : IRbacRepository
     {
         var perm = await _db.Permissions.FirstOrDefaultAsync(p => p.Id == id);
         if (perm == null) return null;
+        if (perm.IsSystem)
+        {
+            return null;
+        }
         perm.Name = name;
         perm.Description = description;
         await _db.SaveChangesAsync();
@@ -135,6 +139,10 @@ public class RbacRepository : IRbacRepository
     {
         var perm = await _db.Permissions.FirstOrDefaultAsync(p => p.Id == id);
         if (perm == null) return false;
+        if (perm.IsSystem)
+        {
+            return false;
+        }
         _db.Permissions.Remove(perm);
         await _db.SaveChangesAsync();
         return true;

@@ -137,6 +137,14 @@ public static class RolesHandler
 
     public static async Task<IResult> UpdatePermission(Gml.Web.Api.Domains.Repositories.IRbacRepository repo, int id, PermissionDto dto)
     {
+        var existing = await repo.GetPermissionByIdAsync(id);
+        if (existing == null)
+            return Results.NotFound(ResponseMessage.Create("Право не найдено", HttpStatusCode.NotFound));
+
+        var isSystem = await repo.IsSystemPermissionAsync(id);
+        if (isSystem)
+            return Results.BadRequest(ResponseMessage.Create("Нельзя изменять системные права", HttpStatusCode.BadRequest));
+
         var perm = await repo.UpdatePermissionAsync(id, dto.Name, dto.Description);
         if (perm == null)
             return Results.NotFound(ResponseMessage.Create("Право не найдено", HttpStatusCode.NotFound));
