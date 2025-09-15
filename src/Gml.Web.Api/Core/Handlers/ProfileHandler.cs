@@ -57,7 +57,7 @@ public class ProfileHandler : IProfileHandler
                     c is { IsEnabled: true, UserWhiteListGuid.Count: 0 } ||
                     c.UserWhiteListGuid.Any(g => g.Equals(user.Uuid)));
 
-        }else if (context.User.IsInRole("Admin"))
+        }else
         {
             profiles = await gmlManager.Profiles.GetProfiles();
         }
