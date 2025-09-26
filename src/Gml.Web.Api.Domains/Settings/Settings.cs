@@ -13,4 +13,5 @@ public class Settings
     public StorageType StorageType { get; set; }
     public TextureProtocol TextureProtocol { get; set; }
     public bool RegistrationIsEnabled { get; set; }
+    public bool IsInstalled { get; set; }
 }
