@@ -1019,7 +1019,9 @@ public static class EndpointsExtensions
             .WithName("Install settings")
             .WithTags("Settings")
             .Produces<ResponseMessage<SettingsReadDto>>()
-            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .AllowAnonymous()
+            .WithMetadata(new Microsoft.AspNetCore.Cors.DisableCorsAttribute());
 
         app.MapGet("/api/v1/settings/platform", SettingsHandler.GetSettings)
             .WithOpenApi(generatedOperation =>

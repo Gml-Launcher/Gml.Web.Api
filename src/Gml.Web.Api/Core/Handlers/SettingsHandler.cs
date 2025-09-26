@@ -1,12 +1,20 @@
 using System.Net;
 using AutoMapper;
+using CommunityToolkit.HighPerformance.Helpers;
 using FluentValidation;
+using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Repositories;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Core.Validation;
+using Gml.Web.Api.Data;
+using Gml.Web.Api.Domains.Repositories;
 using Gml.Web.Api.Domains.Settings;
+using Gml.Web.Api.Dto.Auth;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Settings;
+using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -39,35 +47,64 @@ public abstract class SettingsHandler : ISettingsHandler
     }
 
     public static async Task<IResult> Install(
+        HttpContext context,
         IGmlManager gmlManager,
         ISettingsRepository settingsService,
+        IUserRepository userRepository,
         IMapper mapper,
         IValidator<SettingsInstallRecord> validator,
+        HttpContext httpContext,
+        IValidator<UserCreateDto> userValidator,
+        ApplicationContext appContext,
+        AccessTokenService tokenService,
+        IRefreshTokenRepository refreshRepo,
+        DatabaseContext db,
+        ServerSettings serverSettings,
         [FromBody] SettingsInstallRecord dto)
     {
         var settings = await settingsService.GetSettings();
 
-        if (settings is not null && settings.IsInstalled)
+        if (settings is null || settings.IsInstalled)
         {
             return Results.Forbid();
         }
 
-        var result = await validator.ValidateAsync(dto);
+        var validationResult = await validator.ValidateAsync(dto);
 
-        if (!result.IsValid)
-            return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+        if (!validationResult.IsValid)
+            return Results.BadRequest(ResponseMessage.Create(validationResult.Errors, "Ошибка валидации",
                 HttpStatusCode.BadRequest));
 
-        return Results.Ok(ResponseMessage.Create(
-            mapper.Map<SettingsReadDto>(settings),
-            "Настройки получены",
-            HttpStatusCode.OK));
+        var result = await AuthHandler.CreateUser(httpContext, userRepository, userValidator, mapper, new UserCreateDto
+        {
+            Email = dto.AdminEmail,
+            Login = dto.AdminUsername,
+            Password = dto.AdminPassword
+        }, appContext, tokenService, refreshRepo, serverSettings, db);
+
+        switch (result)
+        {
+            case BadRequest<object>:
+                return result;
+            case Ok<ResponseMessage<AuthTokensDto>>:
+                settings.IsInstalled = true;
+                settings.ProjectName = dto.ProjectName;
+
+                await settingsService.UpdateSettings(settings);
+
+                return result;
+            default:
+                return result;
+        }
+
+        return Results.BadRequest();
     }
 
     public record SettingsInstallRecord(
         string ProjectName,
         string BackendAddress,
         string AdminUsername,
+        string AdminEmail,
         string AdminPassword,
         string ConfirmPassword);
 }

@@ -125,6 +125,9 @@ namespace Gml.Web.Api.Migrations
                     b.Property<bool>("IsInstalled")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ProjectName")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("RegistrationIsEnabled")
                         .HasColumnType("INTEGER");
 

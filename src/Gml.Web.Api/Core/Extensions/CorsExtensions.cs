@@ -7,7 +7,7 @@ public static class CorsExtensions
         serviceCollection
             .AddCors(o => o.AddPolicy(policyName, policyBuilder =>
             {
-                policyBuilder.WithOrigins("http://localhost:3000")
+                policyBuilder.WithOrigins("http://localhost:3001")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
