@@ -100,6 +100,19 @@ public abstract class SettingsHandler : ISettingsHandler
         return Results.BadRequest();
     }
 
+    public static async Task<IResult> IsNotInstalled(
+        ISettingsRepository settingsService)
+    {
+        var settings = await settingsService.GetSettings();
+
+        if (settings is null || settings.IsInstalled)
+        {
+            return Results.Forbid();
+        }
+
+        return Results.Ok();
+    }
+
     public record SettingsInstallRecord(
         string ProjectName,
         string BackendAddress,

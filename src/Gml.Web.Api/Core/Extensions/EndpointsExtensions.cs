@@ -1023,6 +1023,17 @@ public static class EndpointsExtensions
             .AllowAnonymous()
             .WithMetadata(new Microsoft.AspNetCore.Cors.DisableCorsAttribute());
 
+        app.MapGet("/api/v1/settings/checkInstalled", SettingsHandler.IsNotInstalled)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Проверка установленности платформы";
+                return generatedOperation;
+            })
+            .WithDescription("Проверка установленности платформы")
+            .WithName("Check installed")
+            .WithTags("Settings")
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
         app.MapGet("/api/v1/settings/platform", SettingsHandler.GetSettings)
             .WithOpenApi(generatedOperation =>
             {
