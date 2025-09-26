@@ -451,6 +451,7 @@ public class Tests
 
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
             $"Gml.Launcher-Client-GmlClientManager/1.0 (OS: {Environment.OSVersion};)");
+        _httpClient.DefaultRequestHeaders.Add("X-HWID", "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23");
 
         var response = await _httpClient.PostAsync("/api/v1/integrations/auth/signin", httpContent);
 
