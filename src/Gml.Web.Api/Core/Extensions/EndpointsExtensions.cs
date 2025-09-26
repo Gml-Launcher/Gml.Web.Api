@@ -1009,6 +1009,18 @@ public static class EndpointsExtensions
 
         #region Settings
 
+        app.MapPost("/api/v1/settings/install", SettingsHandler.Install)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Первоначальная конфигурации платформы";
+                return generatedOperation;
+            })
+            .WithDescription("Первоначальная конфигурации платформы")
+            .WithName("Install settings")
+            .WithTags("Settings")
+            .Produces<ResponseMessage<SettingsReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
+
         app.MapGet("/api/v1/settings/platform", SettingsHandler.GetSettings)
             .WithOpenApi(generatedOperation =>
             {

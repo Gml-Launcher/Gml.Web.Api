@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using FluentValidation;
 using Gml.Web.Api.Core.Validation;
+using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Domains.Servers;
 using Gml.Web.Api.Dto.Files;
 using Gml.Web.Api.Dto.Integration;
@@ -49,7 +50,10 @@ public static class ValidatorsExtensions
             .AddScoped<IValidator<DiscordRpcUpdateDto>, DiscordRpcValidator>()
 
             // Texture validator
-            .AddScoped<IValidator<UrlServiceDto>, TextureServiceDtoValidator>();
+            .AddScoped<IValidator<UrlServiceDto>, TextureServiceDtoValidator>()
+
+            // Settings validator
+            .AddScoped<IValidator<SettingsHandler.SettingsInstallRecord>, SettingsInstallRecordValidator>();
 
         return serviceCollection;
     }
