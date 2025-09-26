@@ -105,7 +105,7 @@ public class AuthHandler : IAuthHandler
             .ToListAsync();
 
         // Generate JWT pair for the newly created user
-        var accessToken = tokenService.GenerateAccessToken(user.Id, roles, permissions);
+        var accessToken = tokenService.GenerateAccessToken(user.Id, null, null, roles, permissions);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
@@ -173,7 +173,7 @@ public class AuthHandler : IAuthHandler
             .Select(rp => rp.Permission.Name)
             .Distinct()
             .ToListAsync();
-        var accessToken = tokenService.GenerateAccessToken(user.Id, rolesSignin, permsSignin);
+        var accessToken = tokenService.GenerateAccessToken(user.Id, user.Login, user.Email, rolesSignin, permsSignin);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);
@@ -224,7 +224,7 @@ public class AuthHandler : IAuthHandler
             .Select(rp => rp.Permission.Name)
             .Distinct()
             .ToListAsync();
-        var newAccess = tokenService.GenerateAccessToken(stored.UserId, rolesRefresh, permsRefresh);
+        var newAccess = tokenService.GenerateAccessToken(stored.UserId, null, null, rolesRefresh, permsRefresh);
         var newRefresh = tokenService.GenerateRefreshToken();
         var newHash = tokenService.HashRefreshToken(newRefresh);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);

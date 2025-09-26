@@ -25,47 +25,31 @@ public class AccessTokenService
     public string GenerateAccessToken(string subject, string? role = null)
         => GenerateAccessToken(subject, role is null ? Array.Empty<string>() : new[] { role }, Array.Empty<string>());
 
-    public string GenerateAccessToken(int userId, IEnumerable<string> roles, IEnumerable<string> permissions)
-        => GenerateAccessToken(userId.ToString(), roles, permissions);
+    public string GenerateAccessToken(int userId, string userLogin, string userEmail, IEnumerable<string> roles,
+        IEnumerable<string> permissions)
+        => GenerateAccessToken(userId.ToString(), userLogin, userEmail, roles, permissions);
 
     public string GenerateAccessToken(string subject, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
-        var now = DateTime.UtcNow;
-        var claims = new List<Claim>
-        {
-            new("sub", subject),
-            new(ClaimTypes.NameIdentifier, subject)
-        };
-
-        if (roles != null)
-        {
-            foreach (var r in roles)
-            {
-                if (!string.IsNullOrWhiteSpace(r))
-                    claims.Add(new Claim(ClaimTypes.Role, r));
-            }
-        }
-
-        if (permissions != null)
-        {
-            foreach (var p in permissions)
-            {
-                if (!string.IsNullOrWhiteSpace(p))
-                    claims.Add(new Claim("perm", p));
-            }
-        }
-
-        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(
-            issuer: _settings.JwtIssuer,
-            audience: _settings.JwtAudience,
-            claims: claims,
-            notBefore: now,
-            expires: now.AddMinutes(_settings.AccessTokenMinutes),
-            signingCredentials: creds);
-        return _handler.WriteToken(token);
+        return GenerateAccessTokenCore(
+            subject: subject,
+            userLogin: null,
+            userEmail: null,
+            roles: roles,
+            permissions: permissions
+        );
     }
 
+    public string GenerateAccessToken(string subject, string userLogin, string userEmail, IEnumerable<string> roles, IEnumerable<string> permissions)
+    {
+        return GenerateAccessTokenCore(
+            subject: subject,
+            userLogin: userLogin,
+            userEmail: userEmail,
+            roles: roles,
+            permissions: permissions
+        );
+    }
     public bool ValidateToken(string token)
     {
         try
@@ -100,5 +84,57 @@ public class AccessTokenService
         using var sha = SHA256.Create();
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(refreshToken));
         return Convert.ToBase64String(bytes);
+    }
+
+    // Internal helpers
+    private string GenerateAccessTokenCore(
+        string subject,
+        string? userLogin,
+        string? userEmail,
+        IEnumerable<string>? roles,
+        IEnumerable<string>? permissions)
+    {
+        var now = DateTime.UtcNow;
+
+        var claims = new List<Claim>
+        {
+            new("sub", subject),
+            new(ClaimTypes.NameIdentifier, subject)
+        };
+
+        if (!string.IsNullOrWhiteSpace(userLogin))
+            claims.Add(new Claim(ClaimTypes.Name, userLogin));
+        if (!string.IsNullOrWhiteSpace(userEmail))
+            claims.Add(new Claim(ClaimTypes.Email, userEmail));
+
+        AddClaims(claims, ClaimTypes.Role, roles);
+        AddClaims(claims, "perm", permissions);
+
+        var token = CreateJwtToken(claims, now);
+        return _handler.WriteToken(token);
+    }
+
+    private static void AddClaims(List<Claim> target, string claimType, IEnumerable<string>? values)
+    {
+        if (values is null) return;
+        foreach (var v in values)
+        {
+            if (!string.IsNullOrWhiteSpace(v))
+                target.Add(new Claim(claimType, v));
+        }
+    }
+
+
+    private JwtSecurityToken CreateJwtToken(IEnumerable<Claim> claims, DateTime now)
+    {
+        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
+        return new JwtSecurityToken(
+            issuer: _settings.JwtIssuer,
+            audience: _settings.JwtAudience,
+            claims: claims,
+            notBefore: now,
+            //expires: now.AddMinutes(_settings.AccessTokenMinutes),
+            expires: now.AddMinutes(1),
+            signingCredentials: creds);
     }
 }
