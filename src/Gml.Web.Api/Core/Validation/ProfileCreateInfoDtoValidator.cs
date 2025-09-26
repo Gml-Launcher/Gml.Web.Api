@@ -10,10 +10,7 @@ public class ProfileCreateInfoDtoValidator : AbstractValidator<ProfileCreateInfo
         RuleFor(x => x.UserName)
             .NotEmpty().WithMessage("Имя пользователя обязательно.")
             .Length(2, 100).WithMessage("Длина имени пользователя должна быть от 2 до 100 символов.");
-        RuleFor(x => x.UserAccessToken)
-            .NotEmpty().WithMessage("Токен пользователя обязателен.")
-            .Length(2, 1000).WithMessage("Длина токена пользователя должна быть от 2 до 1000 символов.");
-        RuleFor(x => x.ProfileName)
+         RuleFor(x => x.ProfileName)
             .NotEmpty().WithMessage("Название клиента обязательно.")
             .Length(2, 100).WithMessage("Длина названия клиента должна быть от 2 до 100 символов.");
         RuleFor(x => x.UserUuid)
