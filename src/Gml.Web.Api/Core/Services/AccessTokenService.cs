@@ -3,11 +3,12 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Gml.Web.Api.Core.Options;
+using GmlCore.Interfaces.Auth;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gml.Web.Api.Core.Services;
 
-public class AccessTokenService
+public class AccessTokenService : IAccessTokenService
 {
     private readonly ServerSettings _settings;
     private readonly JwtSecurityTokenHandler _handler = new();

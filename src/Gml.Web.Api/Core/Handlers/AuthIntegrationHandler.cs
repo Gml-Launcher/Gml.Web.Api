@@ -3,11 +3,13 @@ using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Extensions;
 using Gml.Web.Api.Core.Integrations.Auth;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.User;
 using Microsoft.AspNetCore.Authorization;
@@ -76,6 +78,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
     public static async Task<IResult> Auth(
         HttpContext context,
         IGmlManager gmlManager,
+        IAccessTokenService accessTokenService,
         IMapper mapper,
         IValidator<BaseUserPassword> validator,
         IAuthService authService,
@@ -126,7 +129,14 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 context.ParseRemoteAddress(),
                 authResult.Uuid,
                 hwid,
-				authResult.IsSlim);
+                authResult.IsSlim);
+
+            player.AccessToken = accessTokenService.GenerateAccessToken(
+                player.Uuid,
+                player.Name,
+                player.Name,
+                ["Player"], ["profiles.view"]
+            );
 
             return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
 
@@ -154,6 +164,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         HttpContext context,
         IGmlManager gmlManager,
         IMapper mapper,
+        IAccessTokenService accessTokenService,
         IAuthService authService,
         BaseUserPassword authDto)
     {
@@ -177,7 +188,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             var user = await gmlManager.Users.GetUserByAccessToken(authDto.AccessToken);
             var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-            if (user is not null && gmlManager.Users.ValidateAccessToken(user.AccessToken))
+            if (user is not null && accessTokenService.ValidateToken(user.AccessToken))
             {
                 return await HandleAuthenticatedUser(gmlManager, mapper, user, userAgent);
             }

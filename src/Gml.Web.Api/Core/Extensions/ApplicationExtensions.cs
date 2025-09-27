@@ -14,6 +14,7 @@ using Gml.Web.Api.Domains.Launcher;
 using Gml.Web.Api.Domains.Settings;
 using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -188,7 +189,7 @@ public static class ApplicationExtensions
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
             .AddSingleton<ApplicationContext>()
-            .AddSingleton<AccessTokenService>()
+            .AddSingleton<IAccessTokenService, AccessTokenService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
             .AddTransient<UnicoreCMSAuthService>()

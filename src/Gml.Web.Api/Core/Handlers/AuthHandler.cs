@@ -10,6 +10,7 @@ using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,7 @@ public class AuthHandler : IAuthHandler
         IMapper mapper,
         UserCreateDto createDto,
         ApplicationContext appContext,
-        AccessTokenService tokenService,
+        IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
         Gml.Web.Api.Core.Options.ServerSettings settings,
         DatabaseContext db)
@@ -149,7 +150,7 @@ public class AuthHandler : IAuthHandler
         IValidator<UserAuthDto> validator,
         IMapper mapper,
         UserAuthDto authDto,
-        AccessTokenService tokenService,
+        IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
         Gml.Web.Api.Core.Options.ServerSettings settings,
         DatabaseContext db)
@@ -200,7 +201,7 @@ public class AuthHandler : IAuthHandler
 
     public static async Task<IResult> RefreshTokens(
         HttpContext httpContext,
-        AccessTokenService tokenService,
+        IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
         Gml.Web.Api.Core.Options.ServerSettings settings,
         DatabaseContext db)

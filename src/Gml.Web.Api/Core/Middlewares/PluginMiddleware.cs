@@ -10,6 +10,7 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using Spectre.Console;
 
 namespace Gml.Web.Api.Core.Middlewares;
@@ -17,10 +18,10 @@ namespace Gml.Web.Api.Core.Middlewares;
 public class PluginMiddleware
 {
     private readonly RequestDelegate _next;
-    private static AccessTokenService _accessTokenService;
+    private static IAccessTokenService _accessTokenService;
     private static IGmlManager _gmlManager;
 
-    public PluginMiddleware(RequestDelegate next, AccessTokenService accessTokenService, IGmlManager gmlManager)
+    public PluginMiddleware(RequestDelegate next, IAccessTokenService accessTokenService, IGmlManager gmlManager)
     {
         _next = next;
         _accessTokenService = accessTokenService;

@@ -14,6 +14,7 @@ using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Settings;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,7 +57,7 @@ public abstract class SettingsHandler : ISettingsHandler
         HttpContext httpContext,
         IValidator<UserCreateDto> userValidator,
         ApplicationContext appContext,
-        AccessTokenService tokenService,
+        IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
         DatabaseContext db,
         ServerSettings serverSettings,
