@@ -399,7 +399,19 @@ public class ProfileHandler : IProfileHandler
             OsArch = createInfoDto.OsArchitecture
         }, user);
 
-        var whiteListPlayers = await gmlManager.Users.GetUsers(profile.UserWhiteListGuid);
+        var whiteListPlayers = (await gmlManager.Users.GetUsers(profile.UserWhiteListGuid)).ToList();
+
+        foreach (var userGuid in profile.UserWhiteListGuid)
+        {
+            if (!whiteListPlayers.Any(c => c.Uuid == userGuid))
+            {
+                whiteListPlayers.Add(new AuthUser
+                {
+                    Uuid = userGuid,
+                    Name = "Неизвестный игрок"
+                });
+            }
+        }
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
@@ -720,17 +732,11 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        var user = await gmlManager.Users.GetUserByUuid(userUuid);
-
-        if (user is null)
-            return Results.NotFound(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден",
-                HttpStatusCode.NotFound));
-
         if (!profile.UserWhiteListGuid.Any(c=> c.Equals(userUuid)))
             return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
-        profile.UserWhiteListGuid.Remove(user.Uuid);
+        profile.UserWhiteListGuid.Remove(userUuid);
         await gmlManager.Profiles.SaveProfiles();
 
         return Results.Ok(ResponseMessage.Create("Пользователь успешно удален из белого списка профиля", HttpStatusCode.OK));

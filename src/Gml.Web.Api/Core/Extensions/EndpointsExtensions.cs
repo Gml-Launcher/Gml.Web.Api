@@ -110,7 +110,7 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<UserAuthReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
-        app.MapPost("/api/v1/users/refresh", AuthHandler.RefreshTokens)
+        app.MapGet("/api/v1/users/refresh", AuthHandler.RefreshTokens)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Перевыпуск пары токенов по refresh";
