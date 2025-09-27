@@ -106,7 +106,7 @@ public class AuthHandler : IAuthHandler
             .ToListAsync();
 
         // Generate JWT pair for the newly created user
-        var accessToken = tokenService.GenerateAccessToken(user.Id, null, null, roles, permissions);
+        var accessToken = tokenService.GenerateAccessToken(user.Id, user.Login, user.Email, roles, permissions);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
         var expiresAt = DateTime.UtcNow.AddDays(settings.RefreshTokenDays);

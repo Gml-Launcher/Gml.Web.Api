@@ -21,35 +21,35 @@ public class AccessTokenService : IAccessTokenService
     }
 
     public string GenerateAccessToken(int userId, string? role = null)
-        => GenerateAccessToken(userId.ToString(), role);
+        => GenerateAccessToken(userId.ToString(), role: role);
 
-    public string GenerateAccessToken(string subject, string? role = null)
-        => GenerateAccessToken(subject, role is null ? Array.Empty<string>() : new[] { role }, Array.Empty<string>());
+    public string GenerateAccessToken(string subject, int? tokenDuration = null, string? role = null)
+        => GenerateAccessToken(subject, role is null ? Array.Empty<string>() : new[] { role }, Array.Empty<string>(), tokenDuration);
 
     public string GenerateAccessToken(int userId, string userLogin, string userEmail, IEnumerable<string> roles,
-        IEnumerable<string> permissions)
-        => GenerateAccessToken(userId.ToString(), userLogin, userEmail, roles, permissions);
+        IEnumerable<string> permissions, int? tokenDuration)
+        => GenerateAccessToken(userId.ToString(), userLogin, userEmail, roles, permissions, tokenDuration);
 
-    public string GenerateAccessToken(string subject, IEnumerable<string> roles, IEnumerable<string> permissions)
+    public string GenerateAccessToken(string subject, IEnumerable<string> roles, IEnumerable<string> permissions,
+        int? tokenDuration)
     {
         return GenerateAccessTokenCore(
             subject: subject,
             userLogin: null,
             userEmail: null,
             roles: roles,
-            permissions: permissions
-        );
+            permissions: permissions, tokenDuration);
     }
 
-    public string GenerateAccessToken(string subject, string userLogin, string userEmail, IEnumerable<string> roles, IEnumerable<string> permissions)
+    public string GenerateAccessToken(string subject, string userLogin, string userEmail, IEnumerable<string> roles,
+        IEnumerable<string> permissions, int? tokenDuration = null)
     {
         return GenerateAccessTokenCore(
             subject: subject,
             userLogin: userLogin,
             userEmail: userEmail,
             roles: roles,
-            permissions: permissions
-        );
+            permissions: permissions, tokenDuration);
     }
     public bool ValidateToken(string token)
     {
@@ -88,12 +88,12 @@ public class AccessTokenService : IAccessTokenService
     }
 
     // Internal helpers
-    private string GenerateAccessTokenCore(
-        string subject,
+    private string GenerateAccessTokenCore(string subject,
         string? userLogin,
         string? userEmail,
         IEnumerable<string>? roles,
-        IEnumerable<string>? permissions)
+        IEnumerable<string>? permissions,
+        int? tokenDuration)
     {
         var now = DateTime.UtcNow;
 
@@ -111,7 +111,7 @@ public class AccessTokenService : IAccessTokenService
         AddClaims(claims, ClaimTypes.Role, roles);
         AddClaims(claims, "perm", permissions);
 
-        var token = CreateJwtToken(claims, now);
+        var token = CreateJwtToken(claims, now, tokenDuration ?? _settings.AccessTokenMinutes);
         return _handler.WriteToken(token);
     }
 
@@ -126,7 +126,7 @@ public class AccessTokenService : IAccessTokenService
     }
 
 
-    private JwtSecurityToken CreateJwtToken(IEnumerable<Claim> claims, DateTime now)
+    private JwtSecurityToken CreateJwtToken(IEnumerable<Claim> claims, DateTime now, int tokenDuration)
     {
         var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
         return new JwtSecurityToken(
@@ -134,8 +134,7 @@ public class AccessTokenService : IAccessTokenService
             audience: _settings.JwtAudience,
             claims: claims,
             notBefore: now,
-            //expires: now.AddMinutes(_settings.AccessTokenMinutes),
-            expires: now.AddMinutes(1),
+            expires: now.AddMinutes(tokenDuration),
             signingCredentials: creds);
     }
 }

@@ -135,8 +135,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 player.Uuid,
                 player.Name,
                 player.Name,
-                ["Player"], ["profiles.view"]
-            );
+                ["Player"], ["profiles.view"], 60 * 24 * 10); // 60 минут * 24 часа * 10 дней
 
             return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
 
@@ -172,11 +171,6 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         {
 
             var authType = await gmlManager.Integrations.GetAuthType();
-            var hwid = context.Request.Headers["X-HWID"].ToString();
-
-            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType, hwid);
-            if (validationResult != null)
-                return validationResult;
 
             if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.AccessToken))
             {
