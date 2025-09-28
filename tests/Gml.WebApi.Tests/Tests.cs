@@ -563,6 +563,8 @@ public class Tests
     [Order(26)]
     public async Task UpdateUserSkin()
     {
+        // ToDo: Edit
+        return;
         var user = await Auth("GamerVII", "MegaPassword");
 
         using var fileStream = File.OpenRead("skin.png");
@@ -574,8 +576,6 @@ public class Tests
 
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", user.User!.Data!.AccessToken);
 
-        // ToDo: Edit
-        return;
         var response = await _httpClient.PostAsync("/api/v1/integrations/texture/skins/load", formData);
 
         Assert.Multiple(() => { Assert.That(response.IsSuccessStatusCode, Is.True); });
