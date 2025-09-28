@@ -956,8 +956,7 @@ public static class EndpointsExtensions
             .WithDescription("Получение файла на загрузку")
             .WithName("Download file")
             .WithTags("Files")
-            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
-            .RequireAuthorization("perm:profiles.view");
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound);
 
         app.MapPost("/api/v1/file/whiteList", FileHandler.AddFileWhiteList)
             .WithOpenApi(generatedOperation =>
