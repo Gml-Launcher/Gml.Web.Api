@@ -14,9 +14,11 @@ using Gml.Web.Api.Domains.Launcher;
 using Gml.Web.Api.Domains.Settings;
 using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Minio;
@@ -81,6 +83,13 @@ public static class ApplicationExtensions
 
         var textureEndpoint = GetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT");
 
+        var jwtIssuer = GetEnvironmentVariable("JWT_ISSUER");
+        var jwtAudience = GetEnvironmentVariable("JWT_AUDIENCE");
+        var accessMinutesStr = GetEnvironmentVariable("JWT_ACCESS_MINUTES");
+        var refreshDaysStr = GetEnvironmentVariable("JWT_REFRESH_DAYS");
+        int.TryParse(accessMinutesStr, out var accessMinutes);
+        int.TryParse(refreshDaysStr, out var refreshDays);
+
         return new ServerSettings
         {
             ProjectDescription = projectDescription,
@@ -91,7 +100,11 @@ public static class ApplicationExtensions
             ProjectVersion = "1.1.0",
             SecurityKey = securityKey,
             ProjectPath = projectPath,
-            TextureEndpoint = textureEndpoint
+            TextureEndpoint = textureEndpoint,
+            JwtIssuer = string.IsNullOrWhiteSpace(jwtIssuer) ? "gml-api" : jwtIssuer,
+            JwtAudience = string.IsNullOrWhiteSpace(jwtAudience) ? "gml-clients" : jwtAudience,
+            AccessTokenMinutes = accessMinutes > 0 ? accessMinutes : 15,
+            RefreshTokenDays = refreshDays > 0 ? refreshDays : 30
         };
     }
 
@@ -114,9 +127,12 @@ public static class ApplicationExtensions
 
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = settings.JwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = settings.JwtAudience,
             ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = key
         };
@@ -150,6 +166,7 @@ public static class ApplicationExtensions
                 map.AddProfile<SettingsMapper>();
                 map.AddProfile<SystemIOMapper>();
                 map.AddProfile<UserMapper>();
+                map.AddProfile<RbacMapper>();
             })
             .ConfigureGmlManager(
                 settings.ProjectName,
@@ -172,7 +189,7 @@ public static class ApplicationExtensions
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
             .AddSingleton<ApplicationContext>()
-            .AddSingleton<AccessTokenService>()
+            .AddSingleton<IAccessTokenService, AccessTokenService>()
             .AddTransient<UndefinedAuthService>()
             .AddTransient<DataLifeEngineAuthService>()
             .AddTransient<UnicoreCMSAuthService>()
@@ -187,6 +204,8 @@ public static class ApplicationExtensions
             .RegisterValidators()
             .RegisterCors(settings.PolicyName)
             .AddSignalR();
+
+        builder.Services.AddAuthorization();
 
         builder.Services.AddAuthentication(options =>
         {
@@ -211,6 +230,10 @@ public static class ApplicationExtensions
                 }
             };
         });
+
+        // RBAC dynamic permission policies and handler
+        builder.Services.AddSingleton<IAuthorizationPolicyProvider, Gml.Web.Api.Core.Authorization.DynamicPermissionPolicyProvider>();
+        builder.Services.AddSingleton<IAuthorizationHandler, Gml.Web.Api.Core.Authorization.PermissionAuthorizationHandler>();
 
         return builder;
     }

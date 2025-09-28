@@ -30,6 +30,7 @@ public class SettingsRepository(
             settings.VkKey
             );
 
+        settings.Id = 0;
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();
 

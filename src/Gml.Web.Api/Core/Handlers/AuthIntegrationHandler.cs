@@ -3,11 +3,13 @@ using AutoMapper;
 using FluentValidation;
 using Gml.Web.Api.Core.Extensions;
 using Gml.Web.Api.Core.Integrations.Auth;
+using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Dto.Integration;
 using Gml.Web.Api.Dto.Messages;
 using Gml.Web.Api.Dto.Player;
 using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.User;
 using Microsoft.AspNetCore.Authorization;
@@ -17,19 +19,19 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthIntegrationHandler : IAuthIntegrationHandler
 {
-    private static async Task<IResult?> HandleCommonAuthValidation(
-        HttpContext context,
+    private static async Task<IResult?> HandleCommonAuthValidation(HttpContext context,
         IGmlManager gmlManager,
-        AuthType authType)
+        AuthType authType,
+        string hwid)
     {
         var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-        if (string.IsNullOrWhiteSpace(userAgent))
+        if (string.IsNullOrWhiteSpace(userAgent) || string.IsNullOrWhiteSpace(hwid))
             return Results.BadRequest(ResponseMessage.Create(
                 "Не удалось определить устройство, с которого произошла авторизация",
                 HttpStatusCode.BadRequest));
 
-        return null; // Валидация прошла успешно
+        return null;
     }
 
     private static async Task<IResult> HandleAuthenticatedUser(
@@ -76,6 +78,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
     public static async Task<IResult> Auth(
         HttpContext context,
         IGmlManager gmlManager,
+        IAccessTokenService accessTokenService,
         IMapper mapper,
         IValidator<BaseUserPassword> validator,
         IAuthService authService,
@@ -88,9 +91,11 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
                     HttpStatusCode.BadRequest));
 
+            var hwid = context.Request.Headers["X-HWID"].ToString();
+            var userAgent = context.Request.Headers["User-Agent"].ToString();
             var authType = await gmlManager.Integrations.GetAuthType();
 
-            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType);
+            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType, hwid);
 
             if (validationResult is not null)
                 return validationResult;
@@ -102,7 +107,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, authDto.TwoFactorCode);
+            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, hwid, authDto.TwoFactorCode);
 
             if (authResult.TwoFactorEnabled && string.IsNullOrEmpty(authDto.TwoFactorCode))
             {
@@ -116,8 +121,6 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     authResult.Message ?? "Неверный логин или пароль",
                     HttpStatusCode.Unauthorized));
 
-            var userAgent = context.Request.Headers["User-Agent"].ToString();
-
             var player = await gmlManager.Users.GetAuthData(
                 authResult.Login ?? authDto.Login,
                 authDto.Password,
@@ -125,8 +128,14 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 context.Request.Protocol,
                 context.ParseRemoteAddress(),
                 authResult.Uuid,
-                context.Request.Headers["X-HWID"],
-				authResult.IsSlim);
+                hwid,
+                authResult.IsSlim);
+
+            player.AccessToken = accessTokenService.GenerateAccessToken(
+                player.Uuid,
+                player.Name,
+                player.Name,
+                ["Player"], ["profiles.view"], 60 * 24 * 10); // 60 минут * 24 часа * 10 дней
 
             return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
 
@@ -154,16 +163,14 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         HttpContext context,
         IGmlManager gmlManager,
         IMapper mapper,
+        IAccessTokenService accessTokenService,
         IAuthService authService,
         BaseUserPassword authDto)
     {
         try
         {
-            var authType = await gmlManager.Integrations.GetAuthType();
 
-            var validationResult = await HandleCommonAuthValidation(context, gmlManager, authType);
-            if (validationResult != null)
-                return validationResult;
+            var authType = await gmlManager.Integrations.GetAuthType();
 
             if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.AccessToken))
             {
@@ -175,7 +182,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
             var user = await gmlManager.Users.GetUserByAccessToken(authDto.AccessToken);
             var userAgent = context.Request.Headers["User-Agent"].ToString();
 
-            if (user is not null && gmlManager.Users.ValidateAccessToken(user.AccessToken))
+            if (user is not null && accessTokenService.ValidateToken(user.AccessToken))
             {
                 return await HandleAuthenticatedUser(gmlManager, mapper, user, userAgent);
             }

@@ -1,47 +1,140 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Gml.Web.Api.Core.Options;
-using Gml.Web.Api.Domains.Settings;
-using Microsoft.Extensions.Options;
+using GmlCore.Interfaces.Auth;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gml.Web.Api.Core.Services;
 
-public class AccessTokenService(ServerSettings settings)
+public class AccessTokenService : IAccessTokenService
 {
+    private readonly ServerSettings _settings;
+    private readonly JwtSecurityTokenHandler _handler = new();
+    private readonly SymmetricSecurityKey _key;
+
+    public AccessTokenService(ServerSettings settings)
+    {
+        _settings = settings;
+        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecurityKey));
+    }
+
+    public string GenerateAccessToken(int userId, string? role = null)
+        => GenerateAccessToken(userId.ToString(), role: role);
+
+    public string GenerateAccessToken(string subject, int? tokenDuration = null, string? role = null)
+        => GenerateAccessToken(subject, role is null ? Array.Empty<string>() : new[] { role }, Array.Empty<string>(), tokenDuration);
+
+    public string GenerateAccessToken(int userId, string userLogin, string userEmail, IEnumerable<string> roles,
+        IEnumerable<string> permissions, int? tokenDuration)
+        => GenerateAccessToken(userId.ToString(), userLogin, userEmail, roles, permissions, tokenDuration);
+
+    public string GenerateAccessToken(string subject, IEnumerable<string> roles, IEnumerable<string> permissions,
+        int? tokenDuration)
+    {
+        return GenerateAccessTokenCore(
+            subject: subject,
+            userLogin: null,
+            userEmail: null,
+            roles: roles,
+            permissions: permissions, tokenDuration);
+    }
+
+    public string GenerateAccessToken(string subject, string userLogin, string userEmail, IEnumerable<string> roles,
+        IEnumerable<string> permissions, int? tokenDuration = null)
+    {
+        return GenerateAccessTokenCore(
+            subject: subject,
+            userLogin: userLogin,
+            userEmail: userEmail,
+            roles: roles,
+            permissions: permissions, tokenDuration);
+    }
     public bool ValidateToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecurityKey));
-
         try
         {
-            var tokenValidationParameters = new TokenValidationParameters
+            _handler.ValidateToken(token, new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            var principle = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
-
+                IssuerSigningKey = _key,
+                ValidateIssuer = true,
+                ValidIssuer = _settings.JwtIssuer,
+                ValidateAudience = true,
+                ValidAudience = _settings.JwtAudience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            }, out _);
             return true;
         }
         catch
         {
-            // Здесь вы можете обрабатывать исключение, выбрасываемое в случае недействительного токена
             return false;
         }
     }
 
-    public static string Generate(string login, string secretKey)
+    public string GenerateRefreshToken()
     {
-        var timestamp = DateTime.Now.Ticks.ToString();
-        var guidPart1 = Guid.NewGuid().ToString();
-        var guidPart2 = Guid.NewGuid().ToString();
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes);
+    }
 
-        var textBytes = Encoding.UTF8.GetBytes(string.Join(login, timestamp, secretKey, guidPart1, guidPart2));
-        return Convert.ToBase64String(textBytes);
+    public string HashRefreshToken(string refreshToken)
+    {
+        using var sha = SHA256.Create();
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(refreshToken));
+        return Convert.ToBase64String(bytes);
+    }
+
+    // Internal helpers
+    private string GenerateAccessTokenCore(string subject,
+        string? userLogin,
+        string? userEmail,
+        IEnumerable<string>? roles,
+        IEnumerable<string>? permissions,
+        int? tokenDuration)
+    {
+        var now = DateTime.UtcNow;
+
+        var claims = new List<Claim>
+        {
+            new("sub", subject),
+            new(ClaimTypes.NameIdentifier, subject)
+        };
+
+        if (!string.IsNullOrWhiteSpace(userLogin))
+            claims.Add(new Claim(ClaimTypes.Name, userLogin));
+        if (!string.IsNullOrWhiteSpace(userEmail))
+            claims.Add(new Claim(ClaimTypes.Email, userEmail));
+
+        AddClaims(claims, ClaimTypes.Role, roles);
+        AddClaims(claims, "perm", permissions);
+
+        var token = CreateJwtToken(claims, now, tokenDuration ?? _settings.AccessTokenMinutes);
+        return _handler.WriteToken(token);
+    }
+
+    private static void AddClaims(List<Claim> target, string claimType, IEnumerable<string>? values)
+    {
+        if (values is null) return;
+        foreach (var v in values)
+        {
+            if (!string.IsNullOrWhiteSpace(v))
+                target.Add(new Claim(claimType, v));
+        }
+    }
+
+
+    private JwtSecurityToken CreateJwtToken(IEnumerable<Claim> claims, DateTime now, int tokenDuration)
+    {
+        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
+        return new JwtSecurityToken(
+            issuer: _settings.JwtIssuer,
+            audience: _settings.JwtAudience,
+            claims: claims,
+            notBefore: now,
+            expires: now.AddMinutes(tokenDuration),
+            signingCredentials: creds);
     }
 }
