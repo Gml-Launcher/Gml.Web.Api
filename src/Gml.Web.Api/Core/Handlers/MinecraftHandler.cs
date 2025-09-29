@@ -18,12 +18,12 @@ public class MinecraftHandler : IMinecraftHandler
         IOptions<ServerSettings> options)
     {
         var skinsAddresses = options.Value.SkinDomains.ToList();
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+        var address = new Uri($"{context.Request.Scheme}://{hostValue}");
+
         skinsAddresses.AddRange(await GetEnvironmentAddress(gmlManager));
-        skinsAddresses.Add($"{context.Request.Host.Value}");
-        skinsAddresses.Add($"{context.Request.Scheme}://{context.Request.Host.Value}");
-        skinsAddresses.Add($".{context.Request.Host.Value}");
-        skinsAddresses.Add($"{context.Request.Host.Host}");
-        skinsAddresses.Add($".{context.Request.Host.Host}");
+        skinsAddresses.Add($"{address.Host}");
+        skinsAddresses.Add($".{address.Host}");
 
         skinsAddresses = skinsAddresses.Distinct().ToList();
 
@@ -85,7 +85,8 @@ public class MinecraftHandler : IMinecraftHandler
         var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower()
                               ?? TextureProtocol.Https.GetDisplayName().ToLower();
 
-        var address = $"{textureProtocol}://{context.Request.Host.Value}";
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+        var address = $"{textureProtocol}://{hostValue}";
 
         var texture = new PropertyTextures
         {
@@ -126,7 +127,7 @@ public class MinecraftHandler : IMinecraftHandler
             };
         }
 
-        Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin.Url, texture.Textures.Cape.Url));
+        Debug.WriteLine(string.Join(Environment.NewLine, texture.Textures.Skin?.Url, texture.Textures.Cape?.Url));
 
         var jsonData = JsonConvert.SerializeObject(texture);
 
@@ -176,7 +177,8 @@ public class MinecraftHandler : IMinecraftHandler
 
         var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower() ?? TextureProtocol.Https.GetDisplayName().ToLower();
 
-        var address = $"{textureProtocol}://{context.Request.Host.Value}";
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+        var address = $"{textureProtocol}://{hostValue}";
 
         var texture = new PropertyTextures
         {

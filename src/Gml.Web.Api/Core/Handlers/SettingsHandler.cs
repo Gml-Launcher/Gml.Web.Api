@@ -90,6 +90,8 @@ public abstract class SettingsHandler : ISettingsHandler
             case Ok<ResponseMessage<AuthTokensDto>>:
                 settings.IsInstalled = true;
                 settings.ProjectName = dto.ProjectName;
+                var address = new Uri(dto.BackendAddress);
+                await gmlManager.Integrations.SetSentryService($"{address.Scheme}://gml@{address.Authority}/1");
 
                 await settingsService.UpdateSettings(settings);
 
