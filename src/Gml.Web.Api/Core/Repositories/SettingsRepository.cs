@@ -20,6 +20,8 @@ public class SettingsRepository(
 
     public async Task<Settings?> UpdateSettings(Settings settings)
     {
+        var oldSettings = await databaseContext.Settings.OrderByDescending(c => c.Id).FirstOrDefaultAsync();
+
         gmlManager.LauncherInfo.UpdateSettings(
             settings.StorageType,
             settings.StorageHost,
@@ -31,6 +33,8 @@ public class SettingsRepository(
             );
 
         settings.Id = 0;
+        settings.IsInstalled = true;
+        settings.ProjectName = oldSettings?.ProjectName;
         await databaseContext.AddAsync(settings);
         await databaseContext.SaveChangesAsync();
 
