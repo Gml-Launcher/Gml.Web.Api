@@ -34,8 +34,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         return null;
     }
 
-    private static async Task<IResult> HandleAuthenticatedUser(
-        IGmlManager gmlManager,
+    private static async Task<IResult> HandleAuthenticatedUser(HttpContext context, IGmlManager gmlManager,
         IMapper mapper,
         IUser player,
         string userAgent)
@@ -47,14 +46,17 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 HttpStatusCode.BadRequest));
         }
 
-        await gmlManager.Profiles.CreateUserSessionAsync(null, player);
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
 
-        if (string.IsNullOrEmpty(player.TextureSkinUrl))
-        {
-            player.TextureSkinUrl = (await gmlManager.Integrations.GetSkinServiceAsync())
-                .Replace("{userName}", player.Name)
-                .Replace("{userUuid}", player.Uuid);
-        }
+        await gmlManager.Profiles.CreateUserSessionAsync(null, player, hostValue);
+
+        // player.TextureSkinUrl = (await gmlManager.Integrations.GetSkinServiceAsync())
+        //     .Replace("{userName}", player.Name)
+        //     .Replace("{userUuid}", player.Uuid);
+        //
+        // player.TextureCloakUrl = (await gmlManager.Integrations.GetCloakServiceAsync())
+        //     .Replace("{userName}", player.Name)
+        //     .Replace("{userUuid}", player.Uuid);
 
         return Results.Ok(ResponseMessage.Create(
             mapper.Map<PlayerReadDto>(player),
@@ -137,7 +139,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 player.Name,
                 ["Player"], ["profiles.view"], 60 * 24 * 10); // 60 минут * 24 часа * 10 дней
 
-            return await HandleAuthenticatedUser(gmlManager, mapper, player, userAgent);
+            return await HandleAuthenticatedUser(context, gmlManager, mapper, player, userAgent);
 
         }
         catch (HttpRequestException exception)
@@ -184,7 +186,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
 
             if (user is not null && accessTokenService.ValidateToken(user.AccessToken))
             {
-                return await HandleAuthenticatedUser(gmlManager, mapper, user, userAgent);
+                return await HandleAuthenticatedUser(context, gmlManager, mapper, user, userAgent);
             }
 
             return Results.BadRequest(ResponseMessage.Create(

@@ -69,7 +69,8 @@ public class ProfileHandler : IProfileHandler
         foreach (var profile in dtoProfiles)
         {
             var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
-            profile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{originalProfile.BackgroundImageKey}";
+            var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+            profile.Background = $"{context.Request.Scheme}://{hostValue}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
         return Results.Ok(ResponseMessage.Create(dtoProfiles.OrderByDescending(c => c.Priority), string.Empty, HttpStatusCode.OK));
@@ -237,7 +238,8 @@ public class ProfileHandler : IProfileHandler
             );
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
-        newProfile.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+        newProfile.Background = $"{context.Request.Scheme}://{hostValue}/api/v1/file/{profile.BackgroundImageKey}";
 
         var message = $"""Профиль "{updateDto.Name}" успешно обновлен""";
 
@@ -346,7 +348,8 @@ public class ProfileHandler : IProfileHandler
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
-        profileDto.Background = $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}";
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+        profileDto.Background = $"{context.Request.Scheme}://{hostValue}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
     }
@@ -415,8 +418,9 @@ public class ProfileHandler : IProfileHandler
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
         profileDto.Background = profile.BackgroundImageKey is not null
-            ? $"{context.Request.Scheme}://{context.Request.Host}/api/v1/file/{profile.BackgroundImageKey}"
+            ? $"{context.Request.Scheme}://{hostValue}/api/v1/file/{profile.BackgroundImageKey}"
             : profile.BackgroundImageKey;
         profileDto.IsEnabled = profile.IsEnabled;
         profileDto.Priority = profile.Priority;

@@ -8,5 +8,7 @@ public class PlayerTextureDto : IPlayerTexture
     public string TextureCloakUrl { get; set; } = null!;
     public string TextureSkinGuid { get; set; } = null!;
     public string TextureCloakGuid { get; set; } = null!;
+    public string ExternalTextureSkinUrl { get; set; } = null!;
+    public string ExternalTextureCloakUrl { get; set; } = null!;
     public string FullSkinUrl { get; set; }
 }

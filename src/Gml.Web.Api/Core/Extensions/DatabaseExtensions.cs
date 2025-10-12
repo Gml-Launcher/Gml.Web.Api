@@ -22,6 +22,13 @@ public static class DatabaseExtensions
 
         app.UseCors(settings.PolicyName);
 
+        var databaseDirectory = new DirectoryInfo("database");
+
+        if (!databaseDirectory.Exists)
+        {
+            databaseDirectory.Create();
+        }
+
         if (context.Database.GetPendingMigrations().Any())
             context.Database.Migrate();
 
