@@ -1317,6 +1317,36 @@ public static class EndpointsExtensions
 
         #endregion
 
+        #region External Applications
+
+        app.MapPost("/api/v1/applications", ExternalApplicationHandler.CreateApplication)
+            .WithOpenApi(o => { o.Summary = "Создать внешнее приложение"; return o; })
+            .WithDescription("Создание внешнего приложения с набором разрешений")
+            .WithName("Create external application")
+            .WithTags("External Applications")
+            .Produces<ResponseMessage<ExternalApplicationReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapGet("/api/v1/applications", ExternalApplicationHandler.GetUserApplications)
+            .WithOpenApi(o => { o.Summary = "Получить список приложений пользователя"; return o; })
+            .WithDescription("Получение списка приложений текущего пользователя")
+            .WithName("Get user applications")
+            .WithTags("External Applications")
+            .Produces<ResponseMessage<List<ExternalApplicationListDto>>>()
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        app.MapDelete("/api/v1/applications/{id:guid}", ExternalApplicationHandler.DeleteApplication)
+            .WithOpenApi(o => { o.Summary = "Удалить внешнее приложение"; return o; })
+            .WithDescription("Удаление внешнего приложения и его токена")
+            .WithName("Delete external application")
+            .WithTags("External Applications")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .RequireAuthorization(c => c.RequireRole("Admin"));
+
+        #endregion
+
         return app;
     }
 }

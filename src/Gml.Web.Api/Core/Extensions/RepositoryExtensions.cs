@@ -11,6 +11,7 @@ public static class RepositoryExtensions
         serviceCollection.AddScoped<ISettingsRepository, SettingsRepository>();
         serviceCollection.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         serviceCollection.AddScoped<IRbacRepository, RbacRepository>();
+        serviceCollection.AddScoped<IExternalApplicationRepository, ExternalApplicationRepository>();
 
         return serviceCollection;
     }

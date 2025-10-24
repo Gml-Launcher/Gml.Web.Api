@@ -17,6 +17,46 @@ namespace Gml.Web.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
+            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.ApplicationPermission", b =>
+                {
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ApplicationId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("ApplicationPermissions");
+                });
+
+            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.ExternalApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExternalApplications");
+                });
+
             modelBuilder.Entity("Gml.Web.Api.Domains.Auth.Permission", b =>
                 {
                     b.Property<int>("Id")
@@ -181,6 +221,25 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.ApplicationPermission", b =>
+                {
+                    b.HasOne("Gml.Web.Api.Domains.Auth.ExternalApplication", "Application")
+                        .WithMany("ApplicationPermissions")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Gml.Web.Api.Domains.Auth.Permission", "Permission")
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Permission");
+                });
+
             modelBuilder.Entity("Gml.Web.Api.Domains.Auth.RolePermission", b =>
                 {
                     b.HasOne("Gml.Web.Api.Domains.Auth.Permission", "Permission")
@@ -217,6 +276,11 @@ namespace Gml.Web.Api.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.ExternalApplication", b =>
+                {
+                    b.Navigation("ApplicationPermissions");
                 });
 
             modelBuilder.Entity("Gml.Web.Api.Domains.Auth.Permission", b =>

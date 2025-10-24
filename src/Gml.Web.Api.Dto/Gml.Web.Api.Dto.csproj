@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>2025.2.3</Version>
+    <Version>2025.2.3.1</Version>
     <Title>Gml.Web.Api.Dto</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

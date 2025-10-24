@@ -16,6 +16,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
 
+    public DbSet<ExternalApplication> ExternalApplications { get; set; }
+    public DbSet<ApplicationPermission> ApplicationPermissions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -51,6 +54,23 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             .HasOne(ur => ur.User)
             .WithMany()
             .HasForeignKey(ur => ur.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Composite key for ApplicationPermission
+        modelBuilder.Entity<ApplicationPermission>()
+            .HasKey(ap => new { ap.ApplicationId, ap.PermissionId });
+
+        // Relationships: ApplicationPermission
+        modelBuilder.Entity<ApplicationPermission>()
+            .HasOne(ap => ap.Application)
+            .WithMany(a => a.ApplicationPermissions)
+            .HasForeignKey(ap => ap.ApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ApplicationPermission>()
+            .HasOne(ap => ap.Permission)
+            .WithMany()
+            .HasForeignKey(ap => ap.PermissionId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
