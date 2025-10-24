@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Gml.Domains.Auth;
+using Gml.Domains.Repositories;
+using Gml.Domains.User;
 using Gml.Web.Api.Data;
-using Gml.Web.Api.Domains.Auth;
-using Gml.Web.Api.Domains.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Core.Repositories;
@@ -18,7 +19,7 @@ public class RbacRepository : IRbacRepository
     }
 
     // Users
-    public Task<List<Gml.Web.Api.Domains.User.User>> GetAllUsersAsync()
+    public Task<List<DbUser>> GetAllUsersAsync()
     {
         return _db.Users.AsNoTracking().ToListAsync();
     }

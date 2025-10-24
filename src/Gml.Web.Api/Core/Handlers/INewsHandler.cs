@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Gml.Web.Api.Dto.News;
+using Gml.Dto.News;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Launcher;
 

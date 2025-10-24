@@ -1,5 +1,5 @@
 using System.Text;
-using Gml.Web.Api.Domains.Integrations;
+using Gml.Domains.Integrations;
 using GmlCore.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

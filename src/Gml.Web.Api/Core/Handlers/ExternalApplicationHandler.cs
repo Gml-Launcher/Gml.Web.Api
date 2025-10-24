@@ -3,9 +3,9 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using AutoMapper;
-using Gml.Web.Api.Domains.Repositories;
-using Gml.Web.Api.Dto.Auth;
-using Gml.Web.Api.Dto.Messages;
+using Gml.Domains.Repositories;
+using Gml.Dto.Auth;
+using Gml.Dto.Messages;
 using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Http;
 

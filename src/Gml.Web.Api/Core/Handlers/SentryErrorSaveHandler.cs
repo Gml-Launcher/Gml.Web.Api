@@ -1,8 +1,8 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Texture;
+using Gml.Dto.Messages;
+using Gml.Dto.Texture;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;

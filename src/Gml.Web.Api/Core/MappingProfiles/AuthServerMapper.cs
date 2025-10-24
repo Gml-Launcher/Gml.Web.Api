@@ -1,6 +1,6 @@
 using AutoMapper;
+using Gml.Dto.Integration;
 using Gml.Models.Auth;
-using Gml.Web.Api.Dto.Integration;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 

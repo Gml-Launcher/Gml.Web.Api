@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using Gml.Dto.Files;
 using Gml.Models.System;
-using Gml.Web.Api.Dto.Files;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 

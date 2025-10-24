@@ -1,4 +1,5 @@
-using Gml.Web.Api.Domains.Integrations;
+
+using Gml.Domains.Integrations;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 

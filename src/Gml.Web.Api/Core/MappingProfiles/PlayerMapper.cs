@@ -1,6 +1,6 @@
 using AutoMapper;
 using Gml.Core.User;
-using Gml.Web.Api.Dto.Player;
+using Gml.Dto.Player;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 

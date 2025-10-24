@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Gml.Domains.Auth;
+using Gml.Domains.Repositories;
 using Gml.Web.Api.Data;
-using Gml.Web.Api.Domains.Auth;
-using Gml.Web.Api.Domains.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Core.Repositories;

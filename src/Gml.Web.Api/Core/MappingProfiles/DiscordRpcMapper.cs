@@ -1,6 +1,6 @@
 using AutoMapper;
-using Gml.Web.Api.Domains.Integrations;
-using Gml.Web.Api.Dto.Integration;
+using Gml.Dto.Integration;
+using Gml.Models.Discord;
 using GmlCore.Interfaces.Integrations;
 
 namespace Gml.Web.Api.Core.MappingProfiles;

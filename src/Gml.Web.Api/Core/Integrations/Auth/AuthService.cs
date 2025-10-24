@@ -1,6 +1,6 @@
 using Gml.Core.Launcher;
+using Gml.Domains.Integrations;
 using Gml.Web.Api.Core.Extensions;
-using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;

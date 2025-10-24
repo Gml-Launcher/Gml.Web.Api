@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Net.Http.Headers;
+using Gml.Dto.Marketplace;
+using Gml.Dto.Messages;
 using Gml.Web.Api.Core.Options;
-using Gml.Web.Api.Dto.Marketplace;
-using Gml.Web.Api.Dto.Messages;
 using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Services;

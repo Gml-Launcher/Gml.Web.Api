@@ -1,5 +1,5 @@
 using Gml.Core.Launcher;
-using Gml.Web.Api.Domains.Launcher;
+using Gml.Domains.Launcher;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Extensions;

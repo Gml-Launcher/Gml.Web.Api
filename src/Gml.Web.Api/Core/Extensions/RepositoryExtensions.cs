@@ -1,5 +1,5 @@
+using Gml.Domains.Repositories;
 using Gml.Web.Api.Core.Repositories;
-using Gml.Web.Api.Domains.Repositories;
 
 namespace Gml.Web.Api.Core.Extensions;
 

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using Gml.Dto.Mods;
 using Gml.Models.Mods;
-using Gml.Web.Api.Dto.Mods;
 using GmlCore.Interfaces.Mods;
 using Modrinth.Api.Models.Dto.Entities;
 

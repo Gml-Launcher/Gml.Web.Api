@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text;
+using Gml.Dto.Minecraft.AuthLib;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Dto.Minecraft.AuthLib;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Http.HttpResults;

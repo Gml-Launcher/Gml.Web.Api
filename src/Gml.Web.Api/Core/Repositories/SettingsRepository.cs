@@ -1,7 +1,7 @@
 using System.Reactive.Subjects;
+using Gml.Domains.Settings;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
-using Gml.Web.Api.Domains.Settings;
 using GmlCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

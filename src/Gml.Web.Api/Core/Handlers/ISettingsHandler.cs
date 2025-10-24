@@ -1,6 +1,6 @@
 using AutoMapper;
+using Gml.Dto.Settings;
 using Gml.Web.Api.Core.Repositories;
-using Gml.Web.Api.Dto.Settings;
 
 namespace Gml.Web.Api.Core.Handlers;
 
