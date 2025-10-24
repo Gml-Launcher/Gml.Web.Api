@@ -1,6 +1,6 @@
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Dto.Integration;
+using Gml.Dto.Integration;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;

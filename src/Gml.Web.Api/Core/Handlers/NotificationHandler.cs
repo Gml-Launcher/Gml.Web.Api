@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using System.Net;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Notifications;
+using Gml.Dto.Messages;
+using Gml.Dto.Notifications;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Notifications;
 

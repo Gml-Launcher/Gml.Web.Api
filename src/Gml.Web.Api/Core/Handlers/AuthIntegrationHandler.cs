@@ -1,13 +1,13 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
+using Gml.Dto.Integration;
+using Gml.Dto.Messages;
+using Gml.Dto.Player;
+using Gml.Dto.User;
 using Gml.Web.Api.Core.Extensions;
 using Gml.Web.Api.Core.Integrations.Auth;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Dto.Integration;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Player;
-using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;

@@ -1,5 +1,5 @@
+using Gml.Domains.Repositories;
 using Gml.Web.Api.Core.Repositories;
-using Gml.Web.Api.Domains.Repositories;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -11,6 +11,7 @@ public static class RepositoryExtensions
         serviceCollection.AddScoped<ISettingsRepository, SettingsRepository>();
         serviceCollection.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         serviceCollection.AddScoped<IRbacRepository, RbacRepository>();
+        serviceCollection.AddScoped<IExternalApplicationRepository, ExternalApplicationRepository>();
 
         return serviceCollection;
     }

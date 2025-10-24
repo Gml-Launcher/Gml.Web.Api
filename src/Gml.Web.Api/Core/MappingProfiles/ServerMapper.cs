@@ -1,7 +1,7 @@
 using AutoMapper;
+using Gml.Dto.Servers;
 using Gml.Models.Servers;
 using Gml.Web.Api.Domains.Servers;
-using Gml.Web.Api.Dto.Servers;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 

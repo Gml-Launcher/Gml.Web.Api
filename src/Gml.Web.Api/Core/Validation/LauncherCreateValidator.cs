@@ -1,5 +1,5 @@
 using FluentValidation;
-using Gml.Web.Api.Dto.Launcher;
+using Gml.Dto.Launcher;
 
 namespace Gml.Web.Api.Core.Validation;
 

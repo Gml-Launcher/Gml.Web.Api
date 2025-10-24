@@ -2,13 +2,14 @@ using System.Net;
 using System.Security.Claims;
 using AutoMapper;
 using FluentValidation;
+using Gml.Domains.Auth;
+using Gml.Domains.Repositories;
+using Gml.Dto.Auth;
+using Gml.Dto.Messages;
+using Gml.Dto.Player;
+using Gml.Dto.User;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
-using Gml.Web.Api.Domains.Repositories;
-using Gml.Web.Api.Dto.Auth;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Player;
-using Gml.Web.Api.Dto.User;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Http;
@@ -67,7 +68,7 @@ public class AuthHandler : IAuthHandler
             // Bootstrap: ensure Admin role exists and use it regardless of the requested role
             if (adminRoleEntity == null)
             {
-                adminRoleEntity = new Gml.Web.Api.Domains.Auth.Role { Name = "Admin", Description = "System administrator" };
+                adminRoleEntity = new Role { Name = "Admin", Description = "System administrator" };
                 db.Roles.Add(adminRoleEntity);
                 await db.SaveChangesAsync();
             }
@@ -93,7 +94,7 @@ public class AuthHandler : IAuthHandler
         var hasLink = await db.UserRoles.AnyAsync(x => x.UserId == user.Id && x.RoleId == targetRole.Id);
         if (!hasLink)
         {
-            db.UserRoles.Add(new Gml.Web.Api.Domains.Auth.UserRole { UserId = user.Id, RoleId = targetRole.Id });
+            db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = targetRole.Id });
             await db.SaveChangesAsync();
         }
 

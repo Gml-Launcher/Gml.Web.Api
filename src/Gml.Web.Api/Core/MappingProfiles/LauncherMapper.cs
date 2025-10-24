@@ -1,5 +1,5 @@
 using AutoMapper;
-using Gml.Web.Api.Dto.Launcher;
+using Gml.Dto.Launcher;
 using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Web.Api.Core.MappingProfiles;

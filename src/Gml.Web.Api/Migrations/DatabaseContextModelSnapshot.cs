@@ -17,7 +17,47 @@ namespace Gml.Web.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.Permission", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.ApplicationPermission", b =>
+                {
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ApplicationId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("ApplicationPermissions");
+                });
+
+            modelBuilder.Entity("Gml.Domains.Auth.ExternalApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExternalApplications");
+                });
+
+            modelBuilder.Entity("Gml.Domains.Auth.Permission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -38,7 +78,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.RefreshToken", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -65,7 +105,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.Role", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -83,7 +123,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.RolePermission", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.RolePermission", b =>
                 {
                     b.Property<int>("RoleId")
                         .HasColumnType("INTEGER");
@@ -98,7 +138,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("RolePermissions");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.UserRole", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.UserRole", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
@@ -113,7 +153,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("UserRoles");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Settings.Settings", b =>
+            modelBuilder.Entity("Gml.Domains.Settings.Settings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,7 +194,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.User.User", b =>
+            modelBuilder.Entity("Gml.Domains.User.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -181,15 +221,34 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.RolePermission", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.ApplicationPermission", b =>
                 {
-                    b.HasOne("Gml.Web.Api.Domains.Auth.Permission", "Permission")
+                    b.HasOne("Gml.Domains.Auth.ExternalApplication", "Application")
+                        .WithMany("ApplicationPermissions")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Gml.Domains.Auth.Permission", "Permission")
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Permission");
+                });
+
+            modelBuilder.Entity("Gml.Domains.Auth.RolePermission", b =>
+                {
+                    b.HasOne("Gml.Domains.Auth.Permission", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Gml.Web.Api.Domains.Auth.Role", "Role")
+                    b.HasOne("Gml.Domains.Auth.Role", "Role")
                         .WithMany("RolePermissions")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -200,15 +259,15 @@ namespace Gml.Web.Api.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.UserRole", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.UserRole", b =>
                 {
-                    b.HasOne("Gml.Web.Api.Domains.Auth.Role", "Role")
+                    b.HasOne("Gml.Domains.Auth.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Gml.Web.Api.Domains.User.User", "User")
+                    b.HasOne("Gml.Domains.User.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -219,12 +278,17 @@ namespace Gml.Web.Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.Permission", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.ExternalApplication", b =>
+                {
+                    b.Navigation("ApplicationPermissions");
+                });
+
+            modelBuilder.Entity("Gml.Domains.Auth.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.Role", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.Role", b =>
                 {
                     b.Navigation("RolePermissions");
 

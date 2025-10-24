@@ -1,6 +1,6 @@
 ﻿using System.Collections.Frozen;
 using FluentValidation;
-using Gml.Web.Api.Dto.Files;
+using Gml.Dto.Files;
 
 namespace Gml.Web.Api.Core.Validation;
 

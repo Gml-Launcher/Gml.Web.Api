@@ -1,5 +1,5 @@
 using System.Reactive.Subjects;
-using Gml.Web.Api.Domains.Settings;
+using Gml.Domains.Settings;
 
 namespace Gml.Web.Api.Data;
 

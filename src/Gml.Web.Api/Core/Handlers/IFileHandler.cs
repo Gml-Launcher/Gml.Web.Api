@@ -3,7 +3,7 @@ using System.Collections.Frozen;
 using System.Collections.Frozen;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Dto.Files;
+using Gml.Dto.Files;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;

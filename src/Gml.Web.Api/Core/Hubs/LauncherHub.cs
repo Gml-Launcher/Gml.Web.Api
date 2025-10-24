@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Gml.Web.Api.Core.Hubs.Controllers;
-using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 

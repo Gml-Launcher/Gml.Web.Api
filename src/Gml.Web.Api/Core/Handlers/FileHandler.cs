@@ -1,9 +1,9 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
+using Gml.Dto.Files;
+using Gml.Dto.Messages;
 using Gml.Models.System;
-using Gml.Web.Api.Dto.Files;
-using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Authorization;
