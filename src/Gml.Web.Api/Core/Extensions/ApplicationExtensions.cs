@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using System.Text;
 using Gml.Core.Launcher;
 using Gml.Domains.Settings;
+using Gml.Web.Api.Core.Authentication;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using Gml.Web.Api.Core.Integrations.Auth;
@@ -13,6 +14,7 @@ using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -207,10 +209,27 @@ public static class ApplicationExtensions
 
         builder.Services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(jwt =>
+            options.DefaultAuthenticateScheme = "MultiScheme";
+            options.DefaultScheme = "MultiScheme";
+            options.DefaultChallengeScheme = "MultiScheme";
+        })
+        .AddPolicyScheme("MultiScheme", "JWT or External App", options =>
+        {
+            options.ForwardDefaultSelector = context =>
+            {
+                var authHeader = context.Request.Headers["Authorization"].ToString();
+                if (authHeader.StartsWith("Bearer "))
+                {
+                    var token = authHeader.Substring("Bearer ".Length).Trim();
+                    if (token.StartsWith("eyJ"))
+                        return JwtBearerDefaults.AuthenticationScheme;
+                    else
+                        return "ExternalApplication";
+                }
+                return JwtBearerDefaults.AuthenticationScheme;
+            };
+        })
+        .AddJwtBearer(jwt =>
         {
             jwt.SaveToken = true;
             jwt.TokenValidationParameters = tokenValidationParameters;
@@ -227,7 +246,9 @@ public static class ApplicationExtensions
                     return Task.CompletedTask;
                 }
             };
-        });
+        })
+        .AddScheme<AuthenticationSchemeOptions, ExternalApplicationAuthenticationHandler>(
+            "ExternalApplication", options => { });
 
         // RBAC dynamic permission policies and handler
         builder.Services.AddSingleton<IAuthorizationPolicyProvider, Gml.Web.Api.Core.Authorization.DynamicPermissionPolicyProvider>();
