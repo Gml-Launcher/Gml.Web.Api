@@ -10,8 +10,7 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public interface IFileHandler
 {
-    static abstract Task GetFile(
-        HttpContext context,
+    static abstract Task<IResult> GetFile(HttpContext context,
         IGmlManager manager,
         string fileHash);
 
