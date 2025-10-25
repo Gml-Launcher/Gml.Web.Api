@@ -6,6 +6,7 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG TARGETARCH
 WORKDIR /src
 COPY ["src/Gml.Web.Api/Gml.Web.Api.csproj", "src/Gml.Web.Api/"]
 COPY ["src/Gml.Core/src/Gml.Common/Gml.Common/Gml.Common.csproj", "src/Gml.Core/src/Gml.Common/Gml.Common/"]
@@ -16,14 +17,18 @@ COPY ["src/Gml.Core/src/CmlLib.Core.Installer.NeoForge/CmlLib.Core.Installer.Neo
 COPY ["src/Gml.Core/src/Modrinth.Api/src/Modrinth.Api/Modrinth.Api.csproj", "src/Gml.Core/src/Modrinth.Api/src/Modrinth.Api/"]
 COPY ["src/Gml.Core/src/Pingo/Pingo/Pingo.csproj", "src/Gml.Core/src/Pingo/Pingo/"]
 COPY ["src/plugins/Gml.Web.Api.EndpointSDK/Gml.Web.Api.EndpointSDK.csproj", "src/plugins/Gml.Web.Api.EndpointSDK/"]
-RUN dotnet restore "src/Gml.Web.Api/Gml.Web.Api.csproj"
+RUN if [ "$TARGETARCH" = "amd64" ]; then RID=linux-x64; elif [ "$TARGETARCH" = "arm64" ]; then RID=linux-arm64; else RID=linux-x64; fi && \
+    dotnet restore "src/Gml.Web.Api/Gml.Web.Api.csproj" -r $RID
 COPY . .
 WORKDIR "/src/src/Gml.Web.Api"
-RUN dotnet build "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN if [ "$TARGETARCH" = "amd64" ]; then RID=linux-x64; elif [ "$TARGETARCH" = "arm64" ]; then RID=linux-arm64; else RID=linux-x64; fi && \
+    dotnet build "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build -r $RID
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "amd64" ]; then RID=linux-x64; elif [ "$TARGETARCH" = "arm64" ]; then RID=linux-arm64; else RID=linux-x64; fi && \
+    dotnet publish "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish -r $RID --no-self-contained /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
