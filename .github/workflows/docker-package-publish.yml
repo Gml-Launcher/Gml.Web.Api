@@ -43,6 +43,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
       # Ensure repository/image name is lowercase for Docker registry
       - name: Set lowercase image name
         id: image
