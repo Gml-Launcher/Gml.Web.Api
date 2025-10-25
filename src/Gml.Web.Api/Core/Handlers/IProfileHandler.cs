@@ -1,7 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using Gml.Dto.Profile;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Dto.Profile;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 

@@ -1,9 +1,9 @@
 using System.Net;
 using FluentValidation;
 using Gml.Core.User;
+using Gml.Dto.Messages;
+using Gml.Dto.Texture;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Texture;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;

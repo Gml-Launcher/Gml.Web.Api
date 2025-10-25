@@ -1,5 +1,5 @@
 using FluentValidation;
-using Gml.Web.Api.Dto.User;
+using Gml.Dto.User;
 using Spectre.Console;
 
 namespace Gml.Web.Api.Core.Validation;

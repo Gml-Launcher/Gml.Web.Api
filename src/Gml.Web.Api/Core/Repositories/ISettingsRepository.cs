@@ -1,4 +1,4 @@
-using Gml.Web.Api.Domains.Settings;
+using Gml.Domains.Settings;
 
 namespace Gml.Web.Api.Core.Repositories;
 

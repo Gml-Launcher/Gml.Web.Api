@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Security.Claims;
 using Gml.Core.Launcher;
 using Gml.Core.User;
-using Gml.Web.Api.Domains.User;
+using Gml.Domains.User;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.SignalR;

@@ -1,9 +1,8 @@
 using System.Net;
 using AutoMapper;
-using Gml.Web.Api.Domains.Launcher;
-using Gml.Web.Api.Domains.System;
-using Gml.Web.Api.Dto.Launcher;
-using Gml.Web.Api.Dto.Messages;
+using Gml.Domains.Launcher;
+using Gml.Dto.Launcher;
+using Gml.Dto.Messages;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Launcher;
 

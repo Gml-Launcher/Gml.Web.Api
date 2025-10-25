@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Gml.Web.Api.Core.Hubs.Controllers;
-using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 

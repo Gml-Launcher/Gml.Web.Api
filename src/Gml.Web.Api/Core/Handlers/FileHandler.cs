@@ -1,9 +1,9 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
+using Gml.Dto.Files;
+using Gml.Dto.Messages;
 using Gml.Models.System;
-using Gml.Web.Api.Dto.Files;
-using Gml.Web.Api.Dto.Messages;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Authorization;
@@ -13,25 +13,29 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class FileHandler : IFileHandler
 {
-    public static async Task GetFile(HttpContext context, IGmlManager gmlManager, string fileHash)
+    public static async Task<IResult> GetFile(HttpContext context, IGmlManager gmlManager, string fileHash)
     {
-        var response = context.Response;
+        // var response = context.Response;
 
         var (file, fileName, length) = await gmlManager.Files.GetFileStream(fileHash);
 
         try
         {
-            response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
-            response.Headers.Append("Content-Length", length.ToString());
-            response.ContentType = "application/octet-stream";
+            // response.Headers.Append("Content-Disposition", $"attachment; filename={fileName}");
+            // response.Headers.Append("Content-Length", length.ToString());
+            // response.ContentType = "application/octet-stream";
+            //
+            // await file.CopyToAsync(response.Body);
 
-            await file.CopyToAsync(response.Body);
+            return Results.File(file, "application/octet-stream", fileName);
         }
         catch (Exception exception)
         {
             Console.WriteLine(fileName + exception);
             gmlManager.BugTracker.CaptureException(exception);
         }
+
+        return Results.NotFound();
     }
 
     [Authorize]

@@ -19,7 +19,7 @@ namespace Gml.Web.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.1");
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Settings.Settings", b =>
+            modelBuilder.Entity("Gml.Domains.Settings.Settings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -48,7 +48,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.User.User", b =>
+            modelBuilder.Entity("Gml.Domains.User.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

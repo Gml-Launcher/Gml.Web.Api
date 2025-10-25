@@ -3,15 +3,14 @@ using System.Collections.Frozen;
 using System.Collections.Frozen;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Dto.Files;
+using Gml.Dto.Files;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
 
 public interface IFileHandler
 {
-    static abstract Task GetFile(
-        HttpContext context,
+    static abstract Task<IResult> GetFile(HttpContext context,
         IGmlManager manager,
         string fileHash);
 

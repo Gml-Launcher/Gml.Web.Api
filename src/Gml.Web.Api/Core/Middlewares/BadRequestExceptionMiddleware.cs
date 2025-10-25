@@ -1,5 +1,5 @@
 using System.Net;
-using Gml.Web.Api.Dto.Messages;
+using Gml.Dto.Messages;
 
 namespace Gml.Web.Api.Core.Middlewares;
 

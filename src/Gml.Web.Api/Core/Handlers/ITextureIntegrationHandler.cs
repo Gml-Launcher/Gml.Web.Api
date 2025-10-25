@@ -1,5 +1,5 @@
 using FluentValidation;
-using Gml.Web.Api.Dto.Texture;
+using Gml.Dto.Texture;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;

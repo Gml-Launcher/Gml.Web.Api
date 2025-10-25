@@ -1,6 +1,6 @@
 using AutoMapper;
-using Gml.Web.Api.Domains.Settings;
-using Gml.Web.Api.Dto.Settings;
+using Gml.Domains.Settings;
+using Gml.Dto.Settings;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 

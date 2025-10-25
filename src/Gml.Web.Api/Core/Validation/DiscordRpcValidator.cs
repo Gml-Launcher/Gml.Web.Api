@@ -1,6 +1,5 @@
 using FluentValidation;
-using Gml.Web.Api.Dto.Integration;
-using Gml.Web.Api.Dto.Profile;
+using Gml.Dto.Integration;
 
 namespace Gml.Web.Api.Core.Validation;
 

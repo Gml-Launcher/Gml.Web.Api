@@ -1,9 +1,9 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Domains.Integrations;
-using Gml.Web.Api.Dto.Integration;
-using Gml.Web.Api.Dto.Messages;
+using Gml.Domains.Integrations;
+using Gml.Dto.Integration;
+using Gml.Dto.Messages;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 

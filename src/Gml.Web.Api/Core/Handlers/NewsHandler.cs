@@ -1,8 +1,8 @@
 ﻿using System.Net;
 using AutoMapper;
 using Gml.Core.Integrations;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.News;
+using Gml.Dto.Messages;
+using Gml.Dto.News;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 

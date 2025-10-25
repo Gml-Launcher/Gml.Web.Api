@@ -1,13 +1,13 @@
-using Gml.Web.Api.Domains.Settings;
-using Gml.Web.Api.Domains.Auth;
-using Gml.Web.Api.Domains.User;
+using Gml.Domains.Auth;
+using Gml.Domains.Settings;
+using Gml.Domains.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Data;
 
 public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 {
-    public DbSet<User> Users { get; set; }
+    public DbSet<DbUser> Users { get; set; }
     public DbSet<Settings> Settings { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -15,6 +15,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
+
+    public DbSet<ExternalApplication> ExternalApplications { get; set; }
+    public DbSet<ApplicationPermission> ApplicationPermissions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,9 +51,26 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserRole>()
-            .HasOne(ur => ur.User)
+            .HasOne(ur => ur.DbUser)
             .WithMany()
             .HasForeignKey(ur => ur.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Composite key for ApplicationPermission
+        modelBuilder.Entity<ApplicationPermission>()
+            .HasKey(ap => new { ap.ApplicationId, ap.PermissionId });
+
+        // Relationships: ApplicationPermission
+        modelBuilder.Entity<ApplicationPermission>()
+            .HasOne(ap => ap.Application)
+            .WithMany(a => a.ApplicationPermissions)
+            .HasForeignKey(ap => ap.ApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ApplicationPermission>()
+            .HasOne(ap => ap.Permission)
+            .WithMany()
+            .HasForeignKey(ap => ap.PermissionId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

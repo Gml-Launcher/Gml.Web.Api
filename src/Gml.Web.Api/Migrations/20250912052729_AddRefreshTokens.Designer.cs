@@ -20,7 +20,7 @@ namespace Gml.Web.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Auth.RefreshToken", b =>
+            modelBuilder.Entity("Gml.Domains.Auth.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -47,7 +47,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.Settings.Settings", b =>
+            modelBuilder.Entity("Gml.Domains.Settings.Settings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -82,7 +82,7 @@ namespace Gml.Web.Api.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("Gml.Web.Api.Domains.User.User", b =>
+            modelBuilder.Entity("Gml.Domains.User.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

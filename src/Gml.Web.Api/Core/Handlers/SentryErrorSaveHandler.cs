@@ -1,8 +1,8 @@
 using System.Net;
 using AutoMapper;
 using FluentValidation;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Texture;
+using Gml.Dto.Messages;
+using Gml.Dto.Texture;
 using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -11,7 +11,8 @@ public class SentryErrorSaveHandler : IErrorSaveHandler
 {
     public static async Task<IResult> GetDsnUrl(HttpContext context, IGmlManager gmlManager)
     {
-        var serviceUrl = await gmlManager.Integrations.GetSentryService() ?? $"{context.Request.Scheme}://gml@{context.Request.Host.Value}/1";
+        var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
+        var serviceUrl = await gmlManager.Integrations.GetSentryService() ?? $"{context.Request.Scheme}://gml@{hostValue}/1";
 
         return Results.Ok(ResponseMessage.Create(new UrlServiceDto(serviceUrl), "Успешно", HttpStatusCode.OK));
     }

@@ -2,8 +2,8 @@
 using System.Net;
 using AutoMapper;
 using Gml.Core.User;
-using Gml.Web.Api.Dto.Messages;
-using Gml.Web.Api.Dto.Player;
+using Gml.Dto.Messages;
+using Gml.Dto.Player;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.User;
 using Gml.Web.Api.Core.Hubs.Controllers;

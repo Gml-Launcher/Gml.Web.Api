@@ -1,8 +1,9 @@
 using System.Reactive.Subjects;
 using Gml.Core.Launcher;
+using Gml.Domains.Auth;
+using Gml.Domains.Settings;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
-using Gml.Web.Api.Domains.Settings;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,13 @@ public static class DatabaseExtensions
         var settings = services.GetRequiredService<ServerSettings>();
 
         app.UseCors(settings.PolicyName);
+
+        var databaseDirectory = new DirectoryInfo("database");
+
+        if (!databaseDirectory.Exists)
+        {
+            databaseDirectory.Create();
+        }
 
         if (context.Database.GetPendingMigrations().Any())
             context.Database.Migrate();
@@ -71,7 +79,7 @@ public static class DatabaseExtensions
             var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
             if (adminRole == null)
             {
-                adminRole = context.Roles.Add(new Gml.Web.Api.Domains.Auth.Role
+                adminRole = context.Roles.Add(new Role
                 {
                     Name = "Admin",
                     Description = "System administrator"
@@ -117,7 +125,7 @@ public static class DatabaseExtensions
             {
                 if (!existingNames.Contains(name))
                 {
-                    var newPerm = context.Permissions.Add(new Gml.Web.Api.Domains.Auth.Permission
+                    var newPerm = context.Permissions.Add(new Permission
                     {
                         Name = name,
                         Description = description,
@@ -151,7 +159,7 @@ public static class DatabaseExtensions
                 var linkExists = context.RolePermissions.Any(rp => rp.RoleId == adminRole.Id && rp.PermissionId == permId);
                 if (!linkExists)
                 {
-                    context.RolePermissions.Add(new Gml.Web.Api.Domains.Auth.RolePermission
+                    context.RolePermissions.Add(new RolePermission
                     {
                         RoleId = adminRole.Id,
                         PermissionId = permId
