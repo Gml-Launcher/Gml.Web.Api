@@ -7,11 +7,11 @@ name: Docker
 
 on:
   push:
-    branches: [ "master", "develop" ]
+    branches: [ 'master', 'develop', 'feature/*' ]
     # Publish semver tags as releases.
-    tags: [ 'v*.*.*', 'v*.*', 'v*.*.*-beta*' ]
+    tags: [ 'v*.*', 'v*.*.*', 'v*.*.*-beta*' ]
   pull_request:
-    branches: [ "master", "develop" ]
+    branches: [ 'master', 'develop', 'feature/*' ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -19,38 +19,48 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
 
-
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-22.04
+          - platform: linux/arm64
+            runner: ubuntu-22.04-arm
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
       id-token: write
+    outputs:
+      image-name: ${{ steps.meta.outputs.tags }}
+      labels: ${{ steps.meta.outputs.labels }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout submodules
         run: git submodule update --init --recursive
 
-      #      - name: Tests Gml Core
-      #        run: dotnet test --configuration Release src/Gml.Core/tests/GmlCore.Tests/GmlCore.Tests.csproj
+      # Ensure repository/image name is lowercase for Docker registry
+      - name: Set lowercase image name
+        id: image
+        run: |
+          image="${IMAGE_NAME}"
+          echo "lower=${image,,}" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_NAME_LC=${image,,}" >> "$GITHUB_ENV"
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
 
-      - name: Tests Gml Web Api
-        run: dotnet test --configuration Release tests/Gml.WebApi.Tests/Gml.WebApi.Tests.csproj
-
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@6e04d228eb30da1757ee4e1dd75a0ec73a653e06 #v3.1.1
-        with:
-          cosign-release: 'v2.1.1'
+      - name: Prepare platform name
+        id: platform
+        run: |
+          platform=${{ matrix.platform }}
+          echo "name=${platform//\//-}" >> $GITHUB_OUTPUT
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -74,19 +84,118 @@ jobs:
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.lower }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ github.sha }}-${{ steps.platform.outputs.name }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
+      - name: Build and push Docker image by digest
+        id: build
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ steps.image.outputs.lower }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha,scope=build-${{ steps.platform.outputs.name }}
+          cache-to: type=gha,mode=max,scope=build-${{ steps.platform.outputs.name }}
+          provenance: false
+          sbom: false
 
+      - name: Export digest
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ steps.platform.outputs.name }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    name: Create multi-arch manifest
+    runs-on: ubuntu-22.04
+    needs: build
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          pattern: digests-*
+          path: /tmp/digests
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Ensure repository/image name is lowercase for Docker registry
+      - name: Set lowercase image name
+        id: image
+        run: |
+          image="${IMAGE_NAME}"
+          echo "lower=${image,,}" >> "$GITHUB_OUTPUT"
+          echo "IMAGE_NAME_LC=${image,,}" >> "$GITHUB_ENV"
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.lower }}
+
+      - name: Create manifest list and push
+        id: create-manifest
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY }}/${{ steps.image.outputs.lower }}@sha256:%s ' *)
+
+          # Get the digest of the manifest
+          manifest_digest=$(docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image.outputs.lower }}:${{ steps.meta.outputs.version }} --format '{{json .Manifest}}' | jq -r '.digest // .Digest // empty')
+          if [ -z "$manifest_digest" ]; then
+            manifest_digest=$(docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image.outputs.lower }}:${{ steps.meta.outputs.version }} --format '{{.Digest}}')
+          fi
+          echo "digest=${manifest_digest}" >> $GITHUB_OUTPUT
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image.outputs.lower }}:${{ steps.meta.outputs.version }}
+
+      # Install cosign (before using it)
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.7.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      # Sign the pushed image by digest (skip on PRs)
+      - name: Sign image with cosign
+        if: github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.create-manifest.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
