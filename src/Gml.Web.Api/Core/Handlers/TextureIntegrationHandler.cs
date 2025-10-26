@@ -80,7 +80,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
 
         if (string.IsNullOrEmpty(login))
         {
-            return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Texture\"",
+            return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Login\"",
                 HttpStatusCode.BadRequest));
         }
 
@@ -103,7 +103,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
 
         await skinServiceManager.UpdateSkin(user, texture);
 
-        return await skinServiceManager.UpdateCloak(user, texture)
+        return await skinServiceManager.UpdateSkin(user, texture)
             ? Results.Ok(ResponseMessage.Create("Скин успешно установлен!", HttpStatusCode.OK))
             : Results.BadRequest(ResponseMessage.Create("Не удалось обновить скин!", HttpStatusCode.BadRequest));
     }
@@ -118,7 +118,7 @@ public class TextureIntegrationHandler : ITextureIntegrationHandler
 
         if (string.IsNullOrEmpty(login))
         {
-            return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Texture\"",
+            return Results.BadRequest(ResponseMessage.Create("Не заполнено обязательное поля \"Login\"",
                 HttpStatusCode.BadRequest));
         }
 
