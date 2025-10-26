@@ -137,7 +137,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 player.Uuid,
                 player.Name,
                 player.Name,
-                ["Player"], ["profiles.view"], 60 * 24 * 10); // 60 минут * 24 часа * 10 дней
+                ["Player"], ["profiles.view", "integrations.news.view"], 60 * 24 * 10); // 60 минут * 24 часа * 10 дней
 
             return await HandleAuthenticatedUser(context, gmlManager, mapper, player, userAgent);
 

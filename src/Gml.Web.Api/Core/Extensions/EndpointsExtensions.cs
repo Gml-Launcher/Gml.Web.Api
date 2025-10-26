@@ -628,7 +628,7 @@ public static class EndpointsExtensions
             .WithTags("Integration/News")
             .Produces<ResponseMessage<NewsGetListenerDto[]>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest)
-            .RequireAuthorization("perm:integrations.news.manage");
+            .RequireAuthorization("perm:integrations.news.view");
 
         #endregion
 
