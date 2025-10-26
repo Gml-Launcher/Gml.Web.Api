@@ -104,6 +104,7 @@ public static class DatabaseExtensions
                 ("integrations.auth.update", "Обновление информации о сервисе авторизации"),
                 ("integrations.auth.delete", "Удаление/отключение активного сервиса авторизации"),
                 ("integrations.news.manage", "Управление слушателями новостей, включая добавление, удаление и получение списка слушателей"),
+                ("integrations.news.view", "Получение списка новостей"),
                 ("profiles.view", "Просмотр списка профилей и версий Minecraft"),
                 ("profiles.create", "Создание игровых профилей"),
                 ("profiles.update", "Обновление игровых профилей, включая восстановление, компиляцию и управление whitelist"),
