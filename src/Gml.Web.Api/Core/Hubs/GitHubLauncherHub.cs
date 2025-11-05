@@ -4,6 +4,7 @@ using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.SignalR;
+using System.Reactive.Linq;
 
 namespace Gml.Web.Api.Core.Hubs;
 
@@ -13,6 +14,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
 
     public async Task Download(string branchName, string host, string folderName)
     {
+        using var cts = new CancellationTokenSource();
         try
         {
             var projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher", branchName);
@@ -38,12 +40,19 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             }
 
             ChangeProgress(nameof(GitHubLauncherHub), 10);
+
+            var progressSubscription = Observable
+                .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(700))
+                .Select(x => (int)(10 + Math.Min(x * 0.5, 88)))
+                .Subscribe(progress => ChangeProgress(nameof(GitHubLauncherHub), progress));
+
             var newFolder = await gitHubService.DownloadProject(projectPath, branchName, _launcherGitHub);
-            ChangeProgress(nameof(GitHubLauncherHub), 20);
 
+            await cts.CancelAsync();
+            progressSubscription.Dispose();
+
+            ChangeProgress(nameof(GitHubLauncherHub), 98);
             await gitHubService.EditLauncherFiles(newFolder, host, folderName);
-            ChangeProgress(nameof(GitHubLauncherHub), 30);
-
             ChangeProgress(nameof(GitHubLauncherHub), 100);
             SendCallerMessage($"Проект \"{branchName}\" успешно создан");
         }
@@ -55,6 +64,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         finally
         {
             await Clients.Caller.SendAsync("LauncherDownloadEnded");
+            await cts.CancelAsync();
         }
     }
 
@@ -81,8 +91,8 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
                 if (result)
                     await gmlManager.Notifications.SendMessage("Лаунчер успешно скомпилирован!", NotificationType.Info);
                 else
-                    await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!", NotificationType.Error);
-
+                    await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!",
+                        NotificationType.Error);
             }
         }
         catch (Exception exception)
