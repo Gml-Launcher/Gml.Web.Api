@@ -1,10 +1,8 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Reactive.Linq;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.SignalR;
-using System.Reactive.Linq;
 
 namespace Gml.Web.Api.Core.Hubs;
 
@@ -35,7 +33,8 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             if (allowedVersions.All(c => c != branchName))
             {
                 await gmlManager.Notifications
-                    .SendMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается", NotificationType.Error);
+                    .SendMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается",
+                        NotificationType.Error);
                 return;
             }
 
@@ -70,6 +69,9 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
 
     public async Task Compile(string version, string[] osTypes)
     {
+        IDisposable? downloadLogsDisposable = null;
+        IDisposable? buildLogsDisposable = null;
+
         try
         {
             if (!gmlManager.Launcher.CanCompile(version, out string message))
@@ -79,20 +81,20 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             }
 
             Log("Start compilling...");
-
+            downloadLogsDisposable = gmlManager.LauncherInfo.Settings.SystemProcedures.DownloadLogs.Subscribe(Log);
             if (await gmlManager.LauncherInfo.Settings.SystemProcedures.InstallDotnet())
             {
-                var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
+                buildLogsDisposable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
 
                 var result = await gmlManager.Launcher.Build(version, osTypes);
-
-                eventObservable.Dispose();
 
                 if (result)
                     await gmlManager.Notifications.SendMessage("Лаунчер успешно скомпилирован!", NotificationType.Info);
                 else
                     await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!",
                         NotificationType.Error);
+
+                await Clients.Caller.SendAsync("LauncherBuildEnded");
             }
         }
         catch (Exception exception)
@@ -102,7 +104,8 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         }
         finally
         {
-            await Clients.Caller.SendAsync("LauncherBuildEnded");
+            downloadLogsDisposable?.Dispose();
+            buildLogsDisposable?.Dispose();
         }
     }
 }
