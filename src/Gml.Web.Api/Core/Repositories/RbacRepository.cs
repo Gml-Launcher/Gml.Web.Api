@@ -68,7 +68,7 @@ public class RbacRepository : IRbacRepository
 
     public Task<bool> RoleExistsByNameAsync(string name)
     {
-        return _db.Roles.AnyAsync(r => r.Name == name);
+        return _db.Roles.AnyAsync(r => r.Name.ToLower() == name.ToLower());
     }
 
     public async Task<Role> CreateRoleAsync(string name, string? description)
