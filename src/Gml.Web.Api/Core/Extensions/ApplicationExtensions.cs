@@ -1,9 +1,8 @@
-using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Text;
-using Gml.Core.Launcher;
 using Gml.Domains.Settings;
 using Gml.Web.Api.Core.Authentication;
+using Gml.Web.Api.Core.Authorization;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using Gml.Web.Api.Core.Integrations.Auth;
@@ -12,16 +11,13 @@ using Gml.Web.Api.Core.Middlewares;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
-using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Minio;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -185,6 +181,7 @@ public static class ApplicationExtensions
             .AddSingleton<PlayersController>()
             .AddSingleton<NotificationController>()
             .AddScoped<ISystemService, SystemService>()
+            .AddScoped<RestoreService>()
             .AddScoped<ISkinServiceManager, SkinServiceManager>()
             .AddSingleton<IAuthService, AuthService>()
             .AddSingleton<IGitHubService, GitHubService>()
@@ -208,51 +205,52 @@ public static class ApplicationExtensions
         builder.Services.AddAuthorization();
 
         builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = "MultiScheme";
-            options.DefaultScheme = "MultiScheme";
-            options.DefaultChallengeScheme = "MultiScheme";
-        })
-        .AddPolicyScheme("MultiScheme", "JWT or External App", options =>
-        {
-            options.ForwardDefaultSelector = context =>
             {
-                var authHeader = context.Request.Headers["Authorization"].ToString();
-                if (authHeader.StartsWith("Bearer "))
-                {
-                    var token = authHeader.Substring("Bearer ".Length).Trim();
-                    if (token.StartsWith("eyJ"))
-                        return JwtBearerDefaults.AuthenticationScheme;
-                    else
-                        return "ExternalApplication";
-                }
-                return JwtBearerDefaults.AuthenticationScheme;
-            };
-        })
-        .AddJwtBearer(jwt =>
-        {
-            jwt.SaveToken = true;
-            jwt.TokenValidationParameters = tokenValidationParameters;
-            jwt.Events = new JwtBearerEvents
+                options.DefaultAuthenticateScheme = "MultiScheme";
+                options.DefaultScheme = "MultiScheme";
+                options.DefaultChallengeScheme = "MultiScheme";
+            })
+            .AddPolicyScheme("MultiScheme", "JWT or External App", options =>
             {
-                OnMessageReceived = context =>
+                options.ForwardDefaultSelector = context =>
                 {
-                    var accessToken = context.Request.Query["access_token"];
+                    var authHeader = context.Request.Headers["Authorization"].ToString();
+                    if (authHeader.StartsWith("Bearer "))
+                    {
+                        var token = authHeader.Substring("Bearer ".Length).Trim();
+                        if (token.StartsWith("eyJ"))
+                            return JwtBearerDefaults.AuthenticationScheme;
+                        else
+                            return "ExternalApplication";
+                    }
 
-                    var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/ws"))
-                        context.Token = accessToken;
+                    return JwtBearerDefaults.AuthenticationScheme;
+                };
+            })
+            .AddJwtBearer(jwt =>
+            {
+                jwt.SaveToken = true;
+                jwt.TokenValidationParameters = tokenValidationParameters;
+                jwt.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
 
-                    return Task.CompletedTask;
-                }
-            };
-        })
-        .AddScheme<AuthenticationSchemeOptions, ExternalApplicationAuthenticationHandler>(
-            "ExternalApplication", options => { });
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/ws"))
+                            context.Token = accessToken;
+
+                        return Task.CompletedTask;
+                    }
+                };
+            })
+            .AddScheme<AuthenticationSchemeOptions, ExternalApplicationAuthenticationHandler>(
+                "ExternalApplication", options => { });
 
         // RBAC dynamic permission policies and handler
-        builder.Services.AddSingleton<IAuthorizationPolicyProvider, Gml.Web.Api.Core.Authorization.DynamicPermissionPolicyProvider>();
-        builder.Services.AddSingleton<IAuthorizationHandler, Gml.Web.Api.Core.Authorization.PermissionAuthorizationHandler>();
+        builder.Services.AddSingleton<IAuthorizationPolicyProvider, DynamicPermissionPolicyProvider>();
+        builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return builder;
     }

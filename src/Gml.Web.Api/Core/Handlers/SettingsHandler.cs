@@ -1,6 +1,5 @@
 using System.Net;
 using AutoMapper;
-using CommunityToolkit.HighPerformance.Helpers;
 using FluentValidation;
 using Gml.Domains.Repositories;
 using Gml.Domains.Settings;
@@ -11,7 +10,6 @@ using Gml.Dto.User;
 using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Repositories;
 using Gml.Web.Api.Core.Services;
-using Gml.Web.Api.Core.Validation;
 using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
@@ -101,6 +99,49 @@ public abstract class SettingsHandler : ISettingsHandler
         }
 
         return Results.BadRequest();
+    }
+
+    public static async Task<IResult> Restore(
+        HttpContext context,
+        RestoreService restoreService,
+        ISettingsRepository settingsService,
+        string backupKey)
+    {
+        var settings = await settingsService.GetSettings();
+
+        if (settings is null || settings.IsInstalled)
+        {
+            return Results.Forbid();
+        }
+
+        try
+        {
+            restoreService.Restore(backupKey);
+
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(ResponseMessage.Create(e.Message, HttpStatusCode.BadRequest));
+        }
+    }
+
+    public static async Task<IResult> GetKeys(
+        HttpContext context,
+        RestoreService restoreService,
+        ISettingsRepository settingsService)
+    {
+        var settings = await settingsService.GetSettings();
+
+        if (settings is null || settings.IsInstalled)
+        {
+            return Results.Forbid();
+        }
+
+        var keys = await restoreService.GetBackupKeysAsync();
+
+        return Results.Ok(ResponseMessage.Create(keys, "Ошибка валидации",
+            HttpStatusCode.OK));
     }
 
     public static async Task<IResult> IsNotInstalled(
