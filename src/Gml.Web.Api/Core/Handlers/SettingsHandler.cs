@@ -81,21 +81,28 @@ public abstract class SettingsHandler : ISettingsHandler
             Password = dto.AdminPassword
         }, appContext, tokenService, refreshRepo, serverSettings, db);
 
-        switch (result)
+        try
         {
-            case BadRequest<object>:
-                return result;
-            case Ok<ResponseMessage<AuthTokensDto>>:
-                settings.IsInstalled = true;
-                settings.ProjectName = dto.ProjectName;
-                var address = new Uri(dto.BackendAddress);
-                await gmlManager.Integrations.SetSentryService($"{address.Scheme}://gml@{address.Authority}/1");
+            switch (result)
+            {
+                case BadRequest<object>:
+                    return result;
+                case Ok<ResponseMessage<AuthTokensDto>>:
+                    settings.IsInstalled = true;
+                    settings.ProjectName = dto.ProjectName;
+                    var address = new Uri(dto.BackendAddress);
+                    await gmlManager.Integrations.SetSentryService($"{address.Scheme}://gml@{address.Authority}/1");
 
-                await settingsService.UpdateSettings(settings);
+                    await settingsService.UpdateSettings(settings);
 
-                return result;
-            default:
-                return result;
+                    return result;
+                default:
+                    return result;
+            }
+        }
+        catch (Exception e)
+        {
+            gmlManager.BugTracker.CaptureException(e);
         }
 
         return Results.BadRequest();
