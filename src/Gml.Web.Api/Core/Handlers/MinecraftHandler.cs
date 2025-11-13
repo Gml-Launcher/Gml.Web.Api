@@ -6,6 +6,7 @@ using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -83,8 +84,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower()
-                              ?? TextureProtocol.Https.GetDisplayName().ToLower();
+        var textureProtocol = EnumExtensions.GetDisplayName(gmlManager.LauncherInfo.StorageSettings.TextureProtocol)
+                                  ?.ToLower()
+                              ?? EnumExtensions.GetDisplayName(TextureProtocol.Https).ToLower();
 
         var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
         var address = $"{textureProtocol}://{hostValue}";
@@ -178,8 +180,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower() ??
-                              TextureProtocol.Https.GetDisplayName().ToLower();
+        var textureProtocol = EnumExtensions.GetDisplayName(gmlManager.LauncherInfo.StorageSettings.TextureProtocol)
+                                  ?.ToLower()
+                              ?? EnumExtensions.GetDisplayName(TextureProtocol.Https).ToLower();
 
         var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
         var address = $"{textureProtocol}://{hostValue}";

@@ -29,8 +29,6 @@ public static class RegisterSwaggerExtensions
             };
 
             c.AddSecurityDefinition("Bearer", securitySchema);
-            var securityRequirement = new OpenApiSecurityRequirement { { securitySchema, new[] { "Bearer" } } };
-            c.AddSecurityRequirement(securityRequirement);
         });
 
         return serviceCollection;
