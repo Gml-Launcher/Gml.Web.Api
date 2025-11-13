@@ -118,7 +118,8 @@ public class MinecraftHandler : IMinecraftHandler
         {
             texture.Textures.Skin = new SkinCape
             {
-                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
+                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}"),
+                Metadata = user.IsSlim ? new SkinMetadata { Model = "slim" } : null
             };
         }
 
