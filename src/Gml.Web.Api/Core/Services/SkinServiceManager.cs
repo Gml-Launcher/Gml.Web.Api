@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using Gml.Core.User;
+using Gml.Models.User;
 using Gml.Web.Api.Core.Options;
 
 namespace Gml.Web.Api.Core.Services;
@@ -25,6 +25,7 @@ public class SkinServiceManager(IHttpClientFactory httpClientFactory) : ISkinSer
 
         return request.IsSuccessStatusCode;
     }
+
     public async Task<bool> UpdateCloak(AuthUser authUser, Stream texture)
     {
         var content = new MultipartFormDataContent();
@@ -42,7 +43,6 @@ public class SkinServiceManager(IHttpClientFactory httpClientFactory) : ISkinSer
 
         return request.IsSuccessStatusCode;
     }
-
 }
 
 public interface ISkinServiceManager

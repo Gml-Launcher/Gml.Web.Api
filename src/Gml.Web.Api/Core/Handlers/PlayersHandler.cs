@@ -1,12 +1,12 @@
 ﻿using System.Collections.Frozen;
 using System.Net;
 using AutoMapper;
-using Gml.Core.User;
 using Gml.Dto.Messages;
 using Gml.Dto.Player;
+using Gml.Models.User;
+using Gml.Web.Api.Core.Hubs.Controllers;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.User;
-using Gml.Web.Api.Core.Hubs.Controllers;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -51,19 +51,23 @@ public class PlayersHandler : IPlayersHandler
             if (!string.IsNullOrWhiteSpace(findUuid))
             {
                 var uuidPart = findUuid.Trim();
-                players = players.Where(u => !string.IsNullOrEmpty(u.Uuid) && u.Uuid!.Contains(uuidPart, StringComparison.OrdinalIgnoreCase));
+                players = players.Where(u =>
+                    !string.IsNullOrEmpty(u.Uuid) && u.Uuid!.Contains(uuidPart, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(findIp))
             {
                 var ipPart = findIp.Trim();
-                players = players.Where(u => (u is AuthUser au) && au.AuthHistory.Any(h => !string.IsNullOrEmpty(h.Address) && h.Address!.Contains(ipPart, StringComparison.OrdinalIgnoreCase)));
+                players = players.Where(u => (u is AuthUser au) && au.AuthHistory.Any(h =>
+                    !string.IsNullOrEmpty(h.Address) &&
+                    h.Address!.Contains(ipPart, StringComparison.OrdinalIgnoreCase)));
             }
 
             if (!string.IsNullOrWhiteSpace(findHwid))
             {
                 var hwidPart = findHwid.Trim();
-                players = players.Where(u => (u is AuthUser au) && au.AuthHistory.Any(h => !string.IsNullOrEmpty(h.Hwid) && h.Hwid!.Contains(hwidPart, StringComparison.OrdinalIgnoreCase)));
+                players = players.Where(u => (u is AuthUser au) && au.AuthHistory.Any(h =>
+                    !string.IsNullOrEmpty(h.Hwid) && h.Hwid!.Contains(hwidPart, StringComparison.OrdinalIgnoreCase)));
             }
 
             if (onlyDeviceBlocked == true)
@@ -156,17 +160,16 @@ public class PlayersHandler : IPlayersHandler
         var profiles = (await gmlManager.Profiles.GetProfiles()).ToFrozenSet();
 
 
-
         foreach (var playerUuid in playerUuids)
         {
-
             var player = await gmlManager.Users.GetUserByUuid(playerUuid);
 
             if (player is null) continue;
 
             if (profiles.Any(c => c.UserWhiteListGuid.Contains(playerUuid)))
             {
-                return Results.BadRequest(ResponseMessage.Create($"Пользователь \"{player.Name}\" находится в белом списке, удалите его из всех профилей перед удалением!",
+                return Results.BadRequest(ResponseMessage.Create(
+                    $"Пользователь \"{player.Name}\" находится в белом списке, удалите его из всех профилей перед удалением!",
                     HttpStatusCode.BadRequest));
             }
 

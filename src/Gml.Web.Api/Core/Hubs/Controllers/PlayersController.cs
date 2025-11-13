@@ -2,11 +2,9 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Security.Claims;
-using Gml.Core.Launcher;
-using Gml.Core.User;
 using Gml.Domains.User;
+using Gml.Models.User;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -15,9 +13,9 @@ namespace Gml.Web.Api.Core.Hubs.Controllers;
 public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
 {
     private readonly IGmlManager _gmlManager;
-    public ConcurrentDictionary<string, IDisposable> Timers = new();
     public ConcurrentDictionary<string, ISingleClientProxy> GameServersConnections = new();
     public ConcurrentDictionary<string, UserLauncherInfo> LauncherInfos = new();
+    public ConcurrentDictionary<string, IDisposable> Timers = new();
 
     public PlayersController(IGmlManager gmlManager)
     {
@@ -69,6 +67,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
                 timer.Dispose();
                 Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Timer disposed");
             }
+
             Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Disconnected");
 
             _ = OnKickUser(user.User.Name, "Потеряно соединение с сервером");

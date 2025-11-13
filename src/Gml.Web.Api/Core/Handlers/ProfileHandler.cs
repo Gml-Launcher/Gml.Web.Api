@@ -6,12 +6,11 @@ using FluentValidation;
 using Gml.Common;
 using Gml.Core;
 using Gml.Core.Launcher;
-using Gml.Core.User;
 using Gml.Dto.Messages;
 using Gml.Dto.Mods;
 using Gml.Dto.Player;
 using Gml.Dto.Profile;
-using Gml.Models.Mods;
+using Gml.Models.User;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces;
@@ -19,7 +18,6 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -55,8 +53,8 @@ public class ProfileHandler : IProfileHandler
                 .Where(c =>
                     c is { IsEnabled: true, UserWhiteListGuid.Count: 0 } ||
                     c.UserWhiteListGuid.Any(g => g.Equals(user.Uuid)));
-
-        }else
+        }
+        else
         {
             profiles = await gmlManager.Profiles.GetProfiles();
         }
@@ -69,13 +67,16 @@ public class ProfileHandler : IProfileHandler
         {
             var originalProfile = gameProfiles.First(c => c.Name == profile.Name);
             var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
-            profile.Background = $"{context.Request.Scheme}://{hostValue}/api/v1/file/{originalProfile.BackgroundImageKey}";
+            profile.Background =
+                $"{context.Request.Scheme}://{hostValue}/api/v1/file/{originalProfile.BackgroundImageKey}";
         }
 
-        return Results.Ok(ResponseMessage.Create(dtoProfiles.OrderByDescending(c => c.Priority), string.Empty, HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(dtoProfiles.OrderByDescending(c => c.Priority), string.Empty,
+            HttpStatusCode.OK));
     }
 
-    public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader, string? minecraftVersion)
+    public static async Task<IResult> GetMinecraftVersions(IGmlManager gmlManager, string gameLoader,
+        string? minecraftVersion)
     {
         try
         {
@@ -91,7 +92,8 @@ public class ProfileHandler : IProfileHandler
         }
         catch (VersionNotLoadedException versionNotLoadedException)
         {
-            return Results.NotFound(ResponseMessage.Create(versionNotLoadedException.InnerExceptionMessage, HttpStatusCode.NotFound));
+            return Results.NotFound(ResponseMessage.Create(versionNotLoadedException.InnerExceptionMessage,
+                HttpStatusCode.NotFound));
         }
         catch (Exception e)
         {
@@ -137,7 +139,8 @@ public class ProfileHandler : IProfileHandler
                 return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем уже существует",
                     HttpStatusCode.BadRequest));
 
-            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion, createDto.GameLoader))
+            if (!await gmlManager.Profiles.CanAddProfile(createDto.Name, createDto.Version, createDto.LoaderVersion,
+                    createDto.GameLoader))
                 return Results.BadRequest(ResponseMessage.Create("Невозможно создать профиль по полученным данным",
                     HttpStatusCode.BadRequest));
 
@@ -184,9 +187,12 @@ public class ProfileHandler : IProfileHandler
             OriginalName = context.Request.Form["originalName"],
             JvmArguments = context.Request.Form["jvmArguments"],
             GameArguments = context.Request.Form["gameArguments"],
-            RecommendedRam = int.TryParse(context.Request.Form["recommendedRam"], out var recommendedRam) ? recommendedRam : 1024,
+            RecommendedRam = int.TryParse(context.Request.Form["recommendedRam"], out var recommendedRam)
+                ? recommendedRam
+                : 1024,
             Priority = int.TryParse(context.Request.Form["priority"], out var priority) ? priority : 0,
-            NeedUpdateImages = !bool.TryParse(context.Request.Form["needUpdateImages"], out var needUpdateImages) || needUpdateImages,
+            NeedUpdateImages = !bool.TryParse(context.Request.Form["needUpdateImages"], out var needUpdateImages) ||
+                               needUpdateImages,
             IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
@@ -211,7 +217,8 @@ public class ProfileHandler : IProfileHandler
         }
 
         if (!profile.CanEdit)
-            return Results.NotFound(ResponseMessage.Create("В текущем состоянии профиля редактирование невозможно", HttpStatusCode.NotFound));
+            return Results.NotFound(ResponseMessage.Create("В текущем состоянии профиля редактирование невозможно",
+                HttpStatusCode.NotFound));
 
         var icon = context.Request.Form.Files["icon"] is null
             ? null
@@ -234,7 +241,7 @@ public class ProfileHandler : IProfileHandler
             updateDto.Priority,
             updateDto.RecommendedRam,
             updateDto.NeedUpdateImages
-            );
+        );
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
         var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
@@ -327,7 +334,8 @@ public class ProfileHandler : IProfileHandler
             return Results.StatusCode(StatusCodes.Status403Forbidden);
         }
 
-        if (profile.UserWhiteListGuid.Count != 0 && !profile.UserWhiteListGuid.Any(c => c.Equals(user.Uuid, StringComparison.OrdinalIgnoreCase)))
+        if (profile.UserWhiteListGuid.Count != 0 &&
+            !profile.UserWhiteListGuid.Any(c => c.Equals(user.Uuid, StringComparison.OrdinalIgnoreCase)))
             return Results.Forbid();
 
         user.Manager = gmlManager;
@@ -343,7 +351,7 @@ public class ProfileHandler : IProfileHandler
             MinimumRamMb = 512,
             OsName = osName,
             OsArch = createInfoDto.OsArchitecture
-        },user);
+        }, user);
 
         var profileDto = mapper.Map<ProfileReadInfoDto>(profileInfo);
 
@@ -351,6 +359,42 @@ public class ProfileHandler : IProfileHandler
         profileDto.Background = $"{context.Request.Scheme}://{hostValue}/api/v1/file/{profile.BackgroundImageKey}";
 
         return Results.Ok(ResponseMessage.Create(profileDto, string.Empty, HttpStatusCode.OK));
+    }
+
+    [Authorize]
+    public static async Task<IResult> RemoveProfile(
+        IGmlManager gmlManager,
+        string profileNames,
+        [FromQuery] bool removeFiles)
+    {
+        var profileNamesList = profileNames.Split(',');
+        var notRemovedProfiles = new List<string>();
+
+        foreach (var profileName in profileNamesList)
+        {
+            var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+            if (profile == null || profile.State == ProfileState.Loading)
+                notRemovedProfiles.Add(profileName);
+            else
+                await gmlManager.Profiles.RemoveProfile(profile, removeFiles);
+        }
+
+        var message = "Операция выполнена";
+
+        if (notRemovedProfiles.Any())
+        {
+            message += ". Было пропущено удаление:";
+            message += string.Join(",", notRemovedProfiles);
+        }
+        else
+        {
+            message += $""". Профили: "{profileNames}" удалены.""";
+        }
+
+        await gmlManager.Notifications.SendMessage("Удаление профилей", message, NotificationType.Info);
+
+        return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetProfileDetails(
@@ -431,41 +475,6 @@ public class ProfileHandler : IProfileHandler
     }
 
     [Authorize]
-    public static async Task<IResult> RemoveProfile(
-        IGmlManager gmlManager,
-        string profileNames,
-        [FromQuery] bool removeFiles)
-    {
-        var profileNamesList = profileNames.Split(',');
-        var notRemovedProfiles = new List<string>();
-
-        foreach (var profileName in profileNamesList)
-        {
-            var profile = await gmlManager.Profiles.GetProfile(profileName);
-
-            if (profile == null || profile.State == ProfileState.Loading)
-                notRemovedProfiles.Add(profileName);
-            else
-                await gmlManager.Profiles.RemoveProfile(profile, removeFiles);
-        }
-
-        var message = "Операция выполнена";
-
-        if (notRemovedProfiles.Any())
-        {
-            message += ". Было пропущено удаление:";
-            message += string.Join(",", notRemovedProfiles);
-        }else
-        {
-            message += $""". Профили: "{profileNames}" удалены.""";
-        }
-
-        await gmlManager.Notifications.SendMessage("Удаление профилей", message, NotificationType.Info);
-
-        return Results.Ok(ResponseMessage.Create(message, HttpStatusCode.OK));
-    }
-
-    [Authorize]
     public static async Task<IResult> AddPlayerToWhiteList(
         IGmlManager gmlManager,
         IMapper mapper,
@@ -485,7 +494,8 @@ public class ProfileHandler : IProfileHandler
                 HttpStatusCode.NotFound));
 
         if (profile.UserWhiteListGuid.Any(c => c.Equals(userUuid)))
-            return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" уже находится белом списке пользователей профиля",
+            return Results.BadRequest(ResponseMessage.Create(
+                $"Пользователь с UUID: \"{userUuid}\" уже находится белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
         profile.UserWhiteListGuid.Add(user.Uuid);
@@ -493,7 +503,8 @@ public class ProfileHandler : IProfileHandler
 
         var mappedUser = mapper.Map<PlayerReadDto>(user);
 
-        return Results.Ok(ResponseMessage.Create(mappedUser, "Пользователь успешно добавлен в белый список профиля", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mappedUser, "Пользователь успешно добавлен в белый список профиля",
+            HttpStatusCode.OK));
     }
 
     [Authorize]
@@ -510,7 +521,8 @@ public class ProfileHandler : IProfileHandler
 
         var mods = await profile.GetModsAsync();
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен",
+            HttpStatusCode.OK));
     }
 
     [Authorize]
@@ -520,7 +532,6 @@ public class ProfileHandler : IProfileHandler
         ModsDetailsInfoDto detailsDto,
         IValidator<ModsDetailsInfoDto> validator)
     {
-
         var result = await validator.ValidateAsync(detailsDto);
 
         if (!result.IsValid)
@@ -565,7 +576,8 @@ public class ProfileHandler : IProfileHandler
 
         if (await profile.CanLoadMods() == false)
         {
-            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+            return Results.BadRequest(ResponseMessage.Create(
+                $"Данный проект \"{profileName}\" не может иметь модификации",
                 HttpStatusCode.NotFound));
         }
 
@@ -584,7 +596,8 @@ public class ProfileHandler : IProfileHandler
 
         var mods = await profile.GetModsAsync();
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен",
+            HttpStatusCode.OK));
     }
 
     [Authorize]
@@ -604,7 +617,8 @@ public class ProfileHandler : IProfileHandler
 
         if (await profile.CanLoadMods() == false)
         {
-            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+            return Results.BadRequest(ResponseMessage.Create(
+                $"Данный проект \"{profileName}\" не может иметь модификации",
                 HttpStatusCode.NotFound));
         }
 
@@ -644,7 +658,8 @@ public class ProfileHandler : IProfileHandler
             return Results.Ok(ResponseMessage.Create("Мод был успешно удален", HttpStatusCode.OK));
         }
 
-        return Results.BadRequest(ResponseMessage.Create("Произошла ошибка при удалении модификации", HttpStatusCode.OK));
+        return Results.BadRequest(
+            ResponseMessage.Create("Произошла ошибка при удалении модификации", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetOptionalsMods(
@@ -660,7 +675,8 @@ public class ProfileHandler : IProfileHandler
 
         var mods = await profile.GetOptionalsModsAsync();
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ModReadDto>>(mods), "Список модов успешно получен",
+            HttpStatusCode.OK));
     }
 
     public static async Task<IResult> FindMods(
@@ -680,13 +696,16 @@ public class ProfileHandler : IProfileHandler
 
         if (await profile.CanLoadMods() == false)
         {
-            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+            return Results.BadRequest(ResponseMessage.Create(
+                $"Данный проект \"{profileName}\" не может иметь модификации",
                 HttpStatusCode.NotFound));
         }
 
-        var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modType, modName, take, offset);
+        var mods = await gmlManager.Mods.FindModsAsync(profile.Loader, profile.GameVersion, modType, modName, take,
+            offset);
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods), "Список модов успешно получен", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ExtendedModReadDto>>(mods),
+            "Список модов успешно получен", HttpStatusCode.OK));
     }
 
     public static async Task<IResult> GetModInfo(
@@ -704,7 +723,8 @@ public class ProfileHandler : IProfileHandler
 
         if (await profile.CanLoadMods() == false)
         {
-            return Results.BadRequest(ResponseMessage.Create($"Данный проект \"{profileName}\" не может иметь модификации",
+            return Results.BadRequest(ResponseMessage.Create(
+                $"Данный проект \"{profileName}\" не может иметь модификации",
                 HttpStatusCode.NotFound));
         }
 
@@ -735,13 +755,15 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (!profile.UserWhiteListGuid.Any(c=> c.Equals(userUuid)))
-            return Results.BadRequest(ResponseMessage.Create($"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
+        if (!profile.UserWhiteListGuid.Any(c => c.Equals(userUuid)))
+            return Results.BadRequest(ResponseMessage.Create(
+                $"Пользователь с UUID: \"{userUuid}\" не найден в белом списке пользователей профиля",
                 HttpStatusCode.BadRequest));
 
         profile.UserWhiteListGuid.Remove(userUuid);
         await gmlManager.Profiles.SaveProfiles();
 
-        return Results.Ok(ResponseMessage.Create("Пользователь успешно удален из белого списка профиля", HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create("Пользователь успешно удален из белого списка профиля",
+            HttpStatusCode.OK));
     }
 }
