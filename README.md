@@ -2,13 +2,16 @@
 
 # Gml.Web.Api
 
-Gml.Web.Api is a RESTful web service within the Gml microservices ecosystem, providing APIs for server-side operations, managing game accounts, and profiles for Minecraft (supporting Forge, NeoForge, Fabric, and LiteLoader). This README explains how to set up and run the service, which uses SQLite as its database and relies on environment variables for configuration.
+Gml.Web.Api is a RESTful web service within the Gml microservices ecosystem, providing APIs for server-side operations,
+managing game accounts, and profiles for Minecraft (supporting Vanilla, Forge, NeoForge, Fabric, and LiteLoader, Quilt).
+This README explains how to set up and run the service, which uses SQLite as its database and relies on
+environment variables for configuration.
 
 ## Prerequisites
 
 Ensure the following are installed:
 
-- **.NET 8.0 SDK**: Install from [Microsoft's official website](https://dotnet.microsoft.com/download/dotnet/8.0).
+- **.NET 10.0 SDK**: Install from [Microsoft's official website](https://dotnet.microsoft.com/download/dotnet/10.0).
 - **Git**: Install from [Git website](https://git-scm.com/) or via your package manager.
 - **Docker** (optional, for containerized deployment): Install Docker Desktop from [Docker's official website](https://www.docker.com/products/docker-desktop/).
 - A code editor like Visual Studio or Visual Studio Code (optional, for development).
@@ -22,7 +25,7 @@ Follow these steps to clone, configure, and run the Gml.Web.Api project.
 Clone the repository using Git:
 
 ```bash
-git clone https://github.com/Gml-Launcher/Gml.Web.Api.git
+git clone --recursive https://github.com/Gml-Launcher/Gml.Web.Api.git
 cd Gml.Web.Api
 ```
 
@@ -41,7 +44,8 @@ The service is configured using environment variables, which control the SQLite 
 Required environment variables:
 
 - `ASPNETCORE_ENVIRONMENT`: Environment mode (e.g., `Development` for local testing, `Production` for deployment).
-- `SECURITY_KEY`: A secure key for authentication/encryption (e.g., `jkuhbsfgvuk4gfikhn8i7wa34rkbqw23`). Use a strong, unique key.
+- `SECURITY_KEY`: A secure key for authentication/encryption (e.g., `jkuhbsfgvuk4gfikhn8i7wa34rkbqw23`). Use a strong,
+  unique key.
 - `PROJECT_NAME`: Name of the project (e.g., `GmlServer`).
 - `PROJECT_DESCRIPTION`: Description of the project (e.g., `GmlServer Description`).
 - `PROJECT_POLICYNAME`: Policy name for authorization (e.g., `GmlPolicy`).
@@ -77,22 +81,7 @@ set AllowedHosts=*
 
 Note: The SQLite database path is managed internally by the application. Ensure the directory where the database file will be created is writable.
 
-### 4. Set Up the SQLite Database
-
-The SQLite database is created automatically on first run if the database file does not exist. To apply database migrations:
-
-```bash
-dotnet ef migrations add InitialCreate
-dotnet ef database update
-```
-
-Install Entity Framework Core CLI tools if needed:
-
-```bash
-dotnet tool install --global dotnet-ef
-```
-
-### 5. Build the Project
+### 4. Build the Project
 
 Build the project to check for errors:
 
@@ -105,7 +94,7 @@ dotnet build
 Run the service locally:
 
 ```bash
-dotnet run
+dotnet run --project src/Gml.Web.Api/Gml.Web.Api.csproj
 ```
 
 The API will be available at `https://localhost:5001` or `http://localhost:5000` (check terminal output for the port). Test the API with tools like Postman or curl:
@@ -114,7 +103,7 @@ The API will be available at `https://localhost:5001` or `http://localhost:5000`
 curl http://localhost:5000/api/profiles
 ```
 
-### 7. (Optional) Run with Docker
+### 5. (Optional) Run with Docker
 
 To run the service in a Docker container:
 
