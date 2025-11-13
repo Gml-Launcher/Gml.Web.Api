@@ -30,11 +30,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Setup .NET 8.x
+      - name: Setup .NET 10.x
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore
         run: dotnet restore Gml.Web.Api.sln
@@ -56,7 +58,6 @@ jobs:
           path: |
             **/TestResults/*.trx
           if-no-files-found: warn
-
   build:
     needs: test
     name: Build (${{ matrix.platform }})
