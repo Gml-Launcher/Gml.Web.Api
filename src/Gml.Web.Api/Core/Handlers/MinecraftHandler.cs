@@ -74,7 +74,7 @@ public class MinecraftHandler : IMinecraftHandler
         var user = await gmlManager.Users.GetUserByName(userName);
 
         if (user is null || string.IsNullOrEmpty(userName) || user.IsBanned ||
-            await gmlManager.Users.CanJoinToServer(user, serverId) == false)
+            !await gmlManager.Users.CanJoinToServer(user, serverId))
             return Results.NoContent();
 
         var profile = new Profile
@@ -154,7 +154,7 @@ public class MinecraftHandler : IMinecraftHandler
         bool validateUser =
             await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.ServerId, joinDto.AccessToken);
 
-        if (validateUser is false)
+        if (!validateUser)
         {
             return Results.Unauthorized();
         }
@@ -193,7 +193,7 @@ public class MinecraftHandler : IMinecraftHandler
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
             ProfileId = uuid,
-            SignatureRequired = unsigned == false,
+            SignatureRequired = !unsigned,
             Textures = new Textures
             {
                 Skin = !string.IsNullOrEmpty(user.TextureSkinGuid)

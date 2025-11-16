@@ -30,7 +30,7 @@ public class AuthHandler : IAuthHandler
         ServerSettings settings,
         DatabaseContext db)
     {
-        if (appContext.Settings.RegistrationIsEnabled == false && !httpContext.User.IsInRole("Admin"))
+        if (!appContext.Settings.RegistrationIsEnabled && !httpContext.User.IsInRole("Admin"))
             return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
                 HttpStatusCode.BadRequest));
 

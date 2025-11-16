@@ -574,7 +574,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (await profile.CanLoadMods() == false)
+        if (!await profile.CanLoadMods())
         {
             return Results.BadRequest(ResponseMessage.Create(
                 $"Данный проект \"{profileName}\" не может иметь модификации",
@@ -615,7 +615,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (await profile.CanLoadMods() == false)
+        if (!await profile.CanLoadMods())
         {
             return Results.BadRequest(ResponseMessage.Create(
                 $"Данный проект \"{profileName}\" не может иметь модификации",
@@ -694,7 +694,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (await profile.CanLoadMods() == false)
+        if (!await profile.CanLoadMods())
         {
             return Results.BadRequest(ResponseMessage.Create(
                 $"Данный проект \"{profileName}\" не может иметь модификации",
@@ -721,7 +721,7 @@ public class ProfileHandler : IProfileHandler
             return Results.NotFound(ResponseMessage.Create($"Профиль \"{profileName}\" не найден",
                 HttpStatusCode.NotFound));
 
-        if (await profile.CanLoadMods() == false)
+        if (!await profile.CanLoadMods())
         {
             return Results.BadRequest(ResponseMessage.Create(
                 $"Данный проект \"{profileName}\" не может иметь модификации",

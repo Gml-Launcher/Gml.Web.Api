@@ -1,6 +1,7 @@
 using Gml.Domains.Exceptions;
 using Gml.Domains.Repositories;
 using Gml.Domains.User;
+using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.Data;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +11,12 @@ namespace Gml.Web.Api.Core.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly DatabaseContext _databaseContext;
+    private readonly ServerSettings _options;
 
-    public UserRepository(DatabaseContext databaseContext, Gml.Web.Api.Core.Options.ServerSettings options)
+    public UserRepository(DatabaseContext databaseContext, ServerSettings options)
     {
         _databaseContext = databaseContext;
+        _options = options;
     }
 
     public Task<DbUser?> CheckExistUser(string login, string email)
