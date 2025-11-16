@@ -4,7 +4,6 @@ using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Gml.Web.Api.Core.Repositories;
 
@@ -29,8 +28,10 @@ public class SettingsRepository(
             settings.StoragePassword,
             settings.TextureProtocol,
             settings.CurseForgeKey,
-            settings.VkKey
-            );
+            settings.VkKey,
+            settings.SentryAutoClearPeriod,
+            settings.SentryNeedAutoClear
+        );
 
         settings.Id = 0;
         settings.IsInstalled = true;
