@@ -7,7 +7,6 @@ using Gml.Dto.Player;
 using Gml.Dto.User;
 using Gml.Web.Api.Core.Extensions;
 using Gml.Web.Api.Core.Integrations.Auth;
-using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;
@@ -47,8 +46,14 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         }
 
         var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+        var hostScheme = context.Request.Headers["X-Forwarded-Scheme"].FirstOrDefault();
+        string? host = null;
+        if (!string.IsNullOrWhiteSpace(hostValue) && !string.IsNullOrEmpty(hostScheme))
+        {
+            host = $"{hostScheme}://{hostValue}";
+        }
 
-        await gmlManager.Profiles.CreateUserSessionAsync(null, player, hostValue);
+        await gmlManager.Profiles.CreateUserSessionAsync(null, player, host);
 
         // player.TextureSkinUrl = (await gmlManager.Integrations.GetSkinServiceAsync())
         //     .Replace("{userName}", player.Name)
@@ -109,7 +114,8 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                     HttpStatusCode.BadRequest));
             }
 
-            var authResult = await authService.CheckAuth(authDto.Login, authDto.Password, authType, hwid, authDto.TwoFactorCode);
+            var authResult =
+                await authService.CheckAuth(authDto.Login, authDto.Password, authType, hwid, authDto.TwoFactorCode);
 
             if (authResult.TwoFactorEnabled && string.IsNullOrEmpty(authDto.TwoFactorCode))
             {
@@ -140,7 +146,6 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
                 ["Player"], ["profiles.view", "integrations.news.view"], 60 * 24 * 10); // 60 минут * 24 часа * 10 дней
 
             return await HandleAuthenticatedUser(context, gmlManager, mapper, player, userAgent);
-
         }
         catch (HttpRequestException exception)
         {
@@ -151,7 +156,8 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
         {
             gmlManager.BugTracker.CaptureException(exception);
             var humanException =
-                new Exception("Не удалось прочитать ответ сервера, возможно сайт вернул html, вместо json, или неверно настроен сервер авторизации.");
+                new Exception(
+                    "Не удалось прочитать ответ сервера, возможно сайт вернул html, вместо json, или неверно настроен сервер авторизации.");
             return HandleAuthException(humanException, true);
         }
         catch (Exception exception)
@@ -171,7 +177,6 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
     {
         try
         {
-
             var authType = await gmlManager.Integrations.GetAuthType();
 
             if (authType is not AuthType.Any && string.IsNullOrEmpty(authDto.AccessToken))
