@@ -6,7 +6,6 @@ using Gml.Domains.User;
 using Gml.Models.User;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Gml.Web.Api.Core.Hubs.Controllers;
 
@@ -25,8 +24,8 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
     public async Task AddLauncherConnection(string connectionId, ISingleClientProxy connection,
         ClaimsPrincipal contextUser)
     {
-        var userName = contextUser.FindFirstValue(JwtRegisteredClaimNames.Name);
-        if (!string.IsNullOrEmpty(userName) && await _gmlManager.Users.GetUserByName(userName) is AuthUser user)
+        var uuid = contextUser.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(uuid) && await _gmlManager.Users.GetUserByUuid(uuid) is AuthUser user)
         {
             LauncherInfos.TryAdd(connectionId, new UserLauncherInfo
             {
