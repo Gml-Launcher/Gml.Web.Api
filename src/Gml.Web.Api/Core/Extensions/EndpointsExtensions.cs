@@ -12,6 +12,7 @@ using Gml.Dto.Settings;
 using Gml.Dto.User;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
+using Gml.Web.Api.Core.Hubs.Audit;
 using GmlCore.Interfaces.Notifications;
 using GmlCore.Interfaces.User;
 using Microsoft.AspNetCore.Cors;
@@ -79,6 +80,8 @@ public static class EndpointsExtensions
         app.MapHub<LauncherHub>("/ws/launcher").RequireAuthorization();
         app.MapHub<NotificationHub>("/ws/notifications")
             .RequireAuthorization("perm:notifications.manage");
+        app.MapHub<AuditHub>("/ws/audit")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 
