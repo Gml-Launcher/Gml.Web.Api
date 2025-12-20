@@ -239,4 +239,24 @@ public class MinecraftHandler : IMinecraftHandler
     {
         return Task.FromResult(Results.Ok());
     }
+
+    public static async Task<IResult> GetUserUuidByName(HttpContext context, IGmlManager gmlManager, string name)
+    {
+        var user = await gmlManager.Users.GetUserByName(name);
+
+        if (user is null)
+        {
+            return Results.Ok(new
+            {
+                name = name,
+                id = Guid.Empty.ToString().ToLower()
+            });
+        }
+
+        return Results.Ok(new
+        {
+            name = user.Name,
+            id = user.Uuid
+        });
+    }
 }
