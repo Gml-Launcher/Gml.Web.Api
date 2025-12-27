@@ -5,16 +5,17 @@ using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Core.Handlers;
 
 public class MinecraftHandler : IMinecraftHandler
 {
-    public static async Task<IResult> GetMetaData(HttpContext context, ISystemService systemService, IGmlManager gmlManager,
+    public static async Task<IResult> GetMetaData(HttpContext context, ISystemService systemService,
+        IGmlManager gmlManager,
         IOptions<ServerSettings> options)
     {
         var skinsAddresses = options.Value.SkinDomains.ToList();
@@ -66,13 +67,15 @@ public class MinecraftHandler : IMinecraftHandler
         return domains.ToArray();
     }
 
-    public static async Task<IResult> HasJoined(HttpContext context, IGmlManager gmlManager, ISystemService systemService, string userName,
+    public static async Task<IResult> HasJoined(HttpContext context, IGmlManager gmlManager,
+        ISystemService systemService, string userName,
         string serverId,
         string? ip)
     {
         var user = await gmlManager.Users.GetUserByName(userName);
 
-        if (user is null || string.IsNullOrEmpty(userName) || user.IsBanned || await gmlManager.Users.CanJoinToServer(user, serverId) == false)
+        if (user is null || string.IsNullOrEmpty(userName) || user.IsBanned ||
+            !await gmlManager.Users.CanJoinToServer(user, serverId))
             return Results.NoContent();
 
         var profile = new Profile
@@ -82,8 +85,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower()
-                              ?? TextureProtocol.Https.GetDisplayName().ToLower();
+        var textureProtocol = EnumExtensions.GetDisplayName(gmlManager.LauncherInfo.StorageSettings.TextureProtocol)
+                                  ?.ToLower()
+                              ?? EnumExtensions.GetDisplayName(TextureProtocol.Https).ToLower();
 
         var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
         var address = $"{textureProtocol}://{hostValue}";
@@ -115,7 +119,8 @@ public class MinecraftHandler : IMinecraftHandler
         {
             texture.Textures.Skin = new SkinCape
             {
-                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}")
+                Url = string.Concat(address, $"/api/v1/integrations/texture/skins/{user.TextureSkinGuid}"),
+                Metadata = user.IsSlim ? new SkinMetadata { Model = "slim" } : null
             };
         }
 
@@ -147,9 +152,10 @@ public class MinecraftHandler : IMinecraftHandler
 
     public static async Task<IResult> Join(IGmlManager gmlManager, JoinRequest joinDto)
     {
-        bool validateUser = await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.ServerId, joinDto.AccessToken);
+        bool validateUser =
+            await gmlManager.Users.ValidateUser(joinDto.SelectedProfile, joinDto.ServerId, joinDto.AccessToken);
 
-        if (validateUser is false)
+        if (!validateUser)
         {
             return Results.Unauthorized();
         }
@@ -157,7 +163,8 @@ public class MinecraftHandler : IMinecraftHandler
         return Results.NoContent();
     }
 
-    public static async Task<IResult> GetProfile(HttpContext context, IGmlManager gmlManager, ISystemService systemService, string uuid,
+    public static async Task<IResult> GetProfile(HttpContext context, IGmlManager gmlManager,
+        ISystemService systemService, string uuid,
         bool unsigned = false)
     {
         var guid = Guid.Parse(uuid);
@@ -175,7 +182,9 @@ public class MinecraftHandler : IMinecraftHandler
             Properties = []
         };
 
-        var textureProtocol = gmlManager.LauncherInfo.StorageSettings.TextureProtocol.GetDisplayName()?.ToLower() ?? TextureProtocol.Https.GetDisplayName().ToLower();
+        var textureProtocol = EnumExtensions.GetDisplayName(gmlManager.LauncherInfo.StorageSettings.TextureProtocol)
+                                  ?.ToLower()
+                              ?? EnumExtensions.GetDisplayName(TextureProtocol.Https).ToLower();
 
         var hostValue = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? context.Request.Host.Value;
         var address = $"{textureProtocol}://{hostValue}";
@@ -185,7 +194,7 @@ public class MinecraftHandler : IMinecraftHandler
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             ProfileName = user.Name,
             ProfileId = uuid,
-            SignatureRequired = unsigned == false,
+            SignatureRequired = !unsigned,
             Textures = new Textures
             {
                 Skin = !string.IsNullOrEmpty(user.TextureSkinGuid)
@@ -230,5 +239,47 @@ public class MinecraftHandler : IMinecraftHandler
     public static Task<IResult> GetPlayerAttribute(ISystemService systemService)
     {
         return Task.FromResult(Results.Ok());
+    }
+
+    public static async Task<IResult> GetUserUuidByName(HttpContext context, IGmlManager gmlManager, string name)
+    {
+        var user = await gmlManager.Users.GetUserByName(name);
+
+        if (user is null)
+        {
+            return Results.Ok(new
+            {
+                name = name,
+                id = Guid.Empty.ToString().ToLower()
+            });
+        }
+
+        return Results.Ok(new
+        {
+            name = user.Name,
+            id = user.Uuid
+        });
+    }
+
+    public static async Task<IResult> GetUsersUuidByNames(HttpContext context, IGmlManager gmlManager,
+        [FromBody] string[] names)
+    {
+        List<object> items = new();
+
+        foreach (var name in names)
+        {
+            var user = await gmlManager.Users.GetUserByName(name);
+
+            if (user is not null)
+            {
+                items.Add(new
+                {
+                    name = user.Name,
+                    id = user.Uuid.ToLower()
+                });
+            }
+        }
+
+        return Results.Ok(items);
     }
 }

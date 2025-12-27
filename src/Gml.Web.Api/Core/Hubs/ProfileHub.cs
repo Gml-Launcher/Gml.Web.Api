@@ -1,7 +1,4 @@
-using System.ComponentModel;
-using Gml.Core.Launcher;
-using Gml.Core.User;
-using Gml.Web.Api.Domains.System;
+using System.Text.Json.Serialization;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.AspNetCore.Http.Json;
@@ -105,10 +102,7 @@ public class ProfileHub : BaseHub
                 SendProgress("ChangeProgress", profile.Name, percentage);
             });
 
-            var logInfo = profile.GameLoader.LoadLog.Subscribe(logs =>
-            {
-                Log(logs, profile.Name);
-            });
+            var logInfo = profile.GameLoader.LoadLog.Subscribe(logs => { Log(logs, profile.Name); });
 
             var exception = profile.GameLoader.LoadException.Subscribe(async logs =>
             {
@@ -173,7 +167,7 @@ public class ProfileHub : BaseHub
     {
         public void Configure(JsonOptions options)
         {
-            options.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
+            options.SerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         }
     }
 }

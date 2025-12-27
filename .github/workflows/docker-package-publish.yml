@@ -20,7 +20,46 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  test:
+    name: Test (.NET)
+    runs-on: ubuntu-22.04
+    env:
+      FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET 10.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Gml.Web.Api.sln
+
+      - name: Build
+        run: dotnet build Gml.Web.Api.sln --configuration Release --no-restore
+
+      - name: Test Gml.WebApi.Tests
+        run: dotnet test tests/Gml.WebApi.Tests/Gml.WebApi.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults_WebApi.trx"
+
+      - name: Test GmlCore.Tests
+        run: dotnet test src/Gml.Core/tests/GmlCore.Tests/GmlCore.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults_Core.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            **/TestResults/*.trx
+          if-no-files-found: warn
   build:
+    needs: test
     name: Build (${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     strategy:

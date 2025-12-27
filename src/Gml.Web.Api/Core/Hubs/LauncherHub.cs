@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
@@ -9,10 +6,10 @@ namespace Gml.Web.Api.Core.Hubs;
 
 public class LauncherHub : BaseHub
 {
+    private static IDisposable? _profilesChangedEvent;
     private readonly IGmlManager _gmlManager;
     private readonly HubEvents _hubEvents;
     private readonly PlayersController _playerController;
-    private static IDisposable? _profilesChangedEvent;
 
     public LauncherHub(
         IGmlManager gmlManager,
@@ -23,9 +20,10 @@ public class LauncherHub : BaseHub
         _hubEvents = hubEvents;
         _playerController = playerController;
 
-        _profilesChangedEvent ??= gmlManager.Profiles.ProfilesChanged.Subscribe(eventType =>
+        _profilesChangedEvent ??= gmlManager.Profiles.ProfilesChanged.Subscribe(_ =>
         {
-            foreach (var connection in _playerController.LauncherInfos.Values.Select(c => c.Connection).OfType<ISingleClientProxy>())
+            foreach (var connection in _playerController.LauncherInfos.Values.Select(c => c.Connection)
+                         .OfType<ISingleClientProxy>())
             {
                 connection?.SendAsync("RefreshProfiles");
             }

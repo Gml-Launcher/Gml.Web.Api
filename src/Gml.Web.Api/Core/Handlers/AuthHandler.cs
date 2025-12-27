@@ -8,11 +8,10 @@ using Gml.Dto.Auth;
 using Gml.Dto.Messages;
 using Gml.Dto.Player;
 using Gml.Dto.User;
-using Gml.Web.Api.Core.Services;
+using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Core.Handlers;
@@ -28,26 +27,15 @@ public class AuthHandler : IAuthHandler
         ApplicationContext appContext,
         IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
-        Gml.Web.Api.Core.Options.ServerSettings settings,
+        ServerSettings settings,
         DatabaseContext db)
     {
-        if (appContext.Settings.RegistrationIsEnabled == false && !httpContext.User.IsInRole("Admin"))
+        if (!appContext.Settings.RegistrationIsEnabled && !httpContext.User.IsInRole("Admin"))
             return Results.BadRequest(ResponseMessage.Create("Регистрация для новых пользователей запрещена",
                 HttpStatusCode.BadRequest));
 
         var adminRoleEntity = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
         var hasAdmins = adminRoleEntity != null && await db.UserRoles.AnyAsync(ur => ur.RoleId == adminRoleEntity.Id);
-
-        if (hasAdmins)
-        {
-            var userPrincipal = httpContext.User;
-            var isAuthenticated = userPrincipal?.Identity?.IsAuthenticated == true;
-            var isAdmin = userPrincipal?.IsInRole("Admin") == true;
-            if (!isAuthenticated || !isAdmin)
-            {
-                return Results.Forbid();
-            }
-        }
 
         var result = await validator.ValidateAsync(createDto);
 
@@ -61,36 +49,35 @@ public class AuthHandler : IAuthHandler
             return Results.BadRequest(ResponseMessage.Create("Пользователь с указанными данными уже существует",
                 HttpStatusCode.BadRequest));
 
-        // Decide the role to assign
         string targetRoleName;
         if (!hasAdmins)
         {
-            // Bootstrap: ensure Admin role exists and use it regardless of the requested role
             if (adminRoleEntity == null)
             {
                 adminRoleEntity = new Role { Name = "Admin", Description = "System administrator" };
                 db.Roles.Add(adminRoleEntity);
                 await db.SaveChangesAsync();
             }
+
             targetRoleName = "Admin";
         }
         else
         {
-            var requestedRole = httpContext.Request.Query.TryGetValue("role", out var roleVals) ? roleVals.ToString() : null;
+            var requestedRole = httpContext.Request.Query.TryGetValue("role", out var roleVals)
+                ? roleVals.ToString()
+                : null;
             targetRoleName = string.IsNullOrWhiteSpace(requestedRole) ? "Admin" : requestedRole.Trim();
         }
 
-        // Fetch target role (only create Admin implicitly during bootstrap)
         var targetRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == targetRoleName);
         if (targetRole == null)
         {
-            return Results.BadRequest(ResponseMessage.Create($"Роль '{targetRoleName}' не найдена", HttpStatusCode.BadRequest));
+            return Results.BadRequest(ResponseMessage.Create($"Роль '{targetRoleName}' не найдена",
+                HttpStatusCode.BadRequest));
         }
 
-        // Create user
         var user = await userRepository.CreateUser(createDto.Email, createDto.Login, createDto.Password);
 
-        // Link user to target role
         var hasLink = await db.UserRoles.AnyAsync(x => x.UserId == user.Id && x.RoleId == targetRole.Id);
         if (!hasLink)
         {
@@ -98,7 +85,6 @@ public class AuthHandler : IAuthHandler
             await db.SaveChangesAsync();
         }
 
-        // Load roles and permissions
         var roles = await db.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.Role.Name).ToListAsync();
         var permissions = await db.RolePermissions
             .Where(rp => db.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).Contains(rp.RoleId))
@@ -106,7 +92,6 @@ public class AuthHandler : IAuthHandler
             .Distinct()
             .ToListAsync();
 
-        // Generate JWT pair for the newly created user
         var accessToken = tokenService.GenerateAccessToken(user.Id, user.Login, user.Email, roles, permissions);
         var refreshToken = tokenService.GenerateRefreshToken();
         var refreshHash = tokenService.HashRefreshToken(refreshToken);
@@ -153,7 +138,7 @@ public class AuthHandler : IAuthHandler
         UserAuthDto authDto,
         IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
-        Gml.Web.Api.Core.Options.ServerSettings settings,
+        ServerSettings settings,
         DatabaseContext db)
     {
         var result = await validator.ValidateAsync(authDto);
@@ -204,7 +189,7 @@ public class AuthHandler : IAuthHandler
         HttpContext httpContext,
         IAccessTokenService tokenService,
         IRefreshTokenRepository refreshRepo,
-        Gml.Web.Api.Core.Options.ServerSettings settings,
+        ServerSettings settings,
         DatabaseContext db)
     {
         var refreshToken = httpContext.Request.Cookies["refreshToken"];
@@ -220,9 +205,11 @@ public class AuthHandler : IAuthHandler
         await refreshRepo.RevokeAsync(stored.UserId, stored.TokenHash);
 
         // Issue new pair
-        var rolesRefresh = await db.UserRoles.Where(ur => ur.UserId == stored.UserId).Select(ur => ur.Role.Name).ToListAsync();
+        var rolesRefresh = await db.UserRoles.Where(ur => ur.UserId == stored.UserId).Select(ur => ur.Role.Name)
+            .ToListAsync();
         var permsRefresh = await db.RolePermissions
-            .Where(rp => db.UserRoles.Where(ur => ur.UserId == stored.UserId).Select(ur => ur.RoleId).Contains(rp.RoleId))
+            .Where(rp => db.UserRoles.Where(ur => ur.UserId == stored.UserId).Select(ur => ur.RoleId)
+                .Contains(rp.RoleId))
             .Select(rp => rp.Permission.Name)
             .Distinct()
             .ToListAsync();
@@ -255,7 +242,8 @@ public class AuthHandler : IAuthHandler
         throw new NotImplementedException();
     }
 
-    public static async Task<IResult> DeleteUser(HttpContext httpContext, DatabaseContext db, IRefreshTokenRepository refreshRepo, int userId)
+    public static async Task<IResult> DeleteUser(HttpContext httpContext, DatabaseContext db,
+        IRefreshTokenRepository refreshRepo, int userId)
     {
         var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
@@ -268,10 +256,12 @@ public class AuthHandler : IAuthHandler
 
         var currentUserId = int.Parse(httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
         if (currentUserId == userId)
-            return Results.BadRequest(ResponseMessage.Create("Вы не можете удалить свою учетную запись", HttpStatusCode.BadRequest));
+            return Results.BadRequest(ResponseMessage.Create("Вы не можете удалить свою учетную запись",
+                HttpStatusCode.BadRequest));
 
         if (hasAdminRole)
-            return Results.BadRequest(ResponseMessage.Create("Нельзя удалять пользователя с ролью Admin", HttpStatusCode.BadRequest));
+            return Results.BadRequest(ResponseMessage.Create("Нельзя удалять пользователя с ролью Admin",
+                HttpStatusCode.BadRequest));
 
         // Revoke all refresh tokens
         await refreshRepo.RevokeAllAsync(user.Id);

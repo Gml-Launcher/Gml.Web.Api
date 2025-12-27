@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Gml.Web.Api.Core.Hubs;
@@ -44,6 +45,7 @@ public class BaseHub : Hub
     {
         try
         {
+            Debug.WriteLine(message);
             await Clients.All.SendAsync("Log", message);
         }
         catch (Exception exception)

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -29,8 +29,6 @@ public static class RegisterSwaggerExtensions
             };
 
             c.AddSecurityDefinition("Bearer", securitySchema);
-            var securityRequirement = new OpenApiSecurityRequirement { { securitySchema, new[] { "Bearer" } } };
-            c.AddSecurityRequirement(securityRequirement);
         });
 
         return serviceCollection;

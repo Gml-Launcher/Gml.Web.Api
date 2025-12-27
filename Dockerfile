@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER root
 WORKDIR /app
 EXPOSE 8080
@@ -6,15 +6,12 @@ EXPOSE 8081
 RUN apt-get update && apt-get install -y git
 USER $APP_UID
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/Gml.Web.Api/Gml.Web.Api.csproj", "src/Gml.Web.Api/"]
 COPY ["src/Gml.Core/src/Pingo/Pingo/Pingo.csproj", "src/Gml.Core/src/Pingo/Pingo/"]
 COPY ["src/Gml.Core/src/Modrinth.Api/src/Modrinth.Api/Modrinth.Api.csproj", "src/Gml.Core/src/Modrinth.Api/src/Modrinth.Api/"]
-COPY ["src/Gml.Core/src/CmlLib.Core.Installer.NeoForge/CmlLib.Core.Installer.NeoForge/CmlLib.Core.Installer.NeoForge.csproj", "src/Gml.Core/src/CmlLib.Core.Installer.NeoForge/CmlLib.Core.Installer.NeoForge/"]
-COPY ["src/Gml.Core/src/CmlLib.Core.Installer.Forge/CmlLib.Core.Installer.Forge/CmlLib.Core.Installer.Forge.csproj", "src/Gml.Core/src/CmlLib.Core.Installer.Forge/CmlLib.Core.Installer.Forge/"]
-COPY ["src/Gml.Core/src/CmlLib.ExtendedCore/src/CmlLib.Core.csproj", "src/Gml.Core/src/CmlLib.ExtendedCore/src/"]
 COPY ["src/Gml.Core/src/Gml.Common/Gml.Common/Gml.Common.csproj", "src/Gml.Core/src/Gml.Common/Gml.Common/"]
 COPY ["src/Gml.Core/src/Gml.Interfaces/Gml.Interfaces.csproj", "src/Gml.Core/src/Gml.Interfaces/"]
 COPY ["src/Gml.Core/src/Gml.Core/Gml.Core.csproj", "src/Gml.Core/src/Gml.Core/"]

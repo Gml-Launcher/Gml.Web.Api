@@ -7,7 +7,6 @@ using Gml.Web.Api.Data;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -69,7 +68,9 @@ public static class DatabaseExtensions
             dataBaseSettings.StoragePassword,
             dataBaseSettings.TextureProtocol,
             dataBaseSettings.CurseForgeKey,
-            dataBaseSettings.VkKey
+            dataBaseSettings.VkKey,
+            dataBaseSettings.SentryAutoClearPeriod,
+            dataBaseSettings.SentryNeedAutoClear
         );
 
         // Seed base RBAC: Admin role and base permissions with descriptions
@@ -95,7 +96,8 @@ public static class DatabaseExtensions
                 ("launcher.create", "Загрузка и создание сборок лаунчера"),
                 ("launcher.update", "Сборка лаунчера и управление процессом сборки"),
                 ("launcher.delete", "Удаление сборок лаунчера или откаты"),
-                ("integrations.sentry.manage", "Управление интеграцией с Sentry, включая обновление DSN, получение ошибок, фильтрацию и очистку"),
+                ("integrations.sentry.manage",
+                    "Управление интеграцией с Sentry, включая обновление DSN, получение ошибок, фильтрацию и очистку"),
                 ("integrations.discord.update", "Обновление данных интеграции с DiscordRPC"),
                 ("integrations.textures.update", "Обновление ссылок на сервисы текстур (скины и плащи)"),
                 ("integrations.textures.view", "Просмотр ссылок на сервисы текстур (скины и плащи)"),
@@ -103,13 +105,16 @@ public static class DatabaseExtensions
                 ("integrations.auth.create", "Добавление/установка сервиса авторизации"),
                 ("integrations.auth.update", "Обновление информации о сервисе авторизации"),
                 ("integrations.auth.delete", "Удаление/отключение активного сервиса авторизации"),
-                ("integrations.news.manage", "Управление слушателями новостей, включая добавление, удаление и получение списка слушателей"),
+                ("integrations.news.manage",
+                    "Управление слушателями новостей, включая добавление, удаление и получение списка слушателей"),
                 ("integrations.news.view", "Получение списка новостей"),
                 ("profiles.view", "Просмотр списка профилей и версий Minecraft"),
                 ("profiles.create", "Создание игровых профилей"),
-                ("profiles.update", "Обновление игровых профилей, включая восстановление, компиляцию и управление whitelist"),
+                ("profiles.update",
+                    "Обновление игровых профилей, включая восстановление, компиляцию и управление whitelist"),
                 ("profiles.delete", "Удаление игровых профилей"),
-                ("players.manage", "Управление списком игроков, включая просмотр, удаление, блокировку и разблокировку"),
+                ("players.manage",
+                    "Управление списком игроков, включая просмотр, удаление, блокировку и разблокировку"),
                 ("players.view", "Просмотр списка игроков"),
                 ("players.delete", "Удаление игроков из списка"),
                 ("players.ban", "Блокировка игроков"),
@@ -136,11 +141,13 @@ public static class DatabaseExtensions
                 else
                 {
                     // Ensure description is up-to-date
-                    var perm = existingPerms.First(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+                    var perm = existingPerms.First(p =>
+                        string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
                     if (string.IsNullOrWhiteSpace(perm.Description))
                     {
                         perm.Description = description;
                     }
+
                     // Mark as system permission (shadow property)
                     var entry = context.Entry(perm);
                     if (!Equals(entry.Property("IsSystem").CurrentValue, true))
@@ -154,10 +161,12 @@ public static class DatabaseExtensions
                 context.SaveChanges();
 
             // Ensure Admin has all these permissions
-            var permsForLink = context.Permissions.Where(p => basePermNames.Contains(p.Name)).Select(p => p.Id).ToList();
+            var permsForLink = context.Permissions.Where(p => basePermNames.Contains(p.Name)).Select(p => p.Id)
+                .ToList();
             foreach (var permId in permsForLink)
             {
-                var linkExists = context.RolePermissions.Any(rp => rp.RoleId == adminRole.Id && rp.PermissionId == permId);
+                var linkExists =
+                    context.RolePermissions.Any(rp => rp.RoleId == adminRole.Id && rp.PermissionId == permId);
                 if (!linkExists)
                 {
                     context.RolePermissions.Add(new RolePermission
@@ -184,6 +193,8 @@ public static class DatabaseExtensions
         gmlManager.LauncherInfo.StorageSettings.StorageLogin = settings.StorageLogin;
         gmlManager.LauncherInfo.StorageSettings.StoragePassword = settings.StoragePassword;
         gmlManager.LauncherInfo.StorageSettings.TextureProtocol = settings.TextureProtocol;
+        gmlManager.LauncherInfo.StorageSettings.SentryAutoClearPeriod = settings.SentryAutoClearPeriod;
+        gmlManager.LauncherInfo.StorageSettings.SentryNeedAutoClear = settings.SentryNeedAutoClear;
         gmlManager.LauncherInfo.AccessTokens[AccessTokenTokens.CurseForgeKey] = settings.CurseForgeKey;
         gmlManager.LauncherInfo.AccessTokens[AccessTokenTokens.VkKey] = settings.VkKey;
     }

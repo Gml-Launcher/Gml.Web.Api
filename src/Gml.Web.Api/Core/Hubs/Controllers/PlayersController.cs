@@ -2,22 +2,19 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Security.Claims;
-using Gml.Core.Launcher;
-using Gml.Core.User;
 using Gml.Domains.User;
+using Gml.Models.User;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Launcher;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Gml.Web.Api.Core.Hubs.Controllers;
 
 public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
 {
     private readonly IGmlManager _gmlManager;
-    public ConcurrentDictionary<string, IDisposable> Timers = new();
     public ConcurrentDictionary<string, ISingleClientProxy> GameServersConnections = new();
     public ConcurrentDictionary<string, UserLauncherInfo> LauncherInfos = new();
+    public ConcurrentDictionary<string, IDisposable> Timers = new();
 
     public PlayersController(IGmlManager gmlManager)
     {
@@ -27,8 +24,8 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
     public async Task AddLauncherConnection(string connectionId, ISingleClientProxy connection,
         ClaimsPrincipal contextUser)
     {
-        var userName = contextUser.FindFirstValue(JwtRegisteredClaimNames.Name);
-        if (!string.IsNullOrEmpty(userName) && await _gmlManager.Users.GetUserByName(userName) is AuthUser user)
+        var uuid = contextUser.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(uuid) && await _gmlManager.Users.GetUserByUuid(uuid) is AuthUser user)
         {
             LauncherInfos.TryAdd(connectionId, new UserLauncherInfo
             {
@@ -69,6 +66,7 @@ public class PlayersController : ConcurrentDictionary<string, UserLauncherInfo>
                 timer.Dispose();
                 Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Timer disposed");
             }
+
             Debug.WriteLine($"{user.User.Name} | {user.User.Uuid} | Disconnected");
 
             _ = OnKickUser(user.User.Name, "Потеряно соединение с сервером");

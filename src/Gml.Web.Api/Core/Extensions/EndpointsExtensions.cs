@@ -10,14 +10,12 @@ using Gml.Dto.Profile;
 using Gml.Dto.Servers;
 using Gml.Dto.Settings;
 using Gml.Dto.User;
-using Gml.Models.News;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
-using Gml.Web.Api.Domains.Servers;
+using Gml.Web.Api.Core.Hubs.Audit;
 using GmlCore.Interfaces.Notifications;
 using GmlCore.Interfaces.User;
-using Gml.Web.Api.Data;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors;
 
 namespace Gml.Web.Api.Core.Extensions;
 
@@ -82,6 +80,8 @@ public static class EndpointsExtensions
         app.MapHub<LauncherHub>("/ws/launcher").RequireAuthorization();
         app.MapHub<NotificationHub>("/ws/notifications")
             .RequireAuthorization("perm:notifications.manage");
+        app.MapHub<AuditHub>("/ws/audit")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 
@@ -482,6 +482,30 @@ public static class EndpointsExtensions
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapGet("/api/v1/integrations/authlib/minecraft/api/minecraft/profile/lookup/name/{name}",
+                MinecraftHandler.GetUserUuidByName)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Запрос по имени пользователя или игрока";
+                return generatedOperation;
+            })
+            .WithDescription("Запрос по имени пользователя или игрока")
+            .WithName("Getting user uuid by name")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
+        app.MapPost("api/v1/integrations/authlib/minecraft/api/profiles/minecraft",
+                MinecraftHandler.GetUsersUuidByNames)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Запрос на получение игроков по имени";
+                return generatedOperation;
+            })
+            .WithDescription("Запрос на получение игроков по имени")
+            .WithName("Getting users uuid by names")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         #endregion
 
         #region Auth
@@ -837,7 +861,8 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .RequireAuthorization("perm:profiles.view");
 
-        app.MapDelete("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}", ProfileHandler.RemovePlayerFromWhiteList)
+        app.MapDelete("/api/v1/profiles/{profileName}/players/whitelist/{userUuid}",
+                ProfileHandler.RemovePlayerFromWhiteList)
             .WithOpenApi(generatedOperation =>
             {
                 generatedOperation.Summary = "Удаление игрока из белого списка профиля";
@@ -1022,7 +1047,35 @@ public static class EndpointsExtensions
             .Produces<ResponseMessage<SettingsReadDto>>()
             .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
             .AllowAnonymous()
-            .WithMetadata(new Microsoft.AspNetCore.Cors.DisableCorsAttribute());
+            .WithMetadata(new DisableCorsAttribute());
+
+        app.MapGet("/api/v1/settings/restore/keys", SettingsHandler.GetKeys)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Получение списка бекапов";
+                return generatedOperation;
+            })
+            .WithDescription("Получение списка бекапов")
+            .WithName("Backup list")
+            .WithTags("Settings")
+            .Produces<ResponseMessage<SettingsReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .AllowAnonymous()
+            .WithMetadata(new DisableCorsAttribute());
+
+        app.MapPost("/api/v1/settings/restore/{backupKey}", SettingsHandler.Restore)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Восстановление из бекапа";
+                return generatedOperation;
+            })
+            .WithDescription("Восстановление из бекапа")
+            .WithName("Backup restore")
+            .WithTags("Settings")
+            .Produces<ResponseMessage<SettingsReadDto>>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.NotFound)
+            .AllowAnonymous()
+            .WithMetadata(new DisableCorsAttribute());
 
         app.MapGet("/api/v1/settings/checkInstalled", SettingsHandler.IsNotInstalled)
             .WithOpenApi(generatedOperation =>
@@ -1064,7 +1117,6 @@ public static class EndpointsExtensions
         #endregion
 
         #region Plugins
-
 
         app.MapPost("/api/v1/plugins/install", PluginHandler.InstallPlugin)
             .WithOpenApi(generatedOperation =>
@@ -1242,85 +1294,145 @@ public static class EndpointsExtensions
 
         // Aggregate endpoints for Roles/Permissions/Users
         app.MapGet("/api/v1/users/rbac", RolesHandler.GetUsersRbac)
-            .WithOpenApi(o => { o.Summary = "Пользователи с ролями и правами"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Пользователи с ролями и правами";
+                return o;
+            })
             .WithTags("RBAC")
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapGet("/api/v1/roles/details", RolesHandler.GetRolesWithPermissions)
-            .WithOpenApi(o => { o.Summary = "Роли с их правами"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Роли с их правами";
+                return o;
+            })
             .WithTags("RBAC")
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
         // Roles CRUD
         app.MapGet("/api/v1/roles", RolesHandler.GetRoles)
-            .WithOpenApi(o => { o.Summary = "Список ролей"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Список ролей";
+                return o;
+            })
             .WithTags("RBAC")
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPost("/api/v1/roles", RolesHandler.CreateRole)
-        .WithOpenApi(o => { o.Summary = "Создать роль"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Создать роль";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPut("/api/v1/roles/{id:int}", RolesHandler.UpdateRole)
-        .WithOpenApi(o => { o.Summary = "Обновить роль"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Обновить роль";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapDelete("/api/v1/roles/{id:int}", RolesHandler.DeleteRole)
-        .WithOpenApi(o => { o.Summary = "Удалить роль"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Удалить роль";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         // Permissions CRUD
         app.MapGet("/api/v1/permissions", RolesHandler.GetPermissions)
-            .WithOpenApi(o => { o.Summary = "Список прав"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Список прав";
+                return o;
+            })
             .WithTags("RBAC")
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPost("/api/v1/permissions", RolesHandler.CreatePermission)
-        .WithOpenApi(o => { o.Summary = "Создать право"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Создать право";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapPut("/api/v1/permissions/{id:int}", RolesHandler.UpdatePermission)
-        .WithOpenApi(o => { o.Summary = "Обновить право"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Обновить право";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapDelete("/api/v1/permissions/{id:int}", RolesHandler.DeletePermission)
-        .WithOpenApi(o => { o.Summary = "Удалить право"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Удалить право";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         // Assign/Unassign permissions to role
         app.MapPost("/api/v1/roles/{roleId:int}/permissions/{permId:int}", RolesHandler.AssignPermissionToRole)
-        .WithOpenApi(o => { o.Summary = "Назначить право роли"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Назначить право роли";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapDelete("/api/v1/roles/{roleId:int}/permissions/{permId:int}", RolesHandler.UnassignPermissionFromRole)
-        .WithOpenApi(o => { o.Summary = "Снять право с роли"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Снять право с роли";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         // Assign/Unassign role to user
         app.MapPost("/api/v1/users/{userId:int}/roles/{roleId:int}", RolesHandler.AssignRoleToUser)
-        .WithOpenApi(o => { o.Summary = "Назначить роль пользователю"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Назначить роль пользователю";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapDelete("/api/v1/users/{userId:int}/roles/{roleId:int}", RolesHandler.UnassignRoleFromUser)
-        .WithOpenApi(o => { o.Summary = "Снять роль с пользователя"; return o; })
-        .WithTags("RBAC")
-        .RequireAuthorization(c => c.RequireRole("Admin"));
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Снять роль с пользователя";
+                return o;
+            })
+            .WithTags("RBAC")
+            .RequireAuthorization(c => c.RequireRole("Admin"));
 
         #endregion
 
         #region External Applications
 
         app.MapPost("/api/v1/applications", ExternalApplicationHandler.CreateApplication)
-            .WithOpenApi(o => { o.Summary = "Создать внешнее приложение"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Создать внешнее приложение";
+                return o;
+            })
             .WithDescription("Создание внешнего приложения с набором разрешений")
             .WithName("Create external application")
             .WithTags("External Applications")
@@ -1329,7 +1441,11 @@ public static class EndpointsExtensions
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapGet("/api/v1/applications", ExternalApplicationHandler.GetUserApplications)
-            .WithOpenApi(o => { o.Summary = "Получить список приложений пользователя"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Получить список приложений пользователя";
+                return o;
+            })
             .WithDescription("Получение списка приложений текущего пользователя")
             .WithName("Get user applications")
             .WithTags("External Applications")
@@ -1337,7 +1453,11 @@ public static class EndpointsExtensions
             .RequireAuthorization(c => c.RequireRole("Admin"));
 
         app.MapDelete("/api/v1/applications/{id:guid}", ExternalApplicationHandler.DeleteApplication)
-            .WithOpenApi(o => { o.Summary = "Удалить внешнее приложение"; return o; })
+            .WithOpenApi(o =>
+            {
+                o.Summary = "Удалить внешнее приложение";
+                return o;
+            })
             .WithDescription("Удаление внешнего приложения и его токена")
             .WithName("Delete external application")
             .WithTags("External Applications")

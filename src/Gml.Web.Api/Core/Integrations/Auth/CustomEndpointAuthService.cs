@@ -23,7 +23,7 @@ public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGm
 
         var authService = await gmlManager.Integrations.GetActiveAuthService();
 
-        var result =await _httpClient.PostAsync(authService!.Endpoint, content);
+        var result = await _httpClient.PostAsync(authService!.Endpoint, content);
 
         var resultContent = await result.Content.ReadAsStringAsync();
 
@@ -50,8 +50,8 @@ public class CustomEndpointAuthService(IHttpClientFactory httpClientFactory, IGm
 
         authResult.Login = model?.Login ?? login;
         authResult.Uuid = model?.UserUuid;
+        authResult.IsSlim = model?.IsSlim ?? false;
 
         return authResult;
-
     }
 }

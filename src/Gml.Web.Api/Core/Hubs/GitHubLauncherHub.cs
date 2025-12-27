@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Reactive.Linq;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
@@ -13,6 +12,7 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
 
     public async Task Download(string branchName, string host, string folderName)
     {
+        using var cts = new CancellationTokenSource();
         try
         {
             var projectPath = Path.Combine(gmlManager.LauncherInfo.InstallationDirectory, "Launcher", branchName);
@@ -33,17 +33,25 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             if (allowedVersions.All(c => c != branchName))
             {
                 await gmlManager.Notifications
-                    .SendMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается", NotificationType.Error);
+                    .SendMessage($"Полученная версия лаунчера \"{branchName}\" не поддерживается",
+                        NotificationType.Error);
                 return;
             }
 
             ChangeProgress(nameof(GitHubLauncherHub), 10);
+
+            var progressSubscription = Observable
+                .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(700))
+                .Select(x => (int)(10 + Math.Min(x * 0.5, 88)))
+                .Subscribe(progress => ChangeProgress(nameof(GitHubLauncherHub), progress));
+
             var newFolder = await gitHubService.DownloadProject(projectPath, branchName, _launcherGitHub);
-            ChangeProgress(nameof(GitHubLauncherHub), 20);
 
+            await cts.CancelAsync();
+            progressSubscription.Dispose();
+
+            ChangeProgress(nameof(GitHubLauncherHub), 98);
             await gitHubService.EditLauncherFiles(newFolder, host, folderName);
-            ChangeProgress(nameof(GitHubLauncherHub), 30);
-
             ChangeProgress(nameof(GitHubLauncherHub), 100);
             SendCallerMessage($"Проект \"{branchName}\" успешно создан");
         }
@@ -55,11 +63,15 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         finally
         {
             await Clients.Caller.SendAsync("LauncherDownloadEnded");
+            await cts.CancelAsync();
         }
     }
 
     public async Task Compile(string version, string[] osTypes)
     {
+        IDisposable? downloadLogsDisposable = null;
+        IDisposable? buildLogsDisposable = null;
+
         try
         {
             if (!gmlManager.Launcher.CanCompile(version, out string message))
@@ -69,20 +81,20 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
             }
 
             Log("Start compilling...");
-
+            downloadLogsDisposable = gmlManager.LauncherInfo.Settings.SystemProcedures.DownloadLogs.Subscribe(Log);
             if (await gmlManager.LauncherInfo.Settings.SystemProcedures.InstallDotnet())
             {
-                var eventObservable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
+                buildLogsDisposable = gmlManager.Launcher.BuildLogs.Subscribe(Log);
 
                 var result = await gmlManager.Launcher.Build(version, osTypes);
-
-                eventObservable.Dispose();
 
                 if (result)
                     await gmlManager.Notifications.SendMessage("Лаунчер успешно скомпилирован!", NotificationType.Info);
                 else
-                    await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!", NotificationType.Error);
+                    await gmlManager.Notifications.SendMessage("Сборка лаунчера завершилась ошибкой!",
+                        NotificationType.Error);
 
+                await Clients.Caller.SendAsync("LauncherBuildEnded");
             }
         }
         catch (Exception exception)
@@ -92,7 +104,8 @@ public class GitHubLauncherHub(IGitHubService gitHubService, IGmlManager gmlMana
         }
         finally
         {
-            await Clients.Caller.SendAsync("LauncherBuildEnded");
+            downloadLogsDisposable?.Dispose();
+            buildLogsDisposable?.Dispose();
         }
     }
 }

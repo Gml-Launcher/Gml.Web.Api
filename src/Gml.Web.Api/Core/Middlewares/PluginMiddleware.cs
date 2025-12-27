@@ -1,25 +1,20 @@
-using System.Diagnostics;
 using System.Net;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using FluentValidation.Results;
 using Gml.Dto.Messages;
-using Gml.Web.Api.Core.Services;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
-using Spectre.Console;
 
 namespace Gml.Web.Api.Core.Middlewares;
 
 public class PluginMiddleware
 {
-    private readonly RequestDelegate _next;
     private static IAccessTokenService _accessTokenService;
     private static IGmlManager _gmlManager;
+    private readonly RequestDelegate _next;
 
     public PluginMiddleware(RequestDelegate next, IAccessTokenService accessTokenService, IGmlManager gmlManager)
     {
@@ -56,14 +51,17 @@ public class PluginMiddleware
         {
             Console.WriteLine(exeption);
             _gmlManager.BugTracker.CaptureException(exeption);
-            await context.Response.WriteAsJsonAsync(ResponseMessage.Create([new ValidationFailure
-            {
-                ErrorMessage = exeption.Message,
-            }], "Сервер принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
+            await context.Response.WriteAsJsonAsync(ResponseMessage.Create([
+                new ValidationFailure
+                {
+                    ErrorMessage = exeption.Message,
+                }
+            ], "Сервер принял запрос, но не смог его обработать", HttpStatusCode.UnprocessableContent));
         }
 
         // Debug.WriteLine($"Unload successful: {!reference.IsAlive}");
     }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static async Task<WeakReference?> Process(HttpContext context)
     {
@@ -105,13 +103,11 @@ public class PluginMiddleware
                             ?.Split("Bearer ")
                             .Last();
 
-                        if (string.IsNullOrEmpty(accessToken)|| !_accessTokenService.ValidateToken(accessToken))
+                        if (string.IsNullOrEmpty(accessToken) || !_accessTokenService.ValidateToken(accessToken))
                         {
                             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                             return null;
                         }
-
-
                     }
 
                     var endpoint = Activator.CreateInstance(type) as IPluginEndpoint;
@@ -132,5 +128,4 @@ public class PluginMiddleware
 
         return new WeakReference(loadContext);
     }
-
 }
