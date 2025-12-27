@@ -275,7 +275,7 @@ public class MinecraftHandler : IMinecraftHandler
                 items.Add(new
                 {
                     name = user.Name,
-                    id = user.Uuid
+                    id = user.Uuid.ToLower()
                 });
             }
         }
