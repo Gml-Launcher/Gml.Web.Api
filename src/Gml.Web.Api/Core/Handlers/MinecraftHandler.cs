@@ -270,15 +270,7 @@ public class MinecraftHandler : IMinecraftHandler
         {
             var user = await gmlManager.Users.GetUserByName(name);
 
-            if (user is null)
-            {
-                items.Add(new
-                {
-                    name,
-                    id = Guid.Empty.ToString().ToLower()
-                });
-            }
-            else
+            if (user is not null)
             {
                 items.Add(new
                 {
