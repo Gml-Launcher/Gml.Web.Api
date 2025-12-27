@@ -5,6 +5,7 @@ using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Newtonsoft.Json;
@@ -258,5 +259,35 @@ public class MinecraftHandler : IMinecraftHandler
             name = user.Name,
             id = user.Uuid
         });
+    }
+
+    public static async Task<IResult> GetUsersUuidByNames(HttpContext context, IGmlManager gmlManager,
+        [FromBody] string[] names)
+    {
+        List<object> items = new();
+
+        foreach (var name in names)
+        {
+            var user = await gmlManager.Users.GetUserByName(name);
+
+            if (user is null)
+            {
+                items.Add(new
+                {
+                    name,
+                    id = Guid.Empty.ToString().ToLower()
+                });
+            }
+            else
+            {
+                items.Add(new
+                {
+                    name = user.Name,
+                    id = user.Uuid
+                });
+            }
+        }
+
+        return Results.Ok(items);
     }
 }

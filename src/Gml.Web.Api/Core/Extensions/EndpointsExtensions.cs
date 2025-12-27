@@ -494,6 +494,18 @@ public static class EndpointsExtensions
             .WithTags("Integration/Minecraft/AuthLib")
             .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
 
+        app.MapPost("api/v1/integrations/authlib/minecraft/api/profiles/minecraft",
+                MinecraftHandler.GetUsersUuidByNames)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Запрос на получение игроков по имени";
+                return generatedOperation;
+            })
+            .WithDescription("Запрос на получение игроков по имени")
+            .WithName("Getting users uuid by names")
+            .WithTags("Integration/Minecraft/AuthLib")
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         #endregion
 
         #region Auth
