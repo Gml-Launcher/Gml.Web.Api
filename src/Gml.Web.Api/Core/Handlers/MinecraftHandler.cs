@@ -250,14 +250,14 @@ public class MinecraftHandler : IMinecraftHandler
             return Results.Ok(new
             {
                 name = name,
-                id = Guid.Empty.ToString().ToLower()
+                id = Guid.Empty.ToString().Replace("-", string.Empty).ToLower()
             });
         }
 
         return Results.Ok(new
         {
             name = user.Name,
-            id = user.Uuid
+            id = user.Uuid.Replace("-", string.Empty).ToLower()
         });
     }
 
@@ -275,7 +275,7 @@ public class MinecraftHandler : IMinecraftHandler
                 items.Add(new
                 {
                     name = user.Name,
-                    id = user.Uuid.ToLower()
+                    id = user.Uuid.Replace("-", string.Empty).ToLower()
                 });
             }
         }
