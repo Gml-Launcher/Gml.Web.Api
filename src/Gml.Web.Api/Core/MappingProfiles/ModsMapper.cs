@@ -2,7 +2,7 @@
 using Gml.Dto.Mods;
 using Gml.Models.Mods;
 using GmlCore.Interfaces.Mods;
-using Modrinth.Api.Models.Dto.Entities;
+using Modrinth.Models;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
@@ -19,4 +19,3 @@ public class ModsMapper : Profile
         CreateMap<Dependency, ModVersionDtoDependency>();
     }
 }
-
