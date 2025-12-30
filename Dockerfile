@@ -10,11 +10,6 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/Gml.Web.Api/Gml.Web.Api.csproj", "src/Gml.Web.Api/"]
-COPY ["src/Gml.Core/src/Pingo/Pingo/Pingo.csproj", "src/Gml.Core/src/Pingo/Pingo/"]
-COPY ["src/Gml.Core/src/Modrinth.Api/src/Modrinth.Api/Modrinth.Api.csproj", "src/Gml.Core/src/Modrinth.Api/src/Modrinth.Api/"]
-COPY ["src/Gml.Core/src/Gml.Common/Gml.Common/Gml.Common.csproj", "src/Gml.Core/src/Gml.Common/Gml.Common/"]
-COPY ["src/Gml.Core/src/Gml.Interfaces/Gml.Interfaces.csproj", "src/Gml.Core/src/Gml.Interfaces/"]
-COPY ["src/Gml.Core/src/Gml.Core/Gml.Core.csproj", "src/Gml.Core/src/Gml.Core/"]
 COPY ["src/plugins/Gml.Web.Api.EndpointSDK/Gml.Web.Api.EndpointSDK.csproj", "src/plugins/Gml.Web.Api.EndpointSDK/"]
 RUN dotnet restore "src/Gml.Web.Api/Gml.Web.Api.csproj"
 COPY . .
