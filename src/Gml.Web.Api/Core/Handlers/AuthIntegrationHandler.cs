@@ -73,7 +73,7 @@ public class AuthIntegrationHandler : IAuthIntegrationHandler
     {
         Console.WriteLine(exception);
 
-        var errorMessage = string.Join('.',
+        var errorMessage = string.Join(". ",
             "Произошла ошибка при обмене данных с сервисом авторизации",
             exception.Message);
 
