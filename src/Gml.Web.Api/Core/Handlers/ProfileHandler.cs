@@ -193,6 +193,10 @@ public class ProfileHandler : IProfileHandler
             Priority = int.TryParse(context.Request.Form["priority"], out var priority) ? priority : 0,
             NeedUpdateImages = !bool.TryParse(context.Request.Form["needUpdateImages"], out var needUpdateImages) ||
                                needUpdateImages,
+            ProfileJavaVendor = int.TryParse(context.Request.Form["profileJavaVendor"], out var profileJavaVendor)
+                ? (ProfileJavaVendor)profileJavaVendor
+                : ProfileJavaVendor.Default,
+            JavaMajorVersion = context.Request.Form["javaMajorVersion"],
             IsEnabled = context.Request.Form["enabled"] == "true"
         };
 
@@ -240,7 +244,9 @@ public class ProfileHandler : IProfileHandler
             updateDto.GameArguments,
             updateDto.Priority,
             updateDto.RecommendedRam,
-            updateDto.NeedUpdateImages
+            updateDto.NeedUpdateImages,
+            updateDto.ProfileJavaVendor,
+            updateDto.JavaMajorVersion
         );
 
         var newProfile = mapper.Map<ProfileReadDto>(profile);
