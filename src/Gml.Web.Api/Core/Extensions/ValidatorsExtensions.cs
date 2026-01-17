@@ -1,14 +1,14 @@
-using System.Collections.Frozen;
 using FluentValidation;
 using Gml.Dto.Files;
 using Gml.Dto.Integration;
 using Gml.Dto.Launcher;
 using Gml.Dto.Mods;
 using Gml.Dto.Profile;
+using Gml.Dto.Servers;
 using Gml.Dto.Texture;
 using Gml.Dto.User;
-using Gml.Web.Api.Core.Validation;
 using Gml.Web.Api.Core.Handlers;
+using Gml.Web.Api.Core.Validation;
 using Gml.Web.Api.Domains.Servers;
 
 namespace Gml.Web.Api.Core.Extensions;
@@ -45,6 +45,7 @@ public static class ValidatorsExtensions
 
             // Servers validator
             .AddScoped<IValidator<CreateServerDto>, CreateServerDtoValidator>()
+            .AddScoped<IValidator<UpdateServerDto>, UpdateServerDtoValidator>()
 
             // Discord validator
             .AddScoped<IValidator<DiscordRpcUpdateDto>, DiscordRpcValidator>()

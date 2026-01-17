@@ -1249,6 +1249,17 @@ public static class EndpointsExtensions
             .WithTags("MinecraftServers")
             .RequireAuthorization("perm:profiles.update");
 
+        app.MapPut("/api/v1/servers/{profileName}/{serverName}", ServersHandler.UpdateServer)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Обновление сервера у профиля";
+                return generatedOperation;
+            })
+            .WithDescription("Обновление сервера у профиля")
+            .WithName("Update server in game profile")
+            .WithTags("MinecraftServers")
+            .RequireAuthorization("perm:profiles.update");
+
         app.MapDelete("/api/v1/servers/{profileName}/{serverNamesString}", ServersHandler.RemoveServer)
             .WithOpenApi(generatedOperation =>
             {

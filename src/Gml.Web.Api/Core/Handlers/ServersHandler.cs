@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text;
 using AutoMapper;
 using FluentValidation;
 using Gml.Dto.Messages;
@@ -24,7 +23,8 @@ internal abstract class ServersHandler
             return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем не существует",
                 HttpStatusCode.BadRequest));
 
-        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ServerReadDto>>(profile.Servers), string.Empty, HttpStatusCode.OK));
+        return Results.Ok(ResponseMessage.Create(mapper.Map<List<ServerReadDto>>(profile.Servers), string.Empty,
+            HttpStatusCode.OK));
     }
 
     public static async Task<IResult> RemoveServer(IGmlManager gmlManager, string profileName, string serverNamesString)
@@ -74,7 +74,8 @@ internal abstract class ServersHandler
         try
         {
             if (string.IsNullOrEmpty(profileName))
-                return Results.BadRequest(ResponseMessage.Create("Передан пустой параметр в качестве наименования профиля",
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Передан пустой параметр в качестве наименования профиля",
                     HttpStatusCode.BadRequest));
 
             var result = await validator.ValidateAsync(createDto);
@@ -96,10 +97,68 @@ internal abstract class ServersHandler
 
             await gmlManager.Profiles.SaveProfiles();
 
-            var resultObject = ResponseMessage.Create(mapper.Map<ServerReadDto>(mappedServer), "Сервер успешно добавлен",
+            var resultObject = ResponseMessage.Create(mapper.Map<ServerReadDto>(mappedServer),
+                "Сервер успешно добавлен",
                 HttpStatusCode.Created);
 
             return Results.Created($"/api/v1/servers/{profileName}/{mappedServer.Name}", resultObject);
+        }
+        catch (Exception exception)
+        {
+            return Results.BadRequest(ResponseMessage.Create(exception.Message, HttpStatusCode.BadRequest));
+        }
+    }
+
+    public static async Task<IResult> UpdateServer(
+        IGmlManager gmlManager,
+        IValidator<UpdateServerDto> validator,
+        IMapper mapper,
+        string profileName,
+        string serverName,
+        UpdateServerDto updateDto)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(profileName))
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Передан пустой параметр в качестве наименования профиля",
+                    HttpStatusCode.BadRequest));
+
+            if (string.IsNullOrEmpty(serverName))
+                return Results.BadRequest(ResponseMessage.Create(
+                    "Передан пустой параметр в качестве наименования сервера",
+                    HttpStatusCode.BadRequest));
+
+            var result = await validator.ValidateAsync(updateDto);
+
+            if (!result.IsValid)
+                return Results.BadRequest(ResponseMessage.Create(result.Errors, "Ошибка валидации",
+                    HttpStatusCode.BadRequest));
+
+            var profile = await gmlManager.Profiles.GetProfile(profileName);
+
+            if (profile is null)
+                return Results.BadRequest(ResponseMessage.Create("Профиль с данным именем не существует",
+                    HttpStatusCode.BadRequest));
+
+            var server = profile.Servers.FirstOrDefault(c => c.Name == serverName);
+
+            if (server is null)
+                return Results.BadRequest(ResponseMessage.Create("Сервер с данным именем не существует",
+                    HttpStatusCode.BadRequest));
+
+            server.Name = updateDto.Name;
+            server.Address = updateDto.Address;
+            server.Port = updateDto.Port;
+
+            await server.UpdateStatusAsync();
+
+            await gmlManager.Profiles.SaveProfiles();
+
+            var resultObject = ResponseMessage.Create(mapper.Map<ServerReadDto>(server), "Сервер успешно обновлен",
+                HttpStatusCode.OK);
+
+            return Results.Ok(resultObject);
         }
         catch (Exception exception)
         {
