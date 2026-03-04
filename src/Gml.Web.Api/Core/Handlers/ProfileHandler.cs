@@ -317,6 +317,17 @@ public class ProfileHandler : IProfileHandler
             return Results.BadRequest(ResponseMessage.Create("Не удалось определить вид операционной системы профиля",
                 HttpStatusCode.BadRequest));
 
+
+        try
+        {
+            await gmlManager.Integrations.GetSkinServiceAsync();
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(ResponseMessage.Create(e.Message, HttpStatusCode.BadRequest));
+        }
+
+
         var osName = SystemHelper.GetStringOsType(osType);
 
         var profile = await gmlManager.Profiles.GetProfile(createInfoDto.ProfileName);
