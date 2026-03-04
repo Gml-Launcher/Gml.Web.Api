@@ -87,6 +87,17 @@ public static class EndpointsExtensions
 
         #region Auth
 
+        app.MapPost("/api/v1/users/logout", AuthHandler.Logout)
+            .WithOpenApi(generatedOperation =>
+            {
+                generatedOperation.Summary = "Выход пользователя (очистка refreshToken куки)";
+                return generatedOperation;
+            })
+            .WithName("Logout User")
+            .WithTags("Users")
+            .Produces<ResponseMessage>()
+            .Produces<ResponseMessage>((int)HttpStatusCode.BadRequest);
+
         app.MapPost("/api/v1/users/signup", AuthHandler.CreateUser)
             .WithOpenApi(generatedOperation =>
             {

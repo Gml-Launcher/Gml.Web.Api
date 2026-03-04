@@ -18,6 +18,33 @@ namespace Gml.Web.Api.Core.Handlers;
 
 public class AuthHandler : IAuthHandler
 {
+    public static async Task<IResult> Logout(
+        HttpContext httpContext,
+        IAccessTokenService tokenService,
+        IRefreshTokenRepository refreshRepo)
+    {
+        var refreshToken = httpContext.Request.Cookies["refreshToken"];
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+        {
+            var hash = tokenService.HashRefreshToken(refreshToken);
+            var stored = await refreshRepo.FindActiveByHashAsync(hash);
+            if (stored is not null)
+            {
+                await refreshRepo.RevokeAsync(stored.UserId, stored.TokenHash);
+            }
+        }
+
+        httpContext.Response.Cookies.Delete("refreshToken", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/"
+        });
+
+        return Results.Ok(ResponseMessage.Create("Вы вышли из системы", HttpStatusCode.OK));
+    }
+
     public static async Task<IResult> CreateUser(
         HttpContext httpContext,
         IUserRepository userRepository,
