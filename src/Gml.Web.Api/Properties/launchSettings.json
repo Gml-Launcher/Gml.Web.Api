@@ -16,6 +16,9 @@
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
         "PROJECT_PATH": "",
+        //        "HTTP_PROXY_ADDRESS": "http://127.0.0.1:10801",
+        //        "HTTP_PROXY_USERNAME": "",
+        //        "HTTP_PROXY_PASSWORD": "",
         "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     },
@@ -34,6 +37,9 @@
         "PROJECT_DESCRIPTION": "GmlServer Description",
         "PROJECT_POLICYNAME": "GmlPolicy",
         "PROJECT_PATH": "",
+        //        "HTTP_PROXY_ADDRESS": "http://127.0.0.1:10801",
+        //        "HTTP_PROXY_USERNAME": "",
+        //        "HTTP_PROXY_PASSWORD": "",
         "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     }

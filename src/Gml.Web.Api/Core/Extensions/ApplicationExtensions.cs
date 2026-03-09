@@ -1,3 +1,4 @@
+using System.Net;
 using System.Reactive.Subjects;
 using System.Text;
 using Gml.Domains.Settings;
@@ -83,11 +84,17 @@ public static class ApplicationExtensions
         var jwtAudience = GetEnvironmentVariable("JWT_AUDIENCE");
         var accessMinutesStr = GetEnvironmentVariable("JWT_ACCESS_MINUTES");
         var refreshDaysStr = GetEnvironmentVariable("JWT_REFRESH_DAYS");
+        var httpProxyAdress = GetEnvironmentVariable("HTTP_PROXY_ADDRESS");
+        var httpProxyUsername = GetEnvironmentVariable("HTTP_PROXY_USERNAME");
+        var httpProxyPassword = GetEnvironmentVariable("HTTP_PROXY_PASSWORD");
         int.TryParse(accessMinutesStr, out var accessMinutes);
         int.TryParse(refreshDaysStr, out var refreshDays);
 
         return new ServerSettings
         {
+            HttpProxyAddress = httpProxyAdress,
+            HttpProxyUsername = httpProxyUsername,
+            HttpProxyPassword = httpProxyPassword,
             ProjectDescription = projectDescription,
             ProjectName = projectName,
             PolicyName = policyName,
@@ -165,6 +172,7 @@ public static class ApplicationExtensions
                 map.AddProfile<RbacMapper>();
             })
             .ConfigureGmlManager(
+                CreateHttpClient(settings.HttpProxyAddress, settings.HttpProxyUsername, settings.HttpProxyPassword),
                 settings.ProjectName,
                 settings.SecurityKey,
                 settings.ProjectPath,
@@ -253,6 +261,42 @@ public static class ApplicationExtensions
         builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return builder;
+    }
+
+    private static HttpClient CreateHttpClient(string? settingsHttpProxyAddress, string? settingsHttpProxyUsername,
+        string? settingsHttpProxyPassword)
+    {
+        if (string.IsNullOrWhiteSpace(settingsHttpProxyAddress))
+            return new HttpClient();
+
+        if (!string.IsNullOrWhiteSpace(settingsHttpProxyUsername) &&
+            !string.IsNullOrWhiteSpace(settingsHttpProxyPassword))
+        {
+            var proxy = new WebProxy(settingsHttpProxyAddress)
+            {
+                Credentials = new NetworkCredential(settingsHttpProxyUsername, settingsHttpProxyPassword)
+            };
+
+            var handler = new HttpClientHandler
+            {
+                Proxy = proxy,
+                UseProxy = true
+            };
+
+            return new HttpClient(handler);
+        }
+        else
+        {
+            var proxy = new WebProxy(settingsHttpProxyAddress);
+
+            var handler = new HttpClientHandler
+            {
+                Proxy = proxy,
+                UseProxy = true
+            };
+
+            return new HttpClient(handler);
+        }
     }
 
     private static string GetEnvironmentVariable(string name)

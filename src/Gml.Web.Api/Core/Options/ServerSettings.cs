@@ -21,4 +21,7 @@ public class ServerSettings
     public string? TextureEndpoint { get; set; }
     public string MarketEndpoint { get; set; } = "https://gml-market.recloud.tech";
     public bool IsEnabledApiDocs { get; set; }
+    public string? HttpProxyAddress { get; set; }
+    public string? HttpProxyUsername { get; set; }
+    public string? HttpProxyPassword { get; set; }
 }

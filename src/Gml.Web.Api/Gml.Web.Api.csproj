@@ -16,7 +16,7 @@
     <PackageReference Include="AutoMapper" Version="15.1.0"/>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
     <PackageReference Include="FluentValidation" Version="11.12.0"/>
-    <PackageReference Include="Gml.Core" Version="2026.1.1-alpha3"/>
+    <PackageReference Include="Gml.Core" Version="2026.1.1-alpha8"/>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0"/>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0"/>

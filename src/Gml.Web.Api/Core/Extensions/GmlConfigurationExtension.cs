@@ -8,6 +8,7 @@ public static class GmlConfigurationExtension
 {
     public static IServiceCollection ConfigureGmlManager(
         this IServiceCollection services,
+        HttpClient httpClient,
         string projectName,
         string securityKey,
         string? projectPath,
@@ -15,9 +16,9 @@ public static class GmlConfigurationExtension
     {
         services.AddSingleton<IGmlManager>(_ =>
         {
-            var settings = new GmlSettings(projectName, securityKey, projectPath)
+            var settings = new GmlSettings(projectName, securityKey, projectPath, httpClient)
             {
-                TextureServiceEndpoint = textureEndpoint ?? "http://gml-web-skins:8085"
+                TextureServiceEndpoint = textureEndpoint ?? "http://gml-web-skins:8085",
             };
 
             var manager = new GmlManager(settings);
