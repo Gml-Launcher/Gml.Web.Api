@@ -169,11 +169,21 @@ public class ProfileHub : BaseHub
 
         foreach (var profile in await _gmlManager.Profiles.GetProfiles())
         {
-            if (profile.State is ProfileState.Loading or ProfileState.Packing)
+            if (profile.State is not (ProfileState.Loading or ProfileState.Packing))
+                continue;
+
+            using var logInfo = profile.GameLoader.LoadLog
+                .Subscribe(logs => { Log(logs, profile.Name); });
+
+            using var fullPercentage = profile.GameLoader.FullPercentages.Subscribe(percentage =>
             {
-                using var logInfo = profile.GameLoader.LoadLog
-                    .Subscribe(logs => { Log(logs, profile.Name); });
-            }
+                SendProgress("FullProgress", profile.Name, percentage);
+            });
+
+            using var loadPercentage = profile.GameLoader.LoadPercentages.Subscribe(percentage =>
+            {
+                SendProgress("ChangeProgress", profile.Name, percentage);
+            });
         }
     }
 
