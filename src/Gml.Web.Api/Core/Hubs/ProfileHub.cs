@@ -163,6 +163,20 @@ public class ProfileHub : BaseHub
         }
     }
 
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+
+        foreach (var profile in await _gmlManager.Profiles.GetProfiles())
+        {
+            if (profile.State is ProfileState.Loading or ProfileState.Packing)
+            {
+                using var logInfo = profile.GameLoader.LoadLog
+                    .Subscribe(logs => { Log(logs, profile.Name); });
+            }
+        }
+    }
+
     public class ConfigureJsonOptions : IConfigureOptions<JsonOptions>
     {
         public void Configure(JsonOptions options)
