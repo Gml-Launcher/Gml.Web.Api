@@ -9,7 +9,6 @@
       "applicationUrl": "http://0.0.0.0:5002",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
         "PROJECT_NAME": "GmlServer",
         "SWAGGER_ENABLED": "true",
         "MARKET_ENDPOINT": "http://localhost:8380",
@@ -22,6 +21,22 @@
         "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
       }
     },
+    "frontend": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://0.0.0.0:5002",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PROJECT_NAME": "GmlServer",
+        "SWAGGER_ENABLED": "true",
+        "MARKET_ENDPOINT": "https://gml-market.recloud.tech",
+        "PROJECT_DESCRIPTION": "GmlServer Description",
+        "PROJECT_POLICYNAME": "GmlPolicy",
+        "PROJECT_PATH": "",
+        "SERVICE_TEXTURE_ENDPOINT": "http://localhost:5086"
+      }
+    },
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -30,7 +45,6 @@
       "applicationUrl": "https://0.0.0.0:5001;http://0.0.0.0:5002",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "SECURITY_KEY": "jkuhbsfgvuk4gfikhn8i7wa34rkbqw23",
         "PROJECT_NAME": "GmlServer",
         "SWAGGER_ENABLED": "true",
         "MARKET_ENDPOINT": "https://gml-market.recloud.tech",

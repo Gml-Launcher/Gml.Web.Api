@@ -1,5 +1,6 @@
 using System.Net;
 using System.Reactive.Subjects;
+using System.Security.Cryptography;
 using System.Text;
 using Gml.Domains.Settings;
 using Gml.Web.Api.Core.Authentication;
@@ -57,7 +58,7 @@ public static class ApplicationExtensions
 
     public static WebApplicationBuilder RegisterServices(this WebApplicationBuilder builder)
     {
-        var serverSettings = GetServerSettings();
+        var serverSettings = GetServerSettings(builder.Environment);
 
         _policyName = serverSettings.PolicyName;
 
@@ -68,14 +69,14 @@ public static class ApplicationExtensions
         return builder;
     }
 
-    private static ServerSettings GetServerSettings()
+    private static ServerSettings GetServerSettings(IHostEnvironment environment)
     {
         var projectName = GetEnvironmentVariable("PROJECT_NAME");
         var marketEndpoint = GetEnvironmentVariable("MARKET_ENDPOINT");
         var projectDescription = GetEnvironmentVariable("PROJECT_DESCRIPTION");
         var policyName = GetEnvironmentVariable("PROJECT_POLICYNAME");
         var projectPath = GetEnvironmentVariable("PROJECT_PATH");
-        var securityKey = GetEnvironmentVariable("SECURITY_KEY");
+        var securityKey = GetSecurityKey(environment);
         var swaggerEnabled = bool.TryParse(GetEnvironmentVariable("SWAGGER_ENABLED"), out var isEnabled) && isEnabled;
 
         var textureEndpoint = GetEnvironmentVariable("SERVICE_TEXTURE_ENDPOINT");
@@ -109,6 +110,42 @@ public static class ApplicationExtensions
             AccessTokenMinutes = accessMinutes > 0 ? accessMinutes : 15,
             RefreshTokenDays = refreshDays > 0 ? refreshDays : 30
         };
+    }
+
+    private static string GetSecurityKey(IHostEnvironment environment)
+    {
+        var securityKey = GetEnvironmentVariable("SECURITY_KEY");
+        if (!string.IsNullOrWhiteSpace(securityKey))
+            return securityKey;
+
+        if (!environment.IsDevelopment())
+            throw new InvalidOperationException("SECURITY_KEY must be set in the environment.");
+
+        var directory = Path.Combine(environment.ContentRootPath, "database");
+        Directory.CreateDirectory(directory);
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.OpenOrCreate,
+            Access = FileAccess.ReadWrite,
+            Share = FileShare.None
+        };
+        if (!OperatingSystem.IsWindows())
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+        using var stream = new FileStream(Path.Combine(directory, "development.key"), options);
+        using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
+        securityKey = reader.ReadToEnd().Trim();
+        if (!string.IsNullOrWhiteSpace(securityKey))
+            return securityKey;
+
+        securityKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        stream.Position = 0;
+        stream.SetLength(0);
+        using var writer = new StreamWriter(stream, new UTF8Encoding(false), leaveOpen: true);
+        writer.Write(securityKey);
+        writer.Flush();
+        stream.Flush(flushToDisk: true);
+        return securityKey;
     }
 
     private static WebApplicationBuilder RegisterEndpointsInfo(this WebApplicationBuilder builder,

@@ -44,7 +44,7 @@ The service is configured using environment variables, which control the SQLite 
 Required environment variables:
 
 - `ASPNETCORE_ENVIRONMENT`: Environment mode (e.g., `Development` for local testing, `Production` for deployment).
-- `SECURITY_KEY`: A secure key for authentication/encryption (e.g., `jkuhbsfgvuk4gfikhn8i7wa34rkbqw23`). Use a strong,
+- `SECURITY_KEY`: A secure key for authentication/encryption (e.g., `<your-security-key>`). Use a strong,
   unique key.
 - `PROJECT_NAME`: Name of the project (e.g., `GmlServer`).
 - `PROJECT_DESCRIPTION`: Description of the project (e.g., `GmlServer Description`).
@@ -53,11 +53,16 @@ Required environment variables:
 - `SERVICE_TEXTURE_ENDPOINT`: URL for the texture service endpoint (e.g., `http://localhost:5086`).
 - `AllowedHosts`: Allowed hosts for the API (e.g., `*` to allow all).
 
+In Development, if `SECURITY_KEY` is not set, the API generates a random key on its first
+launch and stores it in `src/Gml.Web.Api/database/development.key`. Subsequent launches
+reuse that key. The file is excluded from Git, and an explicitly set environment variable
+takes precedence. Production requires `SECURITY_KEY` in the environment.
+
 Example (Linux/macOS):
 
 ```bash
 ASPNETCORE_ENVIRONMENT="Development"
-SECURITY_KEY="jkuhbsfgvuk4gfikhn8i7wa34rkbqw23"
+SECURITY_KEY="<your-security-key>"
 PROJECT_NAME="GmlServer"
 PROJECT_DESCRIPTION="GmlServer Description"
 PROJECT_POLICYNAME="GmlPolicy"
@@ -70,7 +75,7 @@ On Windows, use `set` in Command Prompt:
 
 ```cmd
 set ASPNETCORE_ENVIRONMENT=Development
-set SECURITY_KEY=jkuhbsfgvuk4gfikhn8i7wa34rkbqw23
+set SECURITY_KEY=<your-security-key>
 set PROJECT_NAME=GmlServer
 set PROJECT_DESCRIPTION=GmlServer Description
 set PROJECT_POLICYNAME=GmlPolicy
@@ -118,7 +123,7 @@ docker build -t gml-web-api .
 ```bash
 docker run -d -p 5000:80 --name gml-web-api \
   -e "ASPNETCORE_ENVIRONMENT=Development" \
-  -e "SECURITY_KEY=jkuhbsfgvuk4gfikhn8i7wa34rkbqw23" \
+  -e "SECURITY_KEY=<your-security-key>" \
   -e "PROJECT_NAME=GmlServer" \
   -e "PROJECT_DESCRIPTION=GmlServer Description" \
   -e "PROJECT_POLICYNAME=GmlPolicy" \
@@ -134,7 +139,7 @@ The API will be accessible at `http://localhost:5000`. The SQLite database file 
 docker run -d -p 5000:80 --name gml-web-api \
   -v /path/to/local/db:/app \
   -e "ASPNETCORE_ENVIRONMENT=Development" \
-  -e "SECURITY_KEY=jkuhbsfgvuk4gfikhn8i7wa34rkbqw23" \
+  -e "SECURITY_KEY=<your-security-key>" \
   -e "PROJECT_NAME=GmlServer" \
   -e "PROJECT_DESCRIPTION=GmlServer Description" \
   -e "PROJECT_POLICYNAME=GmlPolicy" \

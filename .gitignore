@@ -464,4 +464,5 @@ $RECYCLE.BIN/
 src/Gml.Web.Api/src/plugins/commercial/**
 private.key
 public.key
+development.key
 BugStorage.json
