@@ -1,5 +1,3 @@
-using System.Threading.RateLimiting;
-
 namespace Gml.Web.Api.Core.Extensions;
 
 public static class RateLimitExtension

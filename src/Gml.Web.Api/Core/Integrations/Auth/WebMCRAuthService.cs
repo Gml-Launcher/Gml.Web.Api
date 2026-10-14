@@ -1,6 +1,4 @@
-﻿using System.Text;
-using GmlCore.Interfaces;
-using Newtonsoft.Json;
+﻿using GmlCore.Interfaces;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 

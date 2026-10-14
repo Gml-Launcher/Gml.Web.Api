@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using Gml.Domains.Repositories;
 using GmlCore.Interfaces.Auth;

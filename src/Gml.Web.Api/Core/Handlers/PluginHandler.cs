@@ -1,16 +1,12 @@
 using System.Collections.Frozen;
-using System.Diagnostics.Tracing;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
 using Gml.Domains.Plugins;
 using Gml.Dto.Messages;
-using Gml.Web.Api.Core.Options;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Gml.Web.Api.Core.Handlers;
 

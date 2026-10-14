@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Gml.Web.Api.EndpointSDK;
 using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 
 namespace Gml.Web.Api.Plugins.Template;
 

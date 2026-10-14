@@ -2,7 +2,6 @@ using System.Text;
 using Gml.Domains.Integrations;
 using GmlCore.Interfaces;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Gml.Web.Api.Core.Integrations.Auth;
 

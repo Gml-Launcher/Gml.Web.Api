@@ -1,8 +1,3 @@
-using AutoMapper;
-using FluentValidation;
-using Gml.Web.Api.Core.Repositories;
-using Gml.Web.Api.Data;
-
 namespace Gml.Web.Api.Core.Handlers;
 
 public interface IAuthHandler

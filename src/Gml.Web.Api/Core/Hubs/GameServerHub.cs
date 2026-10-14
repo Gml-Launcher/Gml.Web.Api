@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using Gml.Web.Api.Core.Hubs.Controllers;
 using GmlCore.Interfaces;

@@ -2,8 +2,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Gml.Web.Api.EndpointSDK;
-using GmlCore.Interfaces;
-using System.Diagnostics;
 
 namespace Gml.Web.Api.Core.Services;
 

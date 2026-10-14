@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
 using Gml.Dto.Messages;
-using GmlCore.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
