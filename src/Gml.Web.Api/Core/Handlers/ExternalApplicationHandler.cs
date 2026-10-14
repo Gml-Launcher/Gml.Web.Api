@@ -1,13 +1,10 @@
-using System;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using AutoMapper;
+using MapsterMapper;
 using Gml.Domains.Repositories;
 using Gml.Dto.Auth;
 using Gml.Dto.Messages;
 using GmlCore.Interfaces.Auth;
-using Microsoft.AspNetCore.Http;
 
 namespace Gml.Web.Api.Core.Handlers;
 

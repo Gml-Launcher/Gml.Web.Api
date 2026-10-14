@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Gml.Dto.Settings;
 using Gml.Web.Api.Core.Repositories;
 

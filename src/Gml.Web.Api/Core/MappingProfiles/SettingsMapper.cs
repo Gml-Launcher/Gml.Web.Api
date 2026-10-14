@@ -1,14 +1,14 @@
-using AutoMapper;
+using Mapster;
 using Gml.Domains.Settings;
 using Gml.Dto.Settings;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class SettingsMapper : Profile
+public class SettingsMapper : IRegister
 {
-    public SettingsMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<SettingsUpdateDto, Settings>();
-        CreateMap<Settings, SettingsReadDto>();
+        config.NewConfig<SettingsUpdateDto, Settings>();
+        config.NewConfig<Settings, SettingsReadDto>();
     }
 }

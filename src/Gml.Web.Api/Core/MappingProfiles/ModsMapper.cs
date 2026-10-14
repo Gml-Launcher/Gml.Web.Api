@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using Gml.Dto.Mods;
 using Gml.Models.Mods;
 using GmlCore.Interfaces.Mods;
@@ -6,16 +6,16 @@ using Modrinth.Models;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class ModsMapper : Profile
+public class ModsMapper : IRegister
 {
-    public ModsMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<IMod, ModReadDto>();
-        CreateMap<IMod, ExtendedModReadDto>();
-        CreateMap<IExternalMod, ExtendedModReadDto>();
-        CreateMap<IExternalMod, ExtendedModInfoReadDto>();
-        CreateMap<ModrinthModVersion, ModVersionDto>();
-        CreateMap<CurseForgeModVersion, ModVersionDto>();
-        CreateMap<Dependency, ModVersionDtoDependency>();
+        config.NewConfig<IMod, ModReadDto>();
+        config.NewConfig<IMod, ExtendedModReadDto>();
+        config.NewConfig<IExternalMod, ExtendedModReadDto>();
+        config.NewConfig<IExternalMod, ExtendedModInfoReadDto>();
+        config.NewConfig<ModrinthModVersion, ModVersionDto>();
+        config.NewConfig<CurseForgeModVersion, ModVersionDto>();
+        config.NewConfig<Dependency, ModVersionDtoDependency>();
     }
 }

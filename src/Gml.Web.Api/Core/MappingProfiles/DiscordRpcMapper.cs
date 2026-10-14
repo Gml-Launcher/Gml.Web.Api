@@ -1,15 +1,15 @@
-using AutoMapper;
+using Mapster;
 using Gml.Domains.Integrations;
 using Gml.Dto.Integration;
 using GmlCore.Interfaces.Integrations;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class DiscordRpcMapper : Profile
+public class DiscordRpcMapper : IRegister
 {
-    public DiscordRpcMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<DiscordRpcUpdateDto, DiscordRpcClient>();
-        CreateMap<IDiscordRpcClient, DiscordRpcReadDto>();
+        config.NewConfig<DiscordRpcUpdateDto, DiscordRpcClient>();
+        config.NewConfig<IDiscordRpcClient, DiscordRpcReadDto>();
     }
 }

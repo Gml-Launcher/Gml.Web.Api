@@ -1,14 +1,13 @@
-using AutoMapper;
-using Gml.Domains.Integrations;
+using Mapster;
 using Gml.Domains.User;
 using Gml.Dto.User;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class UserMapper : Profile
+public class UserMapper : IRegister
 {
-    public UserMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<DbUser, UserAuthReadDto>();
+        config.NewConfig<DbUser, UserAuthReadDto>();
     }
 }

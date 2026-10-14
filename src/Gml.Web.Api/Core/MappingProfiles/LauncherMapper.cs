@@ -1,13 +1,13 @@
-using AutoMapper;
+using Mapster;
 using Gml.Dto.Launcher;
 using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class LauncherMapper : Profile
+public class LauncherMapper : IRegister
 {
-    public LauncherMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<ILauncherBuild, LauncherBuildReadDto>();
+        config.NewConfig<ILauncherBuild, LauncherBuildReadDto>();
     }
 }

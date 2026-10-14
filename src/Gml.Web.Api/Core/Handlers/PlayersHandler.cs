@@ -1,6 +1,6 @@
 ﻿using System.Collections.Frozen;
 using System.Net;
-using AutoMapper;
+using MapsterMapper;
 using Gml.Dto.Messages;
 using Gml.Dto.Player;
 using Gml.Models.User;

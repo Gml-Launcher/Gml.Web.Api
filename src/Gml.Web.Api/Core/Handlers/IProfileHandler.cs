@@ -1,9 +1,8 @@
-using AutoMapper;
+using MapsterMapper;
 using FluentValidation;
 using Gml.Dto.Profile;
 using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Enums;
 
 namespace Gml.Web.Api.Core.Handlers;
 

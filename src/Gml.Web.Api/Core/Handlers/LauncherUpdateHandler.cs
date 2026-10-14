@@ -1,10 +1,9 @@
 using System.Net;
-using AutoMapper;
+using MapsterMapper;
 using Gml.Domains.Launcher;
 using Gml.Dto.Launcher;
 using Gml.Dto.Messages;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Web.Api.Core.Handlers;
 

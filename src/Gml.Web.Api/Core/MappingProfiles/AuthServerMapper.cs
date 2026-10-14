@@ -1,13 +1,13 @@
-using AutoMapper;
+using Mapster;
 using Gml.Dto.Integration;
 using Gml.Models.Auth;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class AuthServerMapper : Profile
+public class AuthServerMapper : IRegister
 {
-    public AuthServerMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<AuthServiceInfo, AuthServiceReadDto>();
+        config.NewConfig<AuthServiceInfo, AuthServiceReadDto>();
     }
 }

@@ -1,11 +1,10 @@
 using System.Net;
-using AutoMapper;
+using MapsterMapper;
 using FluentValidation;
 using Gml.Dto.Files;
 using Gml.Dto.Messages;
 using Gml.Models.System;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

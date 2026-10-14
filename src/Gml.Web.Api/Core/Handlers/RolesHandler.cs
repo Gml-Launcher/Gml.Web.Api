@@ -1,11 +1,8 @@
 using System.Net;
-using System.Linq;
-using AutoMapper;
+using MapsterMapper;
 using Gml.Domains.Repositories;
 using Gml.Dto.Auth;
 using Gml.Dto.Messages;
-using Gml.Web.Api.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Gml.Web.Api.Core.Handlers;
 
@@ -19,7 +16,7 @@ public static class RolesHandler
 
         foreach (var u in users)
         {
-            // Load roles as entities and map via AutoMapper
+            // Load roles as entities and map via Mapster
             var roleEntities = await repo.GetUserRolesAsync(u.Id);
 
             var roles = mapper.Map<List<RoleDto>>(roleEntities)
@@ -28,7 +25,7 @@ public static class RolesHandler
 
             var roleIds = roleEntities.Select(r => r.Id).ToList();
 
-            // Load permissions via roles and map via AutoMapper
+            // Load permissions via roles and map via Mapster
             var permEntities = await repo.GetPermissionsByRoleIdsAsync(roleIds);
 
             var perms = mapper.Map<List<PermissionDto>>(permEntities)

@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using FluentValidation;
 using Gml.Dto.Texture;
 using GmlCore.Interfaces;

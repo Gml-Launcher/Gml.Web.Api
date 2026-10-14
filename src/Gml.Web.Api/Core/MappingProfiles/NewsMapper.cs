@@ -1,15 +1,15 @@
-﻿using AutoMapper;
+﻿using Mapster;
 using Gml.Dto.News;
 using Gml.Models.News;
 using GmlCore.Interfaces.News;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class NewsMapper : Profile
+public class NewsMapper : IRegister
 {
-    public NewsMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<INewsData, NewsReadDto>();
-        CreateMap<NewsData, NewsReadDto>();
+        config.NewConfig<INewsData, NewsReadDto>();
+        config.NewConfig<NewsData, NewsReadDto>();
     }
 }

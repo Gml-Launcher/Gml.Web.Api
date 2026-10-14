@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Web;
-using AutoMapper;
+using MapsterMapper;
 using FluentValidation;
 using Gml.Common;
 using Gml.Core;

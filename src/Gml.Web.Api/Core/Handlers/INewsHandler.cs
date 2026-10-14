@@ -1,7 +1,6 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Gml.Dto.News;
 using GmlCore.Interfaces;
-using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Web.Api.Core.Handlers;
 

@@ -1,5 +1,5 @@
 using System.Net;
-using AutoMapper;
+using MapsterMapper;
 using FluentValidation;
 using Gml.Domains.Repositories;
 using Gml.Domains.Settings;

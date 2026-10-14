@@ -1,6 +1,6 @@
 using System.Net;
 using System.Security.Claims;
-using AutoMapper;
+using MapsterMapper;
 using FluentValidation;
 using Gml.Domains.Auth;
 using Gml.Domains.Repositories;

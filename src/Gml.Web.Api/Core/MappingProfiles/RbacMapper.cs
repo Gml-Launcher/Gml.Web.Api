@@ -1,14 +1,14 @@
-using AutoMapper;
+using Mapster;
 using Gml.Domains.Auth;
 using Gml.Dto.Auth;
 
 namespace Gml.Web.Api.Core.MappingProfiles;
 
-public class RbacMapper : Profile
+public class RbacMapper : IRegister
 {
-    public RbacMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<Role, RoleDto>();
-        CreateMap<Permission, PermissionDto>();
+        config.NewConfig<Role, RoleDto>();
+        config.NewConfig<Permission, PermissionDto>();
     }
 }
