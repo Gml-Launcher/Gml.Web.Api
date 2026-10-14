@@ -54,6 +54,13 @@ public class Tests
         }
     }
 
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        _httpClient?.Dispose();
+        _webApplicationFactory?.Dispose();
+    }
+
     [Test]
     [Order(1)]
     public async Task RemoveAllProfilesEndFiles()

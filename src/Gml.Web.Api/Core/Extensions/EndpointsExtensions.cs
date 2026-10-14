@@ -13,8 +13,10 @@ using Gml.Dto.User;
 using Gml.Web.Api.Core.Handlers;
 using Gml.Web.Api.Core.Hubs;
 using Gml.Web.Api.Core.Hubs.Audit;
+using Gml.Web.Api.Core.Services;
 using GmlCore.Interfaces.Notifications;
 using GmlCore.Interfaces.User;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors;
 
 namespace Gml.Web.Api.Core.Extensions;
@@ -26,6 +28,29 @@ public static class EndpointsExtensions
         #region Root
 
         app.MapGet("/", () => Results.Redirect("/swagger", true));
+
+        #endregion
+
+        #region System
+
+        app.MapGet("/api/v1/system/version", (HttpContext context) =>
+            {
+                context.Response.Headers.CacheControl = "no-store";
+                return Results.Ok(ResponseMessage.Create(BuildInfo.Current, string.Empty, HttpStatusCode.OK));
+            })
+            .WithOpenApi(operation =>
+            {
+                operation.Summary = "Версия и коммит сборки бэкенда";
+                operation.Description = "Доступно пользователям панели.";
+                return operation;
+            })
+            .WithName("Get backend build version")
+            .WithTags("System")
+            .Produces<ResponseMessage<BuildInfo>>()
+            .Produces((int)HttpStatusCode.Unauthorized)
+            .RequireAuthorization(policy => policy
+                .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                .RequireAuthenticatedUser());
 
         #endregion
 

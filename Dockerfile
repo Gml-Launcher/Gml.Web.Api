@@ -18,7 +18,10 @@ RUN dotnet build "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+ARG BUILD_VERSION=development
+ARG BUILD_COMMIT=unknown
+RUN dotnet publish "./Gml.Web.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false \
+    -p:BuildVersion="$BUILD_VERSION" -p:BuildCommit="$BUILD_COMMIT"
 
 FROM base AS final
 WORKDIR /app

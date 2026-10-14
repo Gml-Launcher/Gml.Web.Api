@@ -118,6 +118,32 @@ To run the service in a Docker container:
 docker build -t gml-web-api .
 ```
 
+To embed the source version and commit, pass build arguments from this repository:
+
+```bash
+docker build -t gml-web-api \
+  --build-arg BUILD_VERSION="$(git describe --tags --exact-match 2>/dev/null || git branch --show-current)" \
+  --build-arg BUILD_COMMIT="$(git rev-parse HEAD)" .
+```
+
+`BUILD_VERSION` is the full release tag (including `v`) or the branch name, and
+`BUILD_COMMIT` is the full SHA of the checked-out backend commit. GitHub Actions
+supplies these automatically for both image architectures. Pull request builds use
+the source branch name and the SHA of the checkout actually built (normally the
+PR merge commit). Builds without arguments use `development` and `unknown`.
+
+These values are stored in the published .NET assembly and cannot be changed by
+runtime environment variables. For a build without Docker, pass
+`-p:BuildVersion=... -p:BuildCommit=...` to `dotnet publish`.
+
+Panel users can read the embedded values with
+`GET /api/v1/system/version`, using `Authorization: Bearer <access-token>`.
+The response follows the usual `ResponseMessage` format, with
+`data: { "version": "v2026.1-beta1", "commit": "<full-commit-sha>" }`, and
+`Cache-Control: no-store`. Any authenticated panel user can access it, without
+an Admin role or additional permissions. Missing, invalid or expired JWTs and
+external application API keys receive `401 Unauthorized`.
+
 2. Run the container, passing environment variables:
 
 ```bash

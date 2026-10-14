@@ -10,7 +10,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <BuildVersion Condition="'$(BuildVersion)' == ''">development</BuildVersion>
+    <BuildCommit Condition="'$(BuildCommit)' == ''">unknown</BuildCommit>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildVersion" Value="$(BuildVersion)" />
+    <AssemblyMetadata Include="BuildCommit" Value="$(BuildCommit)" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.2.0"/>
